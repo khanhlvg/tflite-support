@@ -19,6 +19,10 @@ filegroup(
 )
 
 # Default target that uses BuiltInOpResolver, registers all built-in OPs.
+# IMPORTANT: In order to use hardward acceleration delegates, you must
+# additionally link to the appropriate delegate plugin target as follows:
+# 1. GPU delegate plugin: tensorflow_lite_support/acceleration/configuration:gpu_delegate_plugin_android
+# 2. NNAPI delegate plugin: included in this target.
 android_library_with_tflite(
     name = "image_classifier",
     tflite_exports = [
