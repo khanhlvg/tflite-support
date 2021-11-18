@@ -19,9 +19,8 @@ limitations under the License.
 
 #include "tensorflow_lite_support/c/common.h"
 #include "tensorflow_lite_support/c/task/core/base_options.h"
-#include "tensorflow_lite_support/c/task/processor/bounding_box.h"
 #include "tensorflow_lite_support/c/task/processor/classification_options.h"
-#include "tensorflow_lite_support/c/task/processor/classification_result.h"
+#include "tensorflow_lite_support/c/task/processor/detection_result.h"
 #include "tensorflow_lite_support/c/task/vision/core/frame_buffer.h"
 
 // --------------------------------------------------------------------------
@@ -93,12 +92,12 @@ limitations under the License.
 extern "C" {
 #endif  // __cplusplus
 
-typedef struct TfLiteImageClassifier TfLiteImageClassifier;
+typedef struct TfLiteObjectDetector TfLiteObjectDetector;
 
-typedef struct TfLiteImageClassifierOptions {
+typedef struct TfLitebjectDetectorOptions {
   TfLiteClassificationOptions classification_options;
   TfLiteBaseOptions base_options;
-} TfLiteImageClassifierOptions;
+} TfLitebjectDetectorOptions;
 
 // Creates and returns TfLiteImageClassifierOptions initialized with default
 // values. Default values are as follows:
@@ -112,7 +111,7 @@ typedef struct TfLiteImageClassifierOptions {
 // .classification_options.label_allowlist.list,
 // options.classification_options.label_denylist.list are NULL.
 // 5. All other integer values are initialized to 0.
-TfLiteImageClassifierOptions TfLiteImageClassifierOptionsCreate();
+TfLitebjectDetectorOptions TfLitebjectDetectorOptionsCreate();
 
 // Creates TfLiteImageClassifier from options.
 // .base_options.model_file.file_path in TfLiteImageClassifierOptions should be
@@ -157,8 +156,8 @@ TfLiteImageClassifierOptions TfLiteImageClassifierOptionsCreate();
 //
 // TfLiteSupportErrorDelete(error)
 //
-TfLiteImageClassifier* TfLiteImageClassifierFromOptions(
-    const TfLiteImageClassifierOptions* options, TfLiteSupportError** error);
+TfLitebjectDetector* TfLitebjectDetectorFromOptions(
+    const TfLitebjectDetectorOptions* options, TfLiteSupportError** error);
 
 // Invokes the encapsulated TFLite model and classifies the frame_buffer.
 // Returns a pointer to the created classification result in case of success or
@@ -184,25 +183,12 @@ TfLiteImageClassifier* TfLiteImageClassifierFromOptions(
 //
 // TfLiteSupportErrorDelete(error)
 //
-TfLiteClassificationResult* TfLiteImageClassifierClassify(
-    const TfLiteImageClassifier* classifier,
+TfLiteDetectionResult* TfLiteTfLitebjectDetectorDetect(
+    const TfLitebjectDetector* detector,
     const TfLiteFrameBuffer* frame_buffer, TfLiteSupportError** error);
 
-// Invokes the encapsulated TFLite model and classifies the region of the
-// frame_buffer specified by the bounding box. Same as TfLiteImageClassifier*
-// TfLiteImageClassifierFromOptions(
-//    const TfLiteImageClassifierOptions* options, TfLiteSupportError** error),
-//    except that the
-// classification is performed based on the input region of interest. Cropping
-// according to this region of interest is prepended to the pre-processing
-// operations.
-TfLiteClassificationResult* TfLiteImageClassifierClassifyWithRoi(
-    const TfLiteImageClassifier* classifier,
-    const TfLiteFrameBuffer* frame_buffer, const TfLiteBoundingBox* roi,
-    TfLiteSupportError** error);
-
 // Disposes off the image classifier.
-void TfLiteImageClassifierDelete(TfLiteImageClassifier* classifier);
+void TfLitebjectDetectorDelete(TfLitebjectDetector* detector);
 
 #ifdef __cplusplus
 }  // extern "C"
