@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow_lite_support/c/task/vision/image_classifier.h"
+#include "tensorflow_lite_support/c/task/vision/object_detector.h"
 
 #include <memory>
 
@@ -27,6 +27,7 @@ namespace {
 using ::tflite::support::StatusOr;
 using DetectionResultCpp = ::tflite::task::vision::DetectionResult;
 using DetectionCpp = ::tflite::task::vision::Detection;
+using ClassCpp = ::tflite::task::vision::Class;
 using BoundingBoxCpp = ::tflite::task::vision::BoundingBox;
 using ObjectDetectorCpp = ::tflite::task::vision::ObjectDetector;
 using ObjectDetectorOptionsCpp =
@@ -121,7 +122,7 @@ TfLiteObjectDetector* TfLiteObjectDetectorFromOptions(
       ObjectDetectorCpp::CreateFromOptions(cpp_option_status.value());
 
   if (detector_status.ok()) {
-    return new TfLiteImageClassifier{.impl =
+    return new TfLiteObjectDetector{.impl =
                                          std::move(detector_status.value())};
   } else {
     ::tflite::support::CreateTfLiteSupportErrorWithStatus(
@@ -142,37 +143,37 @@ TfLiteDetectionResult* GetDetectionResultCStruct(
         detection_result_cpp.detections(i);
 
     auto c_categories = new TfLiteCategory[detection.classes_size()];
-    c_detections->size = detection.classes_size();
+    c_detections[i].size = detection.classes_size();
 
-    for (int rank = 0; rank < classifications.classes_size(); ++rank) {
-      const ClassCpp& classification = classifications.classes(rank);
-      c_categories[rank].index = classification.index();
-      c_categories[rank].score = classification.score();
+    for (int j = 0; j < detection.classes_size(); ++j) {
+      const ClassCpp& classification = detection.classes(i);
+      c_categories[j].index = classification.index();
+      c_categories[j].score = classification.score();
 
       if (classification.has_class_name())
-        c_categories[rank].label = strdup(classification.class_name().c_str());
+        c_categories[j].label = strdup(classification.class_name().c_str());
       else
-        c_categories[rank].label = nullptr;
+        c_categories[j].label = nullptr;
 
       if (classification.has_display_name())
-        c_categories[rank].display_name =
+        c_categories[j].display_name =
             strdup(classification.display_name().c_str());
       else
-        c_categories[rank].display_name = nullptr;
+        c_categories[j].display_name = nullptr;
     }
-    c_classifications[head].categories = c_categories;
+    c_detections[i].categories = c_categories;
   }
 
-  auto c_classification_result = new TfLiteClassificationResult;
-  c_classification_result->classifications = c_classifications;
-  c_classification_result->size =
-      classification_result_cpp.classifications_size();
+  auto c_detection_result = new TfLiteDetectionResult;
+  c_detection_result->detections = c_detections;
+  c_detection_result->size =
+      detection_result_cpp.detections_size();
 
-  return c_classification_result;
+  return c_detection_result;
 }
 
-TfLiteClassificationResult* TfLiteObjectDetectorDetect(
-    const TfLiteImageDetectorDetect* detector,
+TfLiteDetectionResult* TfLiteObjectDetectorDetect(
+    const TfLiteObjectDetector* detector,
     const TfLiteFrameBuffer* frame_buffer,
     TfLiteSupportError** error) {
   if (detector == nullptr) {
@@ -189,20 +190,20 @@ TfLiteClassificationResult* TfLiteObjectDetectorDetect(
     return nullptr;
   }
 
-  StatusOr<ClassificationResultCpp> cpp_detection_result_status =
+  StatusOr<DetectionResultCpp> cpp_detection_result_status =
       detector->impl->Detect(*std::move(cpp_frame_buffer_status.value()));
 
-  if (!cpp_classification_result_status.ok()) {
+  if (!cpp_detection_result_status.ok()) {
     tflite::support::CreateTfLiteSupportErrorWithStatus(
-        cpp_classification_result_status.status(), error);
+        cpp_detection_result_status.status(), error);
     return nullptr;
   }
 
-  return GetClassificationResultCStruct(
-      cpp_classification_result_status.value());
+  return GetDetectionResultCStruct(
+      cpp_detection_result_status.value());
 }
 
-void TfLitebjectDetectorDelete(TfLitebjectDetector* detector) {
+void TfLiteObjectDetectorDelete(TfLiteObjectDetector* detector) {
   delete detector;
 }
 

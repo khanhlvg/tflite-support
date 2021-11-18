@@ -29,11 +29,14 @@ extern "C" {
 typedef struct TfLiteDetection {
   // The bounding box of th detected object.
   TfLiteBoundingBox bounding_box;
-
+  
   // The array of predicted classes, usually sorted by descending scores (e.g.
   // from high to low probability). Since this array is dynamically allocated,
   // use size to traverse through the array.
   TfLiteCategory* categories;
+
+  // Number of detectd objects be used to traverse the array of the detected objects.
+  int size;
 } TfLiteDetection;
 
 // Holds Object Detection results.

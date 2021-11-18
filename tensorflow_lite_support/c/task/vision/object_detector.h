@@ -94,10 +94,10 @@ extern "C" {
 
 typedef struct TfLiteObjectDetector TfLiteObjectDetector;
 
-typedef struct TfLitebjectDetectorOptions {
+typedef struct TfLiteObjectDetectorOptions {
   TfLiteClassificationOptions classification_options;
   TfLiteBaseOptions base_options;
-} TfLitebjectDetectorOptions;
+} TfLiteObjectDetectorOptions;
 
 // Creates and returns TfLiteImageClassifierOptions initialized with default
 // values. Default values are as follows:
@@ -111,7 +111,7 @@ typedef struct TfLitebjectDetectorOptions {
 // .classification_options.label_allowlist.list,
 // options.classification_options.label_denylist.list are NULL.
 // 5. All other integer values are initialized to 0.
-TfLitebjectDetectorOptions TfLitebjectDetectorOptionsCreate();
+TfLiteObjectDetectorOptions TfLitebjectDetectorOptionsCreate();
 
 // Creates TfLiteImageClassifier from options.
 // .base_options.model_file.file_path in TfLiteImageClassifierOptions should be
@@ -156,8 +156,8 @@ TfLitebjectDetectorOptions TfLitebjectDetectorOptionsCreate();
 //
 // TfLiteSupportErrorDelete(error)
 //
-TfLitebjectDetector* TfLitebjectDetectorFromOptions(
-    const TfLitebjectDetectorOptions* options, TfLiteSupportError** error);
+TfLiteObjectDetector* TfLitebjectDetectorFromOptions(
+    const TfLiteObjectDetectorOptions* options, TfLiteSupportError** error);
 
 // Invokes the encapsulated TFLite model and classifies the frame_buffer.
 // Returns a pointer to the created classification result in case of success or
@@ -184,11 +184,11 @@ TfLitebjectDetector* TfLitebjectDetectorFromOptions(
 // TfLiteSupportErrorDelete(error)
 //
 TfLiteDetectionResult* TfLiteTfLitebjectDetectorDetect(
-    const TfLitebjectDetector* detector,
+    const TfLiteObjectDetector* detector,
     const TfLiteFrameBuffer* frame_buffer, TfLiteSupportError** error);
 
 // Disposes off the image classifier.
-void TfLitebjectDetectorDelete(TfLitebjectDetector* detector);
+void TfLiteObjectDetectorDelete(TfLiteObjectDetector* detector);
 
 #ifdef __cplusplus
 }  // extern "C"
