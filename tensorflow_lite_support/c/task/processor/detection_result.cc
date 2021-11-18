@@ -22,11 +22,9 @@ limitations under the License.
 extern "C" {
 #endif  // __cplusplus
 
-void TfLiteDetectionResultDelete(
-    TfLiteDetectionResult* detection_result) {
+void TfLiteDetectionResultDelete(TfLiteDetectionResult* detection_result) {
   for (int i = 0; i < detection_result->size; ++i) {
-    TfLiteDetection detections =
-        detection_result->detections[i];
+    TfLiteDetection detections = detection_result->detections[i];
     for (int j = 0; j < detections.size; ++j) {
       // `strdup` obtains memory using `malloc` and the memory needs to be
       // released using `free`.

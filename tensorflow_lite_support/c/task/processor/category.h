@@ -15,7 +15,8 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_SUPPORT_C_TASK_PROCESSOR_CATEGORY_H_
 #define TENSORFLOW_LITE_SUPPORT_C_TASK_PROCESSOR_CATEGORY_H_
 
-// Defines C structure for a Category which encapsulates a single predicted class.
+// Defines C structure for a Category which encapsulates a single predicted
+// class.
 
 #ifdef __cplusplus
 extern "C" {
