@@ -17,9 +17,9 @@ limitations under the License.
 
 #include <memory>
 
-#include "external/com_google_absl/absl/flags/flag.h"
-#include "external/com_google_absl/absl/status/status.h"
-#include "external/com_google_absl/absl/strings/cord.h"
+#include "absl/flags/flag.h"  // from @com_google_absl
+#include "absl/status/status.h"  // from @com_google_absl
+#include "absl/strings/cord.h"  // from @com_google_absl
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/core/shims/cc/shims_test_util.h"
 #include "tensorflow/lite/kernels/builtin_op_kernels.h"
@@ -550,7 +550,7 @@ TEST_F(PostprocessTest, SucceedsWithMaxResultsOption) {
 
   std::vector<uint8_t> scores = {/*daisy*/ 0, /*dandelion*/ 64, /*roses*/ 255,
                                  /*sunflowers*/ 32, /*tulips*/ 128};
-  PopulateTensor(scores, output_tensor);
+  SUPPORT_ASSERT_OK(PopulateTensor(scores, output_tensor));
   SUPPORT_ASSERT_OK_AND_ASSIGN(ClassificationResult result,
                        test_image_classifier_->Postprocess(
                            {output_tensor}, *dummy_frame_buffer_, /*roi=*/{}));
@@ -581,7 +581,7 @@ TEST_F(PostprocessTest, SucceedsWithScoreThresholdOption) {
 
   std::vector<uint8_t> scores = {/*daisy*/ 0, /*dandelion*/ 64, /*roses*/ 255,
                                  /*sunflowers*/ 32, /*tulips*/ 128};
-  PopulateTensor(scores, output_tensor);
+  SUPPORT_ASSERT_OK(PopulateTensor(scores, output_tensor));
   SUPPORT_ASSERT_OK_AND_ASSIGN(ClassificationResult result,
                        test_image_classifier_->Postprocess(
                            {output_tensor}, *dummy_frame_buffer_, /*roi=*/{}));
@@ -613,7 +613,7 @@ TEST_F(PostprocessTest, SucceedsWithWhitelistOption) {
 
   std::vector<uint8_t> scores = {/*daisy*/ 0, /*dandelion*/ 64, /*roses*/ 255,
                                  /*sunflowers*/ 32, /*tulips*/ 128};
-  PopulateTensor(scores, output_tensor);
+  SUPPORT_ASSERT_OK(PopulateTensor(scores, output_tensor));
   SUPPORT_ASSERT_OK_AND_ASSIGN(ClassificationResult result,
                        test_image_classifier_->Postprocess(
                            {output_tensor}, *dummy_frame_buffer_, /*roi=*/{}));
@@ -644,7 +644,7 @@ TEST_F(PostprocessTest, SucceedsWithBlacklistOption) {
 
   std::vector<uint8_t> scores = {/*daisy*/ 0, /*dandelion*/ 64, /*roses*/ 255,
                                  /*sunflowers*/ 32, /*tulips*/ 128};
-  PopulateTensor(scores, output_tensor);
+  SUPPORT_ASSERT_OK(PopulateTensor(scores, output_tensor));
   SUPPORT_ASSERT_OK_AND_ASSIGN(ClassificationResult result,
                        test_image_classifier_->Postprocess(
                            {output_tensor}, *dummy_frame_buffer_, /*roi=*/{}));

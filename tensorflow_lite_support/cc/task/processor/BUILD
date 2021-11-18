@@ -1,8 +1,7 @@
 load("@org_tensorflow//tensorflow/lite/core/shims:cc_library_with_tflite.bzl", "cc_library_with_tflite")
 
-# TODO(b/193127200): Use tensorflow_lite_support:internal (TBA) instead.
 package(
-    default_visibility = ["//tensorflow_lite_support:users"],
+    default_visibility = ["//tensorflow_lite_support:internal"],
     licenses = ["notice"],  # Apache 2.0
 )
 
@@ -16,6 +15,7 @@ cc_library_with_tflite(
     ],
     deps = [
         "//tensorflow_lite_support/cc:common",
+        "//tensorflow_lite_support/cc/port:status_macros",
         "//tensorflow_lite_support/cc/port:statusor",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
@@ -96,6 +96,30 @@ cc_library_with_tflite(
         "//tensorflow_lite_support/cc/task/core:task_utils",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library_with_tflite(
+    name = "text_preprocessor",
+    srcs = ["text_preprocessor.cc"],
+    hdrs = ["text_preprocessor.h"],
+    tflite_deps = [
+        ":processor",
+        "//tensorflow_lite_support/cc/task/core:tflite_engine",
+    ],
+    deps = [
+        "//tensorflow_lite_support/cc:common",
+        "//tensorflow_lite_support/cc/port:status_macros",
+        "//tensorflow_lite_support/cc/port:statusor",
+        "//tensorflow_lite_support/cc/task/core:task_utils",
+        "//tensorflow_lite_support/cc/text/tokenizers:regex_tokenizer",
+        "//tensorflow_lite_support/cc/text/tokenizers:tokenizer",
+        "//tensorflow_lite_support/cc/text/tokenizers:tokenizer_utils",
+        "//tensorflow_lite_support/cc/utils:common_utils",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
 )

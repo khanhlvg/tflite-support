@@ -2,9 +2,7 @@ load("//tensorflow_lite_support/metadata:build_defs.bzl", "stamp_metadata_parser
 # Placeholder for internal Python strict library compatibility macro.
 
 package(
-    default_visibility = [
-        "//visibility:public",
-    ],
+    default_visibility = ["//tensorflow_lite_support:internal"],
     licenses = ["notice"],  # Apache 2.0
 )
 
@@ -35,6 +33,9 @@ py_library(
 py_binary(
     name = "metadata_displayer",
     srcs = ["metadata_displayer.py"],
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [
         ":metadata",
         "@absl_py//absl:app",
@@ -46,9 +47,9 @@ py_library(
     name = "metadata_writer_for_task",
     srcs = ["metadata_writer_for_task.py"],
     srcs_version = "PY3",
-    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
+        "//tensorflow_lite_support/metadata:metadata_schema_py",
         "//tensorflow_lite_support/metadata/python/metadata_writers:metadata_info",
         "//tensorflow_lite_support/metadata/python/metadata_writers:metadata_writer",
         "//tensorflow_lite_support/metadata/python/metadata_writers:writer_utils",

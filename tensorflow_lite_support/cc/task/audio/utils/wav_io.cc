@@ -16,7 +16,7 @@ limitations under the License.
 // Functions to write audio in WAV format.
 // This file is forked from `tensorflow/core/lib/wav/wav_io.cc`.
 
-#include "tensorflow_lite_support/examples/task/audio/desktop/wav/wav_io.h"
+#include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
 
 #include <math.h>
 #include <string.h>
@@ -27,10 +27,10 @@ limitations under the License.
 #include <fstream>
 #include <limits>
 
-#include "external/com_google_absl/absl/base/casts.h"
-#include "external/com_google_absl/absl/status/status.h"
-#include "external/com_google_absl/absl/strings/str_cat.h"
-#include "external/com_google_absl/absl/strings/str_format.h"
+#include "absl/base/casts.h"  // from @com_google_absl
+#include "absl/status/status.h"  // from @com_google_absl
+#include "absl/strings/str_cat.h"  // from @com_google_absl
+#include "absl/strings/str_format.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/port/status_macros.h"
 
 namespace tflite {

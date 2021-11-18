@@ -17,9 +17,9 @@ limitations under the License.
 
 #include <memory>
 
-#include "external/com_google_absl/absl/flags/flag.h"
-#include "external/com_google_absl/absl/status/status.h"
-#include "external/com_google_absl/absl/strings/cord.h"
+#include "absl/flags/flag.h"  // from @com_google_absl
+#include "absl/status/status.h"  // from @com_google_absl
+#include "absl/strings/cord.h"  // from @com_google_absl
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/core/shims/cc/shims_test_util.h"
 #include "tensorflow/lite/kernels/builtin_op_kernels.h"
@@ -449,7 +449,7 @@ class PostprocessTest : public tflite_shims::testing::Test {
         /*left=*/0.2, /*top=*/0.4, /*right=*/0.4, /*bottom=*/0.8};
     // Pad with zeros to fill the 10 locations.
     locations_data.resize(4 * 10);
-    PopulateTensor(locations_data, locations);
+    RETURN_IF_ERROR(PopulateTensor(locations_data, locations));
     result.push_back(locations);
 
     TfLiteTensor* classes = output_tensors[1];
@@ -457,19 +457,19 @@ class PostprocessTest : public tflite_shims::testing::Test {
                                        /*motorcycle*/ 3};
     // Pad with zeros to fill the 10 classes.
     classes_data.resize(10);
-    PopulateTensor(classes_data, classes);
+    RETURN_IF_ERROR(PopulateTensor(classes_data, classes));
     result.push_back(classes);
 
     TfLiteTensor* scores = output_tensors[2];
     std::vector<float> scores_data = {0.8, 0.6, 0.4};
     // Pad with zeros to fill the 10 scores.
     scores_data.resize(10);
-    PopulateTensor(scores_data, scores);
+    RETURN_IF_ERROR(PopulateTensor(scores_data, scores));
     result.push_back(scores);
 
     TfLiteTensor* num_results = output_tensors[3];
     std::vector<float> num_results_data = {10};
-    PopulateTensor(num_results_data, num_results);
+    RETURN_IF_ERROR(PopulateTensor(num_results_data, num_results));
     result.push_back(num_results);
 
     return result;

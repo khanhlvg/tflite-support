@@ -19,15 +19,15 @@ limitations under the License.
 #include <string>
 #include <vector>
 
-#include "external/com_google_absl/absl/status/status.h"
-#include "external/com_google_absl/absl/strings/str_format.h"
+#include "absl/status/status.h"  // from @com_google_absl
+#include "absl/strings/str_format.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/port/status_macros.h"
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/audio/audio_classifier.h"
 #include "tensorflow_lite_support/cc/task/audio/core/audio_buffer.h"
 #include "tensorflow_lite_support/cc/task/audio/proto/classifications_proto_inc.h"
+#include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
 #include "tensorflow_lite_support/cc/task/core/category.h"
-#include "tensorflow_lite_support/examples/task/audio/desktop/wav/wav_io.h"
 
 namespace tflite {
 namespace task {

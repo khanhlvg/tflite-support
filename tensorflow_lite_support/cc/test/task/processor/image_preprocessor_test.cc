@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <memory>
 
-#include "external/com_google_absl/absl/status/status.h"
+#include "absl/status/status.h"  // from @com_google_absl
 #include "tensorflow/lite/core/shims/cc/shims_test_util.h"
 #include "tensorflow_lite_support/cc/port/gmock.h"
 #include "tensorflow_lite_support/cc/port/gtest.h"
@@ -94,9 +94,9 @@ TEST_F(DynamicInputTest, GoldenImageComparison) {
   PreprocessImage();
 
   // Get the processed input image.
-  float* processed_input_data =
-      tflite::task::core::AssertAndReturnTypedTensor<float>(
-          engine_->GetInputs()[0]);
+  SUPPORT_ASSERT_OK_AND_ASSIGN(float* processed_input_data,
+                       tflite::task::core::AssertAndReturnTypedTensor<float>(
+                           engine_->GetInputs()[0]));
 
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image, LoadImage("burger.jpg"));
   const uint8* image_data = image.pixel_data;

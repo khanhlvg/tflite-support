@@ -19,7 +19,7 @@ limitations under the License.
 #include <memory>
 #include <vector>
 
-#include "external/com_google_absl/absl/status/status.h"
+#include "absl/status/status.h"  // from @com_google_absl
 #include "tensorflow/lite/core/api/op_resolver.h"
 #include "tensorflow/lite/core/shims/cc/kernels/register.h"
 #include "tensorflow_lite_support/cc/port/statusor.h"
@@ -147,8 +147,8 @@ class ImageSegmenter : public BaseVisionTaskApi<SegmentationResult> {
 
   // Returns the output confidence at coordinates {x, y, depth}, dequantizing
   // on-the-fly if needed (i.e. if `has_uint8_outputs_` is true).
-  float GetOutputConfidence(const TfLiteTensor& output_tensor, int x, int y,
-                            int depth);
+  tflite::support::StatusOr<float> GetOutputConfidence(
+      const TfLiteTensor& output_tensor, int x, int y, int depth);
 
   // Prebuilt list of ColoredLabel attached to each Segmentation result. The
   // i-th item in this list corresponds to the i-th label map item.

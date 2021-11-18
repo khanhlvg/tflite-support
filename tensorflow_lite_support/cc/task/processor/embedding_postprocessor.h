@@ -17,7 +17,7 @@ limitations under the License.
 #define TENSORFLOW_LITE_SUPPORT_CC_TASK_PROCESSOR_EMBEDDING_POSTPROCESSOR_H_
 #include <initializer_list>
 
-#include "external/com_google_absl/absl/status/status.h"
+#include "absl/status/status.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/port/status_macros.h"
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/core/tflite_engine.h"
@@ -53,6 +53,8 @@ class EmbeddingPostprocessor : public Postprocessor {
   static tflite::support::StatusOr<double> CosineSimilarity(const T& u,
                                                             const T& v);
 
+  int GetEmbeddingDimension() const { return embedding_dimension_; }
+
  private:
   using Postprocessor::Postprocessor;
 
@@ -76,15 +78,15 @@ class EmbeddingPostprocessor : public Postprocessor {
 
 template <typename T>
 absl::Status EmbeddingPostprocessor::Postprocess(T* embedding) {
-  embedding->set_output_index(output_indices_.at(0));
+  embedding->set_output_index(tensor_indices_.at(0));
   auto* feature_vector = embedding->mutable_feature_vector();
-  if (Tensor()->type == kTfLiteUInt8) {
+  if (GetTensor()->type == kTfLiteUInt8) {
     const uint8* output_data =
         engine_->interpreter()->typed_output_tensor<uint8>(
-            output_indices_.at(0));
+            tensor_indices_.at(0));
     // Get the zero_point and scale parameters from the tensor metadata.
     const int output_tensor_index =
-        engine_->interpreter()->outputs()[output_indices_.at(0)];
+        engine_->interpreter()->outputs()[tensor_indices_.at(0)];
     const TfLiteTensor* output_tensor =
         engine_->interpreter()->tensor(output_tensor_index);
     for (int j = 0; j < embedding_dimension_; ++j) {
@@ -96,7 +98,7 @@ absl::Status EmbeddingPostprocessor::Postprocess(T* embedding) {
     // Float
     const float* output_data =
         engine_->interpreter()->typed_output_tensor<float>(
-            output_indices_.at(0));
+            tensor_indices_.at(0));
     for (int j = 0; j < embedding_dimension_; ++j) {
       feature_vector->add_value_float(output_data[j]);
     }

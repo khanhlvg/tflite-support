@@ -1,12 +1,20 @@
 package(
-    default_visibility = ["//tensorflow_lite_support:__subpackages__"],
+    default_visibility = ["//tensorflow_lite_support:internal"],
     licenses = ["notice"],  # Apache 2.0
 )
 
 objc_library(
     name = "TFLClassificationOptions",
     hdrs = [
-        "Sources/TFLClassificationOptions.h",
+        "apis/TFLClassificationOptions.h",
     ],
     module_name = "TFLClassificationOptions",
+)
+
+objc_library(
+    name = "TFLClassificationResult",
+    hdrs = [
+        "apis/TFLClassificationResult.h",
+    ],
+    module_name = "TFLClassificationResult",
 )

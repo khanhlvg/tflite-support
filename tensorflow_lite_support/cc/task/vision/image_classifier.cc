@@ -15,9 +15,9 @@ limitations under the License.
 
 #include "tensorflow_lite_support/cc/task/vision/image_classifier.h"
 
-#include "external/com_google_absl/absl/algorithm/container.h"
-#include "external/com_google_absl/absl/strings/str_format.h"
-#include "external/com_google_absl/absl/strings/string_view.h"
+#include "absl/algorithm/container.h"  // from @com_google_absl
+#include "absl/strings/str_format.h"  // from @com_google_absl
+#include "absl/strings/string_view.h"  // from @com_google_absl
 #include "flatbuffers/flatbuffers.h"  // from @flatbuffers
 #include "tensorflow_lite_support/cc/common.h"
 #include "tensorflow_lite_support/cc/port/integral_types.h"
@@ -407,16 +407,16 @@ StatusOr<ClassificationResult> ImageClassifier::Postprocess(
 
     const TfLiteTensor* output_tensor = output_tensors[i];
     if (has_uint8_outputs_) {
-      const uint8* output_data =
-          AssertAndReturnTypedTensor<uint8>(output_tensor);
+      ASSIGN_OR_RETURN(const uint8* output_data,
+                       AssertAndReturnTypedTensor<uint8>(output_tensor));
       for (int j = 0; j < head.label_map_items.size(); ++j) {
         score_pairs.emplace_back(j, output_tensor->params.scale *
                                         (static_cast<int>(output_data[j]) -
                                          output_tensor->params.zero_point));
       }
     } else {
-      const float* output_data =
-          AssertAndReturnTypedTensor<float>(output_tensor);
+      ASSIGN_OR_RETURN(const float* output_data,
+                       AssertAndReturnTypedTensor<float>(output_tensor));
       for (int j = 0; j < head.label_map_items.size(); ++j) {
         score_pairs.emplace_back(j, output_data[j]);
       }

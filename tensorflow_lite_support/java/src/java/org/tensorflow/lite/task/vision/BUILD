@@ -2,7 +2,7 @@ load("@org_tensorflow//tensorflow/lite/core/shims:cc_library_with_tflite.bzl", "
 load("@org_tensorflow//tensorflow/lite/java:aar_with_jni.bzl", "aar_with_jni")
 
 package(
-    default_visibility = ["//tensorflow_lite_support:users"],
+    default_visibility = ["//visibility:public"],
     licenses = ["notice"],  # Apache 2.0
 )
 
@@ -31,7 +31,7 @@ android_library_with_tflite(
         "@com_google_auto_value",
         "@maven//:androidx_annotation_annotation",
         "@maven//:com_google_android_odml_image",
-        "@org_tensorflow//tensorflow/lite/java:tensorflowlite_java",
+        "@org_tensorflow//tensorflow/lite/java:tensorflowlite_java_stable",
     ],
     # LINT.ThenChange(<INTERNAL>/release/build_task_pom.sh:dep)
 )
