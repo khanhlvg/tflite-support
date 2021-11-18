@@ -23,6 +23,8 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/task/vision/proto/detections_proto_inc.h"
 #include "tensorflow_lite_support/cc/task/vision/proto/object_detector_options_proto_inc.h"
 
+#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+
 namespace {
 using ::tflite::support::StatusOr;
 using DetectionResultCpp = ::tflite::task::vision::DetectionResult;
@@ -30,8 +32,7 @@ using DetectionCpp = ::tflite::task::vision::Detection;
 using ClassCpp = ::tflite::task::vision::Class;
 using BoundingBoxCpp = ::tflite::task::vision::BoundingBox;
 using ObjectDetectorCpp = ::tflite::task::vision::ObjectDetector;
-using ObjectDetectorOptionsCpp =
-    ::tflite::task::vision::ObjectDetectorOptions;
+using ObjectDetectorOptionsCpp = ::tflite::task::vision::ObjectDetectorOptions;
 using FrameBufferCpp = ::tflite::task::vision::FrameBuffer;
 using ::tflite::support::TfLiteSupportStatus;
 
@@ -122,8 +123,7 @@ TfLiteObjectDetector* TfLiteObjectDetectorFromOptions(
       ObjectDetectorCpp::CreateFromOptions(cpp_option_status.value());
 
   if (detector_status.ok()) {
-    return new TfLiteObjectDetector{.impl =
-                                         std::move(detector_status.value())};
+    return new TfLiteObjectDetector{.impl = std::move(detector_status.value())};
   } else {
     ::tflite::support::CreateTfLiteSupportErrorWithStatus(
         detector_status.status(), error);
@@ -133,20 +133,19 @@ TfLiteObjectDetector* TfLiteObjectDetectorFromOptions(
 
 TfLiteDetectionResult* GetDetectionResultCStruct(
     const DetectionResultCpp& detection_result_cpp) {
-  auto c_detections =
-      new TfLiteDetection[detection_result_cpp
-                                    .detections_size()];
+  GTEST_COUT << "C Struct" << std::endl;
 
-  for (int i = 0; i < detection_result_cpp.detections_size();
-       ++i) {
-    const DetectionCpp& detection =
-        detection_result_cpp.detections(i);
+  auto c_detections =
+      new TfLiteDetection[detection_result_cpp.detections_size()];
+
+  for (int i = 0; i < detection_result_cpp.detections_size(); ++i) {
+    const DetectionCpp& detection = detection_result_cpp.detections(i);
 
     auto c_categories = new TfLiteCategory[detection.classes_size()];
     c_detections[i].size = detection.classes_size();
 
     for (int j = 0; j < detection.classes_size(); ++j) {
-      const ClassCpp& classification = detection.classes(i);
+      const ClassCpp& classification = detection.classes(j);
       c_categories[j].index = classification.index();
       c_categories[j].score = classification.score();
 
@@ -166,19 +165,18 @@ TfLiteDetectionResult* GetDetectionResultCStruct(
 
   auto c_detection_result = new TfLiteDetectionResult;
   c_detection_result->detections = c_detections;
-  c_detection_result->size =
-      detection_result_cpp.detections_size();
+  c_detection_result->size = detection_result_cpp.detections_size();
+  GTEST_COUT << "Exit C Struct" << std::endl;
 
   return c_detection_result;
 }
 
 TfLiteDetectionResult* TfLiteObjectDetectorDetect(
-    const TfLiteObjectDetector* detector,
-    const TfLiteFrameBuffer* frame_buffer,
+    const TfLiteObjectDetector* detector, const TfLiteFrameBuffer* frame_buffer,
     TfLiteSupportError** error) {
   if (detector == nullptr) {
     tflite::support::CreateTfLiteSupportError(
-        kInvalidArgumentError, "Expected non null image detector.", error);
+        kInvalidArgumentError, "Expected non null object detector.", error);
     return nullptr;
   }
 
@@ -189,18 +187,18 @@ TfLiteDetectionResult* TfLiteObjectDetectorDetect(
         cpp_frame_buffer_status.status(), error);
     return nullptr;
   }
-
+  GTEST_COUT << "Enter Detect" << std::endl;
   StatusOr<DetectionResultCpp> cpp_detection_result_status =
       detector->impl->Detect(*std::move(cpp_frame_buffer_status.value()));
-
+  GTEST_COUT << "Exit Detect" << std::endl;
   if (!cpp_detection_result_status.ok()) {
     tflite::support::CreateTfLiteSupportErrorWithStatus(
         cpp_detection_result_status.status(), error);
     return nullptr;
   }
 
-  return GetDetectionResultCStruct(
-      cpp_detection_result_status.value());
+  GTEST_COUT << "Enter C Struct" << std::endl;
+  return GetDetectionResultCStruct(cpp_detection_result_status.value());
 }
 
 void TfLiteObjectDetectorDelete(TfLiteObjectDetector* detector) {
