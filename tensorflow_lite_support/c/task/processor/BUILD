@@ -15,8 +15,9 @@ cc_library(
     ],
     hdrs = ["classification_result.h"],
     deps = [
-        ":category"
-    ]
+
+        ":category",
+    ],
 )
 
 cc_library(
@@ -36,8 +37,7 @@ cc_library(
     ],
     hdrs = ["detection_result.h"],
     deps = [
+        ":bounding_box",
         ":category",
-        ":bounding_box"
-    ]
+    ],
 )
-

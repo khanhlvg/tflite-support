@@ -44,7 +44,6 @@ cc_library_with_tflite(
         "//tensorflow_lite_support/cc/task/vision:object_detector",
     ],
     deps = [
-        "//tensorflow_lite_support/c:common",
         "//tensorflow_lite_support/c:common_utils",
         "//tensorflow_lite_support/c/task/core:base_options",
         "//tensorflow_lite_support/c/task/processor:bounding_box",
