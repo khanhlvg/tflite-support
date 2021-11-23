@@ -23,8 +23,6 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/task/vision/proto/detections_proto_inc.h"
 #include "tensorflow_lite_support/cc/task/vision/proto/object_detector_options_proto_inc.h"
 
-#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
-
 namespace {
 using ::tflite::support::StatusOr;
 using DetectionResultCpp = ::tflite::task::vision::DetectionResult;
@@ -133,8 +131,6 @@ TfLiteObjectDetector* TfLiteObjectDetectorFromOptions(
 
 TfLiteDetectionResult* GetDetectionResultCStruct(
     const DetectionResultCpp& detection_result_cpp) {
-  GTEST_COUT << "C Struct" << std::endl;
-
   auto c_detections =
       new TfLiteDetection[detection_result_cpp.detections_size()];
 
@@ -166,7 +162,6 @@ TfLiteDetectionResult* GetDetectionResultCStruct(
   auto c_detection_result = new TfLiteDetectionResult;
   c_detection_result->detections = c_detections;
   c_detection_result->size = detection_result_cpp.detections_size();
-  GTEST_COUT << "Exit C Struct" << std::endl;
 
   return c_detection_result;
 }
@@ -187,17 +182,15 @@ TfLiteDetectionResult* TfLiteObjectDetectorDetect(
         cpp_frame_buffer_status.status(), error);
     return nullptr;
   }
-  GTEST_COUT << "Enter Detect" << std::endl;
+
   StatusOr<DetectionResultCpp> cpp_detection_result_status =
       detector->impl->Detect(*std::move(cpp_frame_buffer_status.value()));
-  GTEST_COUT << "Exit Detect" << std::endl;
   if (!cpp_detection_result_status.ok()) {
     tflite::support::CreateTfLiteSupportErrorWithStatus(
         cpp_detection_result_status.status(), error);
     return nullptr;
   }
 
-  GTEST_COUT << "Enter C Struct" << std::endl;
   return GetDetectionResultCStruct(cpp_detection_result_status.value());
 }
 
