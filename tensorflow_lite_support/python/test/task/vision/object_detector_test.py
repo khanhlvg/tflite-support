@@ -36,7 +36,8 @@ _ExternalFile = task_options.ExternalFile
 _ObjectDetector = object_detector.ObjectDetector
 _ObjectDetectorOptions = object_detector.ObjectDetectorOptions
 
-_MODEL_FLOAT = 'coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.tflite'
+_MODEL_FILE = 'coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.tflite'
+_IMAGE_FILE = 'cats_and_dogs.jpg'
 _EXPECTED_DETECTIONS = [
   (
     {
@@ -72,6 +73,11 @@ _EXPECTED_DETECTIONS = [
     }
   )
 ]
+_BBOX_IOU_THRESHOLD = 0.9
+_ALLOW_LIST = ['cat', 'dog']
+_DENY_LIST = ['cat']
+_SCORE_THRESHOLD = 0.3
+_MAX_RESULTS = 3
 
 
 class ModelFileType(enum.Enum):
@@ -83,7 +89,8 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
   def setUp(self):
     super().setUp()
-    self.model_path = test_util.get_test_data_path(_MODEL_FLOAT)
+    self.test_image_path = test_util.get_test_data_path(_IMAGE_FILE)
+    self.model_path = test_util.get_test_data_path(_MODEL_FILE)
 
   @staticmethod
   def create_detector_from_options(model_file, **detection_options):
@@ -95,6 +102,41 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
         detection_options=detection_options)
     detector = _ObjectDetector.create_from_options(options)
     return detector
+
+  def test_create_from_options_succeeds_with_valid_model_path(self):
+    # Creates with options containing model file successfully.
+    base_options = _BaseOptions(
+      model_file=_ExternalFile(file_name=self.model_path))
+    options = _ObjectDetectorOptions(base_options=base_options)
+    detector = _ObjectDetector.create_from_options(options)
+    self.assertIsInstance(detector, _ObjectDetector)
+
+  def test_create_from_options_fails_with_missing_model_file(self):
+    # Missing the model file.
+    with self.assertRaisesRegex(
+        TypeError,
+        r"__init__\(\) missing 1 required positional argument: 'model_file'"):
+      _BaseOptions()
+
+  def test_create_from_options_fails_with_invalid_model_path(self):
+    # Invalid empty model path.
+    with self.assertRaisesRegex(
+        Exception,
+        r"INVALID_ARGUMENT: Expected exactly one of `base_options.model_file` or "
+        r"`model_file_with_metadata` to be provided, found 0. "
+        r"\[tflite::support::TfLiteSupportStatus='2']"):
+      base_options = _BaseOptions(model_file=_ExternalFile(file_name=""))
+      options = _ObjectDetectorOptions(base_options=base_options)
+      _ObjectDetector.create_from_options(options)
+
+  def test_create_from_options_succeeds_with_valid_model_content(self):
+    # Creates with options containing model content successfully.
+    with open(self.model_path, "rb") as f:
+      base_options = _BaseOptions(
+        model_file=_ExternalFile(file_content=f.read()))
+      options = _ObjectDetectorOptions(base_options=base_options)
+      detector = _ObjectDetector.create_from_options(options)
+      self.assertIsInstance(detector, _ObjectDetector)
 
   @staticmethod
   def build_test_data(expected_detections):
@@ -133,8 +175,7 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
       model_file=model_file, score_threshold=score_threshold)
 
     # Loads image.
-    image = tensor_image.TensorImage.from_file(
-        test_util.get_test_data_path('cats_and_dogs.jpg'))
+    image = tensor_image.TensorImage.from_file(self.test_image_path)
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
