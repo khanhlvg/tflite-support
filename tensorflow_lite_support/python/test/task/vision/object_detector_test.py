@@ -78,6 +78,7 @@ _ALLOW_LIST = ['cat', 'dog']
 _DENY_LIST = ['cat']
 _SCORE_THRESHOLD = 0.3
 _MAX_RESULTS = 3
+_ACCEPTABLE_ERROR_RANGE = 0.000001
 
 
 class ModelFileType(enum.Enum):
@@ -157,9 +158,9 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
     return expected_result_dict
 
   @parameterized.parameters(
-    (ModelFileType.FILE_NAME, 0.5, _EXPECTED_DETECTIONS),
-    (ModelFileType.FILE_CONTENT, 0.5, _EXPECTED_DETECTIONS))
-  def test_detect_model(self, model_file_type, score_threshold, expected_detections):
+    (ModelFileType.FILE_NAME, 4, _EXPECTED_DETECTIONS),
+    (ModelFileType.FILE_CONTENT, 4, _EXPECTED_DETECTIONS))
+  def test_detect_model(self, model_file_type, max_results, expected_detections):
     # Creates detector.
     if model_file_type is ModelFileType.FILE_NAME:
       model_file = _ExternalFile(file_name=self.model_path)
@@ -172,7 +173,7 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
       raise ValueError('model_file_type is invalid.')
 
     detector = self.create_detector_from_options(
-      model_file=model_file, score_threshold=score_threshold)
+      model_file=model_file, max_results=max_results)
 
     # Loads image.
     image = tensor_image.TensorImage.from_file(self.test_image_path)
@@ -186,7 +187,101 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Comparing results.
     self.assertDeepAlmostEqual(
-        image_result_dict, expected_result_dict, places=5)
+        image_result_dict, expected_result_dict, delta=_ACCEPTABLE_ERROR_RANGE)
+
+  def test_score_threshold_option(self):
+    # Creates detector.
+    model_file = _ExternalFile(file_name=self.model_path)
+    detector = self.create_detector_from_options(
+      model_file=model_file, score_threshold=_SCORE_THRESHOLD)
+
+    # Loads image.
+    image = tensor_image.TensorImage.from_file(self.test_image_path)
+
+    # Performs object detection on the input.
+    image_result = detector.detect(image)
+    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+
+    categories = image_result_dict['detections']
+
+    for category in categories:
+      score = category['classes'][0]['score']
+      self.assertGreaterEqual(
+        score, _SCORE_THRESHOLD,
+        'Classification with score lower than threshold found. {0}'.format(
+          category))
+
+  def test_max_results_option(self):
+    # Creates detector.
+    model_file = _ExternalFile(file_name=self.model_path)
+    detector = self.create_detector_from_options(
+      model_file=model_file, max_results=_MAX_RESULTS)
+
+    # Loads image.
+    image = tensor_image.TensorImage.from_file(self.test_image_path)
+
+    # Performs object detection on the input.
+    image_result = detector.detect(image)
+    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+    detections = image_result_dict['detections']
+
+    self.assertLessEqual(
+      len(detections), _MAX_RESULTS, 'Too many results returned.')
+
+  def test_allow_list_option(self):
+    # Creates detector.
+    model_file = _ExternalFile(file_name=self.model_path)
+    detector = self.create_detector_from_options(
+      model_file=model_file, class_name_allowlist=_ALLOW_LIST)
+
+    # Loads image.
+    image = tensor_image.TensorImage.from_file(self.test_image_path)
+
+    # Performs object detection on the input.
+    image_result = detector.detect(image)
+    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+
+    categories = image_result_dict['detections']
+
+    for category in categories:
+      label = category['classes'][0]['className']
+      self.assertIn(
+        label, _ALLOW_LIST,
+        'Label "{0}" found but not in label allow list'.format(label))
+
+  def test_deny_list_option(self):
+    # Creates detector.
+    model_file = _ExternalFile(file_name=self.model_path)
+    detector = self.create_detector_from_options(
+      model_file=model_file, class_name_denylist=_DENY_LIST)
+
+    # Loads image.
+    image = tensor_image.TensorImage.from_file(self.test_image_path)
+
+    # Performs object detection on the input.
+    image_result = detector.detect(image)
+    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+
+    categories = image_result_dict['detections']
+
+    for category in categories:
+      label = category['classes'][0]['className']
+      self.assertNotIn(label, _DENY_LIST,
+                       'Label "{0}" found but in deny list.'.format(label))
+
+  def test_combined_allowlist_and_denylist(self):
+    # Fails with combined allowlist and denylist
+    with self.assertRaisesRegex(
+        Exception,
+        r"INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` "
+        r"are mutually exclusive options. "
+        r"\[tflite::support::TfLiteSupportStatus='2'\]"):
+      base_options = _BaseOptions(model_file=_ExternalFile(file_name=self.model_path))
+      detection_options = detection_options_pb2.DetectionOptions(
+        class_name_allowlist=['foo'], class_name_denylist=['bar'])
+      options = _ObjectDetectorOptions(
+        base_options=base_options, detection_options=detection_options)
+      _ObjectDetector.create_from_options(options)
 
 
 if __name__ == '__main__':
