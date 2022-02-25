@@ -73,7 +73,6 @@ _EXPECTED_DETECTIONS = [
     }
   )
 ]
-_BBOX_IOU_THRESHOLD = 0.9
 _ALLOW_LIST = ['cat', 'dog']
 _DENY_LIST = ['cat']
 _SCORE_THRESHOLD = 0.3
