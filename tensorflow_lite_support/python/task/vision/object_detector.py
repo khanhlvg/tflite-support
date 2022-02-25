@@ -14,7 +14,7 @@
 """Object detector task."""
 
 import dataclasses
-from typing import Optional
+from typing import Any, Optional
 
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.core import task_utils
@@ -36,12 +36,29 @@ class ObjectDetectorOptions:
   detection_options: Optional[
     detection_options_pb2.DetectionOptions] = None
 
+  def __eq__(self, other: Any) -> bool:
+    if (not isinstance(other, self.__class__) or
+        self.base_options != other.base_options):
+      return False
+
+    if self.detection_options is None and other.detection_options is None:
+      return True
+    elif (self.detection_options and other.detection_options and
+          self.detection_options.SerializeToString()
+          == self.detection_options.SerializeToString()):
+      return True
+    else:
+      return False
+
 
 class ObjectDetector(object):
   """Class that performs object detection on images."""
 
-  def __init__(self, detector: _CppObjectDetector) -> None:
+  def __init__(self, options: ObjectDetectorOptions,
+               detector: _CppObjectDetector) -> None:
     """Initializes the `ObjectDetector` object."""
+    # Creates the object of C++ ObjectDetector class.
+    self._options = options
     self._detector = detector
 
   @classmethod
@@ -54,13 +71,13 @@ class ObjectDetector(object):
     Returns:
       `ObjectDetector` object that's created from `options`.
     Raises:
+      TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
       status.StatusNotOk if failed to create `ObjectDetector` object from
         `ObjectDetectorOptions` such as missing the model. Need to import the
         module to catch this error: `from pybind11_abseil
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    # Creates the object of C++ ObjectDetector class.
     proto_options = _ProtoObjectDetectorOptions()
     proto_options.base_options.CopyFrom(
         task_utils.ConvertToProtoBaseOptions(options.base_options))
@@ -82,7 +99,7 @@ class ObjectDetector(object):
 
     detector = _CppObjectDetector.create_from_options(proto_options)
 
-    return cls(detector)
+    return cls(options, detector)
 
   def detect(
       self,
