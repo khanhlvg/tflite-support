@@ -73,7 +73,6 @@ _EXPECTED_DETECTIONS = [
     }
   )
 ]
-_BBOX_IOU_THRESHOLD = 0.9
 _ALLOW_LIST = ['cat', 'dog']
 _DENY_LIST = ['cat']
 _SCORE_THRESHOLD = 0.3
@@ -298,7 +297,7 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
     options2 = _ObjectDetectorOptions(base_options=base_options2)
     detector2 = _ObjectDetector.create_from_options(options2)
     # Checks the detectors with same file name.
-    self.assertEqual(detector2, detector2)
+    self.assertEqual(detector1, detector2)
 
     with open(self.model_path, "rb") as f:
       model_content = f.read()
