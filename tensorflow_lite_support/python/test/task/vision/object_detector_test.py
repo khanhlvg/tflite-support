@@ -123,8 +123,8 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
     # Invalid empty model path.
     with self.assertRaisesRegex(
         Exception,
-        r"INVALID_ARGUMENT: Expected exactly one of `base_options.model_file` or "
-        r"`model_file_with_metadata` to be provided, found 0. "
+        r"INVALID_ARGUMENT: Expected exactly one of `base_options.model_file` "
+        r"or `model_file_with_metadata` to be provided, found 0. "
         r"\[tflite::support::TfLiteSupportStatus='2']"):
       base_options = _BaseOptions(model_file=_ExternalFile(file_name=""))
       options = _ObjectDetectorOptions(base_options=base_options)
@@ -160,7 +160,8 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
   @parameterized.parameters(
     (ModelFileType.FILE_NAME, 4, _EXPECTED_DETECTIONS),
     (ModelFileType.FILE_CONTENT, 4, _EXPECTED_DETECTIONS))
-  def test_detect_model(self, model_file_type, max_results, expected_detections):
+  def test_detect_model(self, model_file_type, max_results,
+                        expected_detections):
     # Creates detector.
     if model_file_type is ModelFileType.FILE_NAME:
       model_file = _ExternalFile(file_name=self.model_path)
@@ -276,7 +277,8 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
         r"INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` "
         r"are mutually exclusive options. "
         r"\[tflite::support::TfLiteSupportStatus='2'\]"):
-      base_options = _BaseOptions(model_file=_ExternalFile(file_name=self.model_path))
+      base_options = _BaseOptions(
+        model_file=_ExternalFile(file_name=self.model_path))
       detection_options = detection_options_pb2.DetectionOptions(
         class_name_allowlist=['foo'], class_name_denylist=['bar'])
       options = _ObjectDetectorOptions(
