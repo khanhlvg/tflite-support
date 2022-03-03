@@ -21,6 +21,7 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
+from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
 
@@ -99,7 +100,7 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio.get_buffer()
+    audio_data = audio_utils.AudioData(audio.get_buffer())
     return self._classifier.classify(audio_data)
 
   @property

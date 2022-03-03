@@ -85,14 +85,14 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     input_buffer_size = classifier.required_input_buffer_size
 
     # Loads audio.
-    # audio = tensor_audio.TensorAudio.from_file(
-    #   self.test_image_path, input_buffer_size)
+    audio = tensor_audio.TensorAudio.from_file(
+      self.test_image_path, input_buffer_size)
 
     # Classifies the input.
     # audio_result = classifier.classify(audio)
     # audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
 
-    print(input_buffer_size)
+    print(audio)
 
 
 if __name__ == '__main__':

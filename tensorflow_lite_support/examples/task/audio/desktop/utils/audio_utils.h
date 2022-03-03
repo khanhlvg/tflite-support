@@ -18,13 +18,26 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/audio/core/audio_buffer.h"
 
+#include <vector>
+
 namespace tflite {
 namespace task {
 namespace audio {
 
-// Creates the AudioBuffer object from the WAV file.
-tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
+struct AudioData {
+    float* wav_data;
+    int sample_count;
+    int channels;
+    int sample_rate;
+};
+
+// Decodes audio from the WAV file.
+tflite::support::StatusOr<AudioData>
 DecodeAudioFromWaveFile(const std::string& wav_file, int buffer_size);
+
+// Creates the AudioBuffer object from the AudioData object.
+tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
+CreateAudioBufferFromAudioData(const AudioData& audio);
 
 }  // namespace audio
 }  // namespace task

@@ -31,9 +31,35 @@ PYBIND11_MODULE(audio_utils, m) {
   // the users.
   pybind11::google::ImportStatusModule();
 
+  py::class_<AudioData>(m, "AudioData", py::buffer_protocol())
+      .def(py::init([](py::buffer buffer) {
+          py::buffer_info info = buffer.request();
+
+          int sample_count = info.shape[0];
+          int channels = info.shape[1];
+          int sample_rate = info.shape[2];
+
+          return AudioData{static_cast<float *>(info.ptr),
+                           sample_count, channels, sample_rate};
+      }))
+      .def_readonly("sample_count", &AudioData::sample_count)
+      .def_readonly("channels", &AudioData::channels)
+      .def_readonly("sample_rate", &AudioData::sample_rate)
+      .def_buffer([](AudioData &data) -> py::buffer_info {
+          return py::buffer_info(
+                  data.wav_data, sizeof(float),
+                  py::format_descriptor<float>::format(), 2,
+                  {data.sample_count, data.channels},
+                  {
+                      sizeof(uint32_t) * size_t(data.sample_count),
+                      sizeof(uint32_t)
+                  });
+      });
+
   m.def("DecodeAudioFromWaveFile", &DecodeAudioFromWaveFile);
 }
 
 }  // namespace vision
 }  // namespace task
 }  // namespace tflite
+

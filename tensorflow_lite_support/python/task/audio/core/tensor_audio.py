@@ -37,11 +37,6 @@ class TensorAudio(object):
 
     # Gets the AudioBuffer object.
 
-  def __del__(self):
-    """Clear the internal buffer and fill it with zeros."""
-    if self._is_from_file:
-      self._audio_data.fill(0)
-
   @classmethod
   def from_file(cls, file_name: str, buffer_size: int) -> "TensorAudio":
     """Creates `TensorAudio` object from the audio file.

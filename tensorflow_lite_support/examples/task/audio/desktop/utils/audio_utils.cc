@@ -15,11 +15,9 @@ limitations under the License.
 
 #include "tensorflow_lite_support/examples/task/audio/desktop/utils/audio_utils.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
-#include "absl/status/status.h"  // from @com_google_absl
 #include "absl/strings/str_format.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/port/status_macros.h"
 #include "tensorflow_lite_support/cc/port/statusor.h"
@@ -30,24 +28,35 @@ namespace tflite {
 namespace task {
 namespace audio {
 
-tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
+tflite::support::StatusOr<AudioData>
 DecodeAudioFromWaveFile(const std::string& wav_file, int buffer_size) {
-    std::string contents = ReadFile(wav_file);
-    std::vector<float>* wav_data;
-    uint32_t decoded_sample_count;
-    uint16_t decoded_channel_count;
-    uint32_t decoded_sample_rate;
-    RETURN_IF_ERROR(DecodeLin16WaveAsFloatVector(
-            contents, wav_data, &decoded_sample_count, &decoded_channel_count,
-            &decoded_sample_rate));
+  std::string contents = ReadFile(wav_file);
+  std::vector<float> wav_data;
+  uint32_t decoded_sample_count;
+  uint16_t decoded_channel_count;
+  uint32_t decoded_sample_rate;
 
-    if (decoded_sample_count > buffer_size) {
-        decoded_sample_count = buffer_size;
-    }
+  RETURN_IF_ERROR(DecodeLin16WaveAsFloatVector(
+      contents, &wav_data,
+      &decoded_sample_count, &decoded_channel_count, &decoded_sample_rate));
 
-    return AudioBuffer::Create(
-            wav_data->data(), decoded_sample_count,
-            {decoded_channel_count, static_cast<int>(decoded_sample_rate)});
+  if (decoded_sample_count > buffer_size) {
+      decoded_sample_count = buffer_size;
+  }
+
+  AudioData audio_data = {
+      wav_data.data(), static_cast<int>(decoded_sample_count),
+      static_cast<int>(decoded_channel_count),
+      static_cast<int>(decoded_sample_rate)
+  };
+
+  return audio_data;
+}
+
+tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
+CreateAudioBufferFromAudioData(const AudioData& audio) {
+    return AudioBuffer::Create(audio.wav_data, audio.sample_count,
+        {audio.channels, audio.sample_rate});
 }
 
 }  // namespace audio
