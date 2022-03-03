@@ -50,9 +50,10 @@ PYBIND11_MODULE(audio_utils, m) {
                   data.wav_data, sizeof(float),
                   py::format_descriptor<float>::format(), 2,
                   {data.sample_count, data.channels},
+                  // TODO: fix strides
                   {
-                      sizeof(uint32_t) * size_t(data.sample_count),
-                      sizeof(uint32_t)
+                      sizeof(float) * size_t(data.channels),
+                      sizeof(float)
                   });
       });
 

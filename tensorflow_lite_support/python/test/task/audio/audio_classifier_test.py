@@ -83,16 +83,33 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
         model_file, max_results=3)
 
     input_buffer_size = classifier.required_input_buffer_size
+    audio_format = classifier.required_audio_format
+
+    print("Fetching required input buffer size, channels & sample rate")
+    print(input_buffer_size, audio_format.channels, audio_format.sample_rate)
 
     # Loads audio.
     audio = tensor_audio.TensorAudio.from_file(
       self.test_image_path, input_buffer_size)
 
+    print("Fetching input audio info")
+    input_sample_count = audio.audio_data.sample_count
+    input_channels = audio.audio_data.channels
+    input_sample_rate = audio.audio_data.sample_rate
+    print(input_sample_count, input_channels, input_sample_rate)
+
+    # Ensure that the WAV file's sampling rate matches with the model
+    # requirement.
+    self.assertEqual(
+      input_sample_rate, audio_format.sample_rate,
+      'The test audio\'s sample rate does not match with the model\'s '
+      'requirement.'
+    )
+
     # Classifies the input.
     # audio_result = classifier.classify(audio)
     # audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
-
-    print(audio)
+    # print(audio_result_dict)
 
 
 if __name__ == '__main__':

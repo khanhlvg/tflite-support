@@ -12,5 +12,6 @@ py_library(
     deps = [
         # build rule placeholder: numpy dep,
         "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_utils",
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
     ],
 )

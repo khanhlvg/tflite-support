@@ -16,6 +16,7 @@
 import numpy as np
 
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
+from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 
 
 class TensorAudio(object):
@@ -36,6 +37,10 @@ class TensorAudio(object):
     self._is_from_file = is_from_file
 
     # Gets the AudioBuffer object.
+
+  @property
+  def audio_data(self) -> audio_buffer.AudioBuffer:
+    return self._audio_data
 
   @classmethod
   def from_file(cls, file_name: str, buffer_size: int) -> "TensorAudio":
