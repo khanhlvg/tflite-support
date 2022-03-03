@@ -1,3 +1,5 @@
+load("//tensorflow_lite_support/cc/port:build_defs.bzl", "support_py_proto_library")
+
 package(
     default_visibility = [
         "//visibility:public",
@@ -19,6 +21,18 @@ cc_proto_library(
     name = "audio_classifier_options_cc_proto",
     deps = [
         ":audio_classifier_options_proto",
+    ],
+)
+
+support_py_proto_library(
+    name = "audio_classifier_options_py_pb2",
+    srcs = ["audio_classifier_options.proto"],
+    api_version = 2,
+    proto_deps = [":audio_classifier_options_proto"],
+    py_proto_deps = [
+        "@org_tensorflow//tensorflow/lite/experimental/acceleration/configuration:configuration_proto_external_py",
+        "//tensorflow_lite_support/cc/task/core/proto:base_options_py_pb2",
+        "//tensorflow_lite_support/cc/task/core/proto:external_file_py_pb2",
     ],
 )
 
