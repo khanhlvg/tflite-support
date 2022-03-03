@@ -32,7 +32,6 @@ support_py_proto_library(
     py_proto_deps = [
         "@org_tensorflow//tensorflow/lite/experimental/acceleration/configuration:configuration_proto_external_py",
         "//tensorflow_lite_support/cc/task/core/proto:base_options_py_pb2",
-        "//tensorflow_lite_support/cc/task/core/proto:external_file_py_pb2",
     ],
 )
 
