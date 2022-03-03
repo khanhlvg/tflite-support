@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TensorAudio class."""
-from typing import NamedTuple
 
 import numpy as np
 
@@ -30,7 +29,7 @@ class TensorAudio(object):
     Args:
       audio_data: AudioBuffer, contains raw audio data, audio format
        and buffer size info.
-      is_from_file: boolean, whether `image_data` is loaded from the image file,
+      is_from_file: boolean, whether `audio_data` is loaded from the image file,
         if True, need to free the storage of AudioBuffer in the destructor.
     """
     self._audio_data = audio_data
@@ -47,13 +46,13 @@ class TensorAudio(object):
     """Creates `TensorAudio` object from the audio file.
 
     Args:
-      file_name: Image file name.
+      file_name: Audio file name.
 
     Returns:
       `TensorAudio` object.
 
     Raises:
-      status.StatusNotOk if the image file can't be decoded. Need to import
+      status.StatusNotOk if the audio file can't be decoded. Need to import
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
