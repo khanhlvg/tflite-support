@@ -82,14 +82,15 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     classifier = self.create_classifier_from_options(
         model_file, max_results=3)
 
-    # Loads image.
+    # Loads audio.
     audio = tensor_audio.TensorAudio.from_file(self.test_image_path)
 
     # Classifies the input.
-    audio_result = classifier.classify(audio)
-    audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
+    # audio_result = classifier.classify(audio)
+    # audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
 
     print(audio)
+
 
 
 if __name__ == '__main__':
