@@ -24,7 +24,7 @@ namespace audio {
 
 // Creates the AudioBuffer object from the WAV file.
 tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
-DecodeAudioFromWaveFile(const std::string& wave_file);
+DecodeAudioFromWaveFile(const std::string& wav_file, int buffer_size);
 
 }  // namespace audio
 }  // namespace task

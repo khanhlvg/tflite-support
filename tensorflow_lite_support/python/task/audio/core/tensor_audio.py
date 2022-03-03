@@ -43,12 +43,12 @@ class TensorAudio(object):
       self._audio_data.fill(0)
 
   @classmethod
-  def from_file(cls, file_name: str) -> "TensorAudio":
+  def from_file(cls, file_name: str, buffer_size: int) -> "TensorAudio":
     """Creates `TensorAudio` object from the audio file.
 
     Args:
       file_name: Audio file name.
-
+      buffer_size: Input buffer size
     Returns:
       `TensorAudio` object.
 
@@ -57,7 +57,7 @@ class TensorAudio(object):
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_utils.DecodeAudioFromWaveFile(file_name)
+    audio_data = audio_utils.DecodeAudioFromWaveFile(file_name, buffer_size)
     return cls(audio_data, is_from_file=True)
 
   def get_buffer(self) -> np.ndarray:

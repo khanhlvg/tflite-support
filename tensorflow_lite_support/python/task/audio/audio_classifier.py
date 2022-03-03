@@ -101,3 +101,8 @@ class AudioClassifier(object):
     """
     audio_data = audio.get_buffer()
     return self._classifier.classify(audio_data)
+
+  @property
+  def required_input_buffer_size(self) -> int:
+    """Gets the required input buffer size for the model."""
+    return self._classifier.get_required_input_buffer_size()

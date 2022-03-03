@@ -42,13 +42,14 @@ PYBIND11_MODULE(_pywrap_audio_classifier, m) {
             return AudioClassifier::CreateFromOptions(options);
           })
       .def("classify",
-           [](AudioClassifier& self, const string& wav_file)
+           [](AudioClassifier& self, const string& wav_file, int buffer_size)
                -> tflite::support::StatusOr<ClassificationResult> {
              ASSIGN_OR_RETURN(std::unique_ptr<AudioBuffer> audio_buffer,
-                              DecodeAudioFromWaveFile(wav_file));
+                              DecodeAudioFromWaveFile(wav_file, buffer_size));
              return self.Classify(*audio_buffer);
            })
-      .def("get_required_audio_format", &AudioClassifier::GetRequiredAudioFormat)
+      .def("get_required_audio_format",
+           &AudioClassifier::GetRequiredAudioFormat)
       .def("get_required_input_buffer_size",
            &AudioClassifier::GetRequiredInputBufferSize);
 }
