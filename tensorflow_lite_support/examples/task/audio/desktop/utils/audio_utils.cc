@@ -28,35 +28,32 @@ namespace tflite {
 namespace task {
 namespace audio {
 
-tflite::support::StatusOr<AudioData>
-DecodeAudioFromWaveFile(const std::string& wav_file, int buffer_size) {
+tflite::support::StatusOr<AudioBuffer> DecodeAudioFromWaveFile(
+    const std::string& wav_file, int buffer_size,
+    std::vector<float>* wav_data) {
   std::string contents = ReadFile(wav_file);
-  std::vector<float> wav_data;
+
   uint32_t decoded_sample_count;
   uint16_t decoded_channel_count;
   uint32_t decoded_sample_rate;
 
   RETURN_IF_ERROR(DecodeLin16WaveAsFloatVector(
-      contents, &wav_data,
+      contents, wav_data,
       &decoded_sample_count, &decoded_channel_count, &decoded_sample_rate));
 
   if (decoded_sample_count > buffer_size) {
       decoded_sample_count = buffer_size;
   }
 
-  AudioData audio_data = {
-      wav_data.data(), static_cast<int>(decoded_sample_count),
-      static_cast<int>(decoded_channel_count),
-      static_cast<int>(decoded_sample_rate)
-  };
-
-  return audio_data;
+  return AudioBuffer(
+      wav_data->data(), decoded_sample_count,
+      {decoded_channel_count, static_cast<int>(decoded_sample_rate)});
 }
 
 tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
-CreateAudioBufferFromAudioData(const AudioData& audio) {
-    return AudioBuffer::Create(audio.wav_data, audio.sample_count,
-        {audio.channels, audio.sample_rate});
+CreateAudioBufferFromAudioData(const AudioBuffer& audio) {
+    return AudioBuffer::Create(
+        audio.GetFloatBuffer(), audio.GetBufferSize(), audio.GetAudioFormat());
 }
 
 }  // namespace audio

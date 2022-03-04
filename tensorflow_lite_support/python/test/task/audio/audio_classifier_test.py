@@ -16,11 +16,13 @@
 import enum
 import json
 
+import numpy as np
 from absl.testing import parameterized
 from google.protobuf import json_format
 # TODO(b/220067158): Change to import tensorflow and leverage tf.test once
 # fixed the dependency issue.
 import unittest
+
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.processor.proto import class_pb2
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
@@ -82,34 +84,37 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     classifier = self.create_classifier_from_options(
         model_file, max_results=3)
 
-    input_buffer_size = classifier.required_input_buffer_size
-    audio_format = classifier.required_audio_format
+    required_input_buffer_size = classifier.required_input_buffer_size
+    required_audio_format = classifier.required_audio_format
 
     print("Fetching required input buffer size, channels & sample rate")
-    print(input_buffer_size, audio_format.channels, audio_format.sample_rate)
+    print(required_input_buffer_size, required_audio_format.channels,
+          required_audio_format.sample_rate)
 
-    # Loads audio.
-    audio = tensor_audio.TensorAudio.from_file(
-      self.test_image_path, input_buffer_size)
+    # Load the input audio file.
+    tensor = tensor_audio.TensorAudio(
+      required_audio_format, required_input_buffer_size)
+    audio_data = tensor.load_from_file(self.test_image_path)
 
-    print("Fetching input audio info")
-    input_sample_count = audio.audio_data.sample_count
-    input_channels = audio.audio_data.channels
-    input_sample_rate = audio.audio_data.sample_rate
-    print(input_sample_count, input_channels, input_sample_rate)
+    # wav_data = tensor.buffer
+
+    original_audio_format = audio_data.get_audio_format()
+    print(original_audio_format.sample_rate)
 
     # Ensure that the WAV file's sampling rate matches with the model
     # requirement.
     self.assertEqual(
-      input_sample_rate, audio_format.sample_rate,
+      original_audio_format.sample_rate, required_audio_format.sample_rate,
       'The test audio\'s sample rate does not match with the model\'s '
       'requirement.'
     )
 
     # Classifies the input.
-    # audio_result = classifier.classify(audio)
-    # audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
-    # print(audio_result_dict)
+    audio_result = classifier.classify(tensor)
+    audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
+    print(audio_result_dict)
+
+    raise Exception("dummy exception")
 
 
 if __name__ == '__main__':

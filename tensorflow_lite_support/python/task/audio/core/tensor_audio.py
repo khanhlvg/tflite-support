@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TensorAudio class."""
+from typing import NamedTuple
 
 import numpy as np
 
@@ -19,53 +20,67 @@ from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 
 
+class AudioFormat(NamedTuple):
+  """Format of the incoming audio."""
+  channels: int
+  sample_rate: int
+
+
 class TensorAudio(object):
   """A wrapper class to store the input audio."""
 
   def __init__(self,
-               audio_data,
-               is_from_file: bool = False) -> None:
-    """Initializes the `TensorAudio` object.
+               audio_format: AudioFormat,
+               sample_count: int,
+               ) -> None:
+    """Initializes the `TensorAudio` object."""
+    self._sample_count = sample_count
 
-    Args:
-      audio_data: AudioBuffer, contains raw audio data, audio format
-       and buffer size info.
-      is_from_file: boolean, whether `audio_data` is loaded from the image file,
-        if True, need to free the storage of AudioBuffer in the destructor.
-    """
-    self._audio_data = audio_data
-    self._is_from_file = is_from_file
+    audio_format = audio_buffer.AudioFormat(
+      audio_format.channels, audio_format.sample_rate)
+    self._format = audio_format
+    self.clear()
 
     # Gets the AudioBuffer object.
 
-  @property
-  def audio_data(self) -> audio_buffer.AudioBuffer:
-    return self._audio_data
+  def clear(self):
+    """Clear the internal buffer and fill it with zeros."""
+    self._buffer = np.zeros([self._sample_count, self._format.channels])
 
-  @classmethod
-  def from_file(cls, file_name: str, buffer_size: int) -> "TensorAudio":
-    """Creates `TensorAudio` object from the audio file.
+  def load_from_file(self,
+                file_name: str,
+                ) -> audio_buffer.AudioBuffer:
+    """Loads `audio_buffer.AudioBuffer` from the WAV file
 
     Args:
-      file_name: Audio file name.
-      buffer_size: Input buffer size
+      file_name: WAV file name.
     Returns:
-      `TensorAudio` object.
+      `audio_buffer.AudioBuffer` object.
 
     Raises:
       status.StatusNotOk if the audio file can't be decoded. Need to import
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_utils.DecodeAudioFromWaveFile(file_name, buffer_size)
-    return cls(audio_data, is_from_file=True)
+    audio_data = audio_utils.DecodeAudioFromWaveFile(
+      file_name, self._sample_count, self._buffer)
+    # self._buffer = audio_data.get_float_buffer()
+    return audio_data
+
+  @property
+  def format(self) -> audio_buffer.AudioFormat:
+    return self._format
+
+  @property
+  def sample_count(self) -> int:
+    return self._sample_count
+
+  @property
+  def buffer(self) -> np.ndarray:
+    return self._buffer
 
   def get_buffer(self) -> np.ndarray:
-    """Gets the numpy array that represents `self._audio_data`.
-    Returns:
-      Numpy array that represents `self._audio_data` which is an
-        `audio_buffer.AudioBuffer` object. To avoid copy, we will use
-        `return np.array(..., copy = False)`. Therefore, this `TensorAudio`
-        object should outlive the returned numpy array.
-    """
-    return np.array(self._audio_data, copy=False)
+    """Gets the numpy array that represents the audio data"""
+    audio_data = audio_buffer.AudioBuffer.create(
+      self.buffer, self.sample_count, self.format)
+    return np.array(audio_data, copy=False)
