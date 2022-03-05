@@ -32,6 +32,8 @@ from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
+from tensorflow_lite_support.metadata.python import metadata
+
 _BaseOptions = task_options.BaseOptions
 _ExternalFile = task_options.ExternalFile
 _AudioClassifier = audio_classifier.AudioClassifier
@@ -81,6 +83,11 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     # Creates classifier.
     model_file = _ExternalFile(file_name=self.model_path)
 
+    # Check if the model contains metadata.
+    # displayer = metadata.MetadataDisplayer.with_model_file(self.model_path)
+    # metadata_json = json.loads(displayer.get_metadata_json())
+    # print(metadata_json)
+
     classifier = self.create_classifier_from_options(
         model_file, max_results=3)
 
@@ -96,10 +103,7 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
       required_audio_format, required_input_buffer_size)
     audio_data = tensor.load_from_file(self.test_image_path)
 
-    # wav_data = tensor.buffer
-
     original_audio_format = audio_data.get_audio_format()
-    print(original_audio_format.sample_rate)
 
     # Ensure that the WAV file's sampling rate matches with the model
     # requirement.

@@ -62,9 +62,16 @@ class TensorAudio(object):
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
+    # print("Buffer before decoding", self._buffer)
     audio_data = audio_utils.DecodeAudioFromWaveFile(
       file_name, self._sample_count, self._buffer)
-    # self._buffer = audio_data.get_float_buffer()
+    # print(audio_data.get_buffer_size(),
+    #       audio_data.get_audio_format().channels,
+    #       audio_data.get_audio_format().sample_rate,
+    #       audio_data.get_float_buffer())
+    # print("Buffer after decoding", self._buffer)
+    # self._buffer = np.array(audio_data.get_float_buffer(), copy=False)
+    # self.load_from_array(audio_data.get_float_buffer())
     return audio_data
 
   @property
@@ -79,8 +86,6 @@ class TensorAudio(object):
   def buffer(self) -> np.ndarray:
     return self._buffer
 
-  def get_buffer(self) -> np.ndarray:
-    """Gets the numpy array that represents the audio data"""
-    audio_data = audio_buffer.AudioBuffer.create(
-      self.buffer, self.sample_count, self.format)
-    return np.array(audio_data, copy=False)
+  def get_data(self):
+    """Gets the audio data."""
+    return self._buffer, self.sample_count, self._format

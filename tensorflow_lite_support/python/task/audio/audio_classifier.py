@@ -102,8 +102,7 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_buffer.AudioBuffer(
-      audio.buffer, audio.sample_count, audio.format)
+    audio_data = audio_buffer.AudioBuffer(*audio.get_data())
     return self._classifier.classify(audio_data)
 
   @property

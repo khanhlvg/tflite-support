@@ -15,7 +15,6 @@ limitations under the License.
 #include "tensorflow_lite_support/examples/task/audio/desktop/utils/audio_utils.h"
 
 #include "pybind11/pybind11.h"
-#include <pybind11/stl.h>
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
 
 namespace tflite {
@@ -27,12 +26,21 @@ namespace py = ::pybind11;
 
 }  //  namespace
 
+
 PYBIND11_MODULE(audio_utils, m) {
   // python wrapper for AudioData class which shouldn't be directly used by
   // the users.
   pybind11::google::ImportStatusModule();
 
-  m.def("DecodeAudioFromWaveFile", &DecodeAudioFromWaveFile);
+
+  m.def("DecodeAudioFromWaveFile",
+        [](const std::string& wav_file, int buffer_size, py::buffer buffer) {
+            py::buffer_info info = buffer.request();
+
+            return DecodeAudioFromWaveFile(
+                    wav_file, buffer_size,
+                    static_cast<std::vector<float> *>(info.ptr));
+        });
 }
 
 }  // namespace vision

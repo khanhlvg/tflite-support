@@ -13,6 +13,8 @@ py_test(
         "//tensorflow_lite_support/cc/test/testdata/task/audio:test_models",
     ],
     deps = [
+        "//tensorflow_lite_support/metadata/python:metadata", # Remove later
+
         "//tensorflow_lite_support/python/task/core:task_options",
         "//tensorflow_lite_support/python/task/processor/proto:class_pb2",
         "//tensorflow_lite_support/python/task/processor/proto:classification_options_pb2",
