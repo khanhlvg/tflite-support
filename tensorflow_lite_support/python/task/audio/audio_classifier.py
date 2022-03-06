@@ -14,13 +14,14 @@
 """Audio classifier task."""
 
 import dataclasses
-from typing import Optional
+from typing import Any, Optional
 
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
+from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
@@ -36,12 +37,29 @@ class AudioClassifierOptions:
   classification_options: Optional[
       classification_options_pb2.ClassificationOptions] = None
 
+  def __eq__(self, other: Any) -> bool:
+    if (not isinstance(other, self.__class__) or
+        self.base_options != other.base_options):
+      return False
+
+    if self.classification_options is None and other.classification_options is None:
+      return True
+    elif (self.classification_options and other.classification_options and
+          self.classification_options.SerializeToString()
+          == self.classification_options.SerializeToString()):
+      return True
+    else:
+      return False
+
 
 class AudioClassifier(object):
   """Class that performs classification on audio."""
 
-  def __init__(self, classifier: _CppAudioClassifier) -> None:
+  def __init__(self, options: AudioClassifierOptions,
+               classifier: _CppAudioClassifier) -> None:
     """Initializes the `AudioClassifier` object."""
+    # Creates the object of C++ AudioClassifier class.
+    self._options = options
     self._classifier = classifier
 
   @classmethod
@@ -84,7 +102,7 @@ class AudioClassifier(object):
 
     classifier = _CppAudioClassifier.create_from_options(proto_options)
 
-    return cls(classifier)
+    return cls(options, classifier)
 
   def classify(
       self,
@@ -102,7 +120,7 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_buffer.AudioBuffer(*audio.get_data())
+    audio_data = audio_utils.AudioData(*audio.get_data())
     return self._classifier.classify(audio_data)
 
   @property
@@ -114,3 +132,11 @@ class AudioClassifier(object):
   def required_audio_format(self) -> audio_buffer.AudioFormat:
     """Gets the required audio format for the model."""
     return self._classifier.get_required_audio_format()
+
+  def __eq__(self, other: Any) -> bool:
+    return (isinstance(other, self.__class__) and
+            self._options == other._options)
+
+  @property
+  def options(self) -> AudioClassifierOptions:
+    return self._options

@@ -32,7 +32,7 @@ from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
-from tensorflow_lite_support.metadata.python import metadata
+# from tensorflow_lite_support.metadata.python import metadata
 
 _BaseOptions = task_options.BaseOptions
 _ExternalFile = task_options.ExternalFile
@@ -103,12 +103,10 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
       required_audio_format, required_input_buffer_size)
     audio_data = tensor.load_from_file(self.test_image_path)
 
-    original_audio_format = audio_data.get_audio_format()
-
     # Ensure that the WAV file's sampling rate matches with the model
     # requirement.
     self.assertEqual(
-      original_audio_format.sample_rate, required_audio_format.sample_rate,
+      audio_data.sample_rate, required_audio_format.sample_rate,
       'The test audio\'s sample rate does not match with the model\'s '
       'requirement.'
     )

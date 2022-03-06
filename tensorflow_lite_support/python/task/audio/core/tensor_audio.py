@@ -32,6 +32,7 @@ class TensorAudio(object):
   def __init__(self,
                audio_format: AudioFormat,
                sample_count: int,
+               buffer: np.ndarray = None
                ) -> None:
     """Initializes the `TensorAudio` object."""
     self._sample_count = sample_count
@@ -41,6 +42,9 @@ class TensorAudio(object):
     self._format = audio_format
     self.clear()
 
+    if buffer is not None:
+      self._buffer = buffer
+
     # Gets the AudioBuffer object.
 
   def clear(self):
@@ -48,14 +52,14 @@ class TensorAudio(object):
     self._buffer = np.zeros([self._sample_count, self._format.channels])
 
   def load_from_file(self,
-                file_name: str,
-                ) -> audio_buffer.AudioBuffer:
+                     file_name: str,
+                     ) -> audio_buffer.AudioBuffer:
     """Loads `audio_buffer.AudioBuffer` from the WAV file
 
     Args:
       file_name: WAV file name.
     Returns:
-      `audio_buffer.AudioBuffer` object.
+      `audio_utils.AudioData` object.
 
     Raises:
       status.StatusNotOk if the audio file can't be decoded. Need to import
@@ -65,13 +69,8 @@ class TensorAudio(object):
     # print("Buffer before decoding", self._buffer)
     audio_data = audio_utils.DecodeAudioFromWaveFile(
       file_name, self._sample_count, self._buffer)
-    # print(audio_data.get_buffer_size(),
-    #       audio_data.get_audio_format().channels,
-    #       audio_data.get_audio_format().sample_rate,
-    #       audio_data.get_float_buffer())
-    # print("Buffer after decoding", self._buffer)
-    # self._buffer = np.array(audio_data.get_float_buffer(), copy=False)
-    # self.load_from_array(audio_data.get_float_buffer())
+    self._audio_data = audio_data
+
     return audio_data
 
   @property
@@ -88,4 +87,4 @@ class TensorAudio(object):
 
   def get_data(self):
     """Gets the audio data."""
-    return self._buffer, self.sample_count, self._format
+    return np.array(self._audio_data, copy=False), self._format.sample_rate

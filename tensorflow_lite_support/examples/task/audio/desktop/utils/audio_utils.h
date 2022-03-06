@@ -24,14 +24,21 @@ namespace tflite {
 namespace task {
 namespace audio {
 
+struct AudioData {
+    float* wav_data;
+    int sample_count;
+    int channels;
+    int sample_rate;
+};
+
 // Decodes audio from the WAV file.
-tflite::support::StatusOr<AudioBuffer>
+tflite::support::StatusOr<AudioData>
 DecodeAudioFromWaveFile(const std::string& wav_file, int buffer_size,
                         std::vector<float>* wav_data);
 
 // Creates the AudioBuffer object from the AudioData object.
 tflite::support::StatusOr<std::unique_ptr<AudioBuffer>>
-CreateAudioBufferFromAudioData(const AudioBuffer& audio);
+CreateAudioBufferFromAudioData(const AudioData& audio);
 
 }  // namespace audio
 }  // namespace task

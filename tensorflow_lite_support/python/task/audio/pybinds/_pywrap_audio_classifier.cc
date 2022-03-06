@@ -42,7 +42,7 @@ PYBIND11_MODULE(_pywrap_audio_classifier, m) {
             return AudioClassifier::CreateFromOptions(options);
           })
       .def("classify",
-           [](AudioClassifier& self, const AudioBuffer& audio_data)
+           [](AudioClassifier& self, const AudioData& audio_data)
                    -> tflite::support::StatusOr<ClassificationResult> {
                ASSIGN_OR_RETURN(std::unique_ptr<AudioBuffer> audio_buffer,
                                 CreateAudioBufferFromAudioData(audio_data));
