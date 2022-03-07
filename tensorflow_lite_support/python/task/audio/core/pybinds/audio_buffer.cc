@@ -43,21 +43,6 @@ PYBIND11_MODULE(audio_buffer, m) {
         .def_readonly("sample_rate", &AudioBuffer::AudioFormat::sample_rate);
 
     py::class_<AudioBuffer>(m, "AudioBuffer")
-        .def(py::init([](
-                py::buffer buffer, const int sample_count,
-                const AudioBuffer::AudioFormat& audio_format) {
-            py::buffer_info info = buffer.request();
-
-            return AudioBuffer{static_cast<float *>(info.ptr),
-                             sample_count, audio_format};
-        }))
-        .def_static(
-            "create",
-            [](const float* audio_buffer, int buffer_size,
-            const AudioBuffer::AudioFormat& audio_format) {
-            return AudioBuffer::Create(
-                    audio_buffer, buffer_size, audio_format);
-        })
         .def("get_audio_format", &AudioBuffer::GetAudioFormat)
         .def("get_buffer_size", &AudioBuffer::GetBufferSize)
         .def("get_float_buffer", &AudioBuffer::GetFloatBuffer);
