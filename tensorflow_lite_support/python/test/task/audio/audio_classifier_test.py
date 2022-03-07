@@ -43,8 +43,8 @@ _FIXED_INPUT_SIZE_MODEL_CLASSIFICATIONS = {
     {
       'index': 0,
       'score': 0.91796875,
-      'class_name': 'Speech'}
-    ,
+      'class_name': 'Speech'
+    },
     {
       'index': 500,
       'score': 0.05859375,
