@@ -82,7 +82,7 @@ proto_library(
     srcs = ["retrieval.proto"],
     deps = [
         "//tensorflow_lite_support/cc/task/core/proto:base_options_proto",
-        "//tensorflow_lite_support/cc/task/processor/proto:embedding_proto",
+        "//tensorflow_lite_support/cc/task/processor/proto:embeddings_proto",
     ],
 )
 

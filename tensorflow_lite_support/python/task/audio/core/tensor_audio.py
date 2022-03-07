@@ -32,59 +32,52 @@ class TensorAudio(object):
   def __init__(self,
                audio_format: AudioFormat,
                sample_count: int,
-               buffer: np.ndarray = None
+               audio_data: audio_utils.AudioData = None
                ) -> None:
     """Initializes the `TensorAudio` object."""
-    self._sample_count = sample_count
-
-    audio_format = audio_buffer.AudioFormat(
-      audio_format.channels, audio_format.sample_rate)
     self._format = audio_format
+    self._sample_count = sample_count
+    self._buffer = np.zeros([self._sample_count, self._format.channels])
+    self._data = audio_data
     self.clear()
-
-    if buffer is not None:
-      self._buffer = buffer
-
-    # Gets the AudioBuffer object.
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer = np.zeros([self._sample_count, self._format.channels])
+    self._buffer.fill(0)
 
-  def load_from_file(self,
-                     file_name: str,
-                     ) -> audio_buffer.AudioBuffer:
-    """Loads `audio_buffer.AudioBuffer` from the WAV file
+  def load_from_file(self, file_name: str) -> audio_utils.AudioData:
+    """Loads `audio_utils.AudioData` from the WAV file
 
     Args:
       file_name: WAV file name.
-    Returns:
-      `audio_utils.AudioData` object.
-
     Raises:
       status.StatusNotOk if the audio file can't be decoded. Need to import
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    # print("Buffer before decoding", self._buffer)
     audio_data = audio_utils.DecodeAudioFromWaveFile(
       file_name, self._sample_count, self._buffer)
-    self._audio_data = audio_data
+    self._data = audio_data
 
-    return audio_data
-
-  @property
-  def format(self) -> audio_buffer.AudioFormat:
+  def get_format(self) -> audio_buffer.AudioFormat:
+    """Gets the audio format of the audio."""
     return self._format
 
-  @property
-  def sample_count(self) -> int:
+  def get_sample_count(self) -> int:
+    """Gets the sample count of the audio."""
     return self._sample_count
 
-  @property
-  def buffer(self) -> np.ndarray:
+  def get_buffer(self) -> np.ndarray:
+    """Gets the internal buffer of the audio."""
     return self._buffer
 
-  def get_data(self):
-    """Gets the audio data."""
-    return np.array(self._audio_data, copy=False), self._format.sample_rate
+  def get_data(self) -> np.ndarray:
+    """Gets the numpy array that represents `self._audio_data`.
+
+    Returns:
+      Numpy array that represents `self._audio_data` which is an
+        `audio_utils.AudioData` object. To avoid copy, we will use
+        `return np.array(..., copy = False)`. Therefore, this `TensorAudio`
+        object should outlive the returned numpy array.
+    """
+    return np.array(self._data, copy=False)

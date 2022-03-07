@@ -94,15 +94,24 @@ class AudioClassifier(object):
         proto_options.score_threshold = \
           options.classification_options.score_threshold
       if options.classification_options.class_name_allowlist:
-        proto_options.class_name_whitelist.extend(
+        proto_options.class_name_allowlist.extend(
             options.classification_options.class_name_allowlist)
       if options.classification_options.class_name_denylist:
-        proto_options.class_name_blacklist.extend(
+        proto_options.class_name_denylist.extend(
             options.classification_options.class_name_denylist)
 
     classifier = _CppAudioClassifier.create_from_options(proto_options)
 
     return cls(options, classifier)
+
+  def create_input_tensor_audio(self) -> tensor_audio.TensorAudio:
+    """Creates a TensorAudio instance to store the audio input.
+    Returns:
+        A TensorAudio instance.
+    """
+    return tensor_audio.TensorAudio(
+      audio_format=self.required_audio_format,
+      sample_count=self.required_input_buffer_size)
 
   def classify(
       self,
@@ -120,8 +129,13 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_utils.AudioData(*audio.get_data())
+    audio_data = audio_utils.AudioData(
+      audio.get_data(), audio.get_format().sample_rate)
     return self._classifier.classify(audio_data)
+
+  def __eq__(self, other: Any) -> bool:
+    return (isinstance(other, self.__class__) and
+            self._options == other._options)
 
   @property
   def required_input_buffer_size(self) -> int:
@@ -132,10 +146,6 @@ class AudioClassifier(object):
   def required_audio_format(self) -> audio_buffer.AudioFormat:
     """Gets the required audio format for the model."""
     return self._classifier.get_required_audio_format()
-
-  def __eq__(self, other: Any) -> bool:
-    return (isinstance(other, self.__class__) and
-            self._options == other._options)
 
   @property
   def options(self) -> AudioClassifierOptions:

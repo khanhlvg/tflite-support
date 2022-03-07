@@ -20,6 +20,13 @@ cc_proto_library(
     ],
 )
 
+support_py_proto_library(
+    name = "classifications_py_pb2",
+    srcs = ["classifications.proto"],
+    api_version = 2,
+    proto_deps = [":classifications_proto"],
+)
+
 proto_library(
     name = "class_proto",
     srcs = ["class.proto"],
@@ -32,16 +39,30 @@ cc_proto_library(
     ],
 )
 
+support_py_proto_library(
+    name = "class_py_pb2",
+    srcs = ["class.proto"],
+    api_version = 2,
+    proto_deps = [":class_proto"],
+)
+
 proto_library(
-    name = "embedding_proto",
-    srcs = ["embedding.proto"],
+    name = "embeddings_proto",
+    srcs = ["embeddings.proto"],
 )
 
 cc_proto_library(
-    name = "embedding_cc_proto",
+    name = "embeddings_cc_proto",
     deps = [
-        ":embedding_proto",
+        ":embeddings_proto",
     ],
+)
+
+support_py_proto_library(
+    name = "embeddings_py_pb2",
+    srcs = ["embeddings.proto"],
+    api_version = 2,
+    proto_deps = [":embeddings_proto"],
 )
 
 proto_library(

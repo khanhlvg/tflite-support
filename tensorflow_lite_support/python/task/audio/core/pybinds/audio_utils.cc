@@ -15,7 +15,6 @@ limitations under the License.
 #include "tensorflow_lite_support/examples/task/audio/desktop/utils/audio_utils.h"
 
 #include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
 
 namespace tflite {
@@ -56,7 +55,6 @@ PYBIND11_MODULE(audio_utils, m) {
              sizeof(float)});
       });
 
-//  m.def("DecodeAudioFromWaveFile", &DecodeAudioFromWaveFile);
   m.def("DecodeAudioFromWaveFile",
         [](const std::string& wav_file, int buffer_size, py::buffer buffer) {
             py::buffer_info info = buffer.request();

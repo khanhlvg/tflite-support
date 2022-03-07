@@ -15,3 +15,21 @@ py_library(
         "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
     ],
 )
+
+py_test(
+    name = "tensor_audio_test",
+    srcs = ["tensor_audio_test.py"],
+    data = [
+        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_files",
+    ],
+    deps = [
+        ":tensor_audio",
+        # build rule placeholder: numpy dep,
+        # build rule placeholder: tensorflow dep,
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_utils",
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
+        "//tensorflow_lite_support/python/test:test_util",
+        "@absl_py//absl/testing:parameterized",
+    ],
+)
+
