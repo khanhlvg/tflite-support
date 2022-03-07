@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TensorAudio class."""
-from typing import NamedTuple
 
 import numpy as np
 
@@ -20,17 +19,11 @@ from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 
 
-class AudioFormat(NamedTuple):
-  """Format of the incoming audio."""
-  channels: int
-  sample_rate: int
-
-
 class TensorAudio(object):
   """A wrapper class to store the input audio."""
 
   def __init__(self,
-               audio_format: AudioFormat,
+               audio_format: audio_buffer.AudioFormat,
                sample_count: int,
                audio_data: audio_utils.AudioData = None
                ) -> None:
