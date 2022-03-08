@@ -13,24 +13,16 @@
 # limitations under the License.
 """TensorAudio class."""
 
-import dataclasses
 import numpy as np
 
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
-
-
-@dataclasses.dataclass
-class TensorAudioFormat:
-  """Format of the incoming audio."""
-  sample_rate: int
-  channels: int = 1
 
 
 class TensorAudio(object):
   """A wrapper class to store the input audio."""
 
   def __init__(self,
-               audio_format: TensorAudioFormat,
+               audio_format: audio_buffer.AudioFormat,
                sample_count: int,
                audio_data: audio_buffer.AudioBuffer = None,
                is_from_file: bool = False,
@@ -38,7 +30,7 @@ class TensorAudio(object):
     """Initializes the `TensorAudio` object.
 
     Args:
-      audio_format: TensorAudioFormat, format of the audio.
+      audio_format: audio_buffer.AudioFormat, format of the audio.
       sample_count: int, number of samples in the audio.
       audio_data: audio_buffer.AudioBuffer, contains raw audio data, buffer size
       and audio format info.
@@ -75,13 +67,11 @@ class TensorAudio(object):
       file_name, buffer_size, np.zeros([buffer_size]))
     decoded_buffer_size = audio_data.get_buffer_size()
     decoded_audio_format = audio_data.get_audio_format()
-    tensor_audio_format = TensorAudioFormat(
-      decoded_audio_format.sample_rate, decoded_audio_format.channels)
 
-    return cls(tensor_audio_format, decoded_buffer_size, audio_data,
+    return cls(decoded_audio_format, decoded_buffer_size, audio_data,
                is_from_file=True)
 
-  def get_format(self) -> TensorAudioFormat:
+  def get_format(self) -> audio_buffer.AudioFormat:
     """Gets the audio format of the audio."""
     return self._format
 
@@ -91,4 +81,9 @@ class TensorAudio(object):
 
   def get_data(self) -> audio_buffer.AudioBuffer:
     """Gets the `audio_buffer.AudioBuffer` object."""
-    return self._data
+    if self._is_from_file:
+      audio_data = self._data
+    else:
+      audio_data = audio_buffer.AudioBuffer(
+        self._buffer, self._sample_count, self._format)
+    return audio_data

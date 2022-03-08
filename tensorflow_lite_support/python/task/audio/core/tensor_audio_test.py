@@ -29,8 +29,8 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     # Test data
     input_channels = 1
     input_sample_rate = 16000
-    input_audio_format = tensor_audio.TensorAudioFormat(
-      input_sample_rate, input_channels)
+    input_audio_format = audio_buffer.AudioFormat(
+      input_channels, input_sample_rate)
     input_sample_count = 15600
 
     # Load TensorAudio object.
