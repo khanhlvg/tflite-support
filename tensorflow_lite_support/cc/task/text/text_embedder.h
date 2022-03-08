@@ -25,7 +25,7 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/core/base_task_api.h"
 #include "tensorflow_lite_support/cc/task/processor/embedding_postprocessor.h"
-#include "tensorflow_lite_support/cc/task/processor/proto/embeddings.pb.h"
+#include "tensorflow_lite_support/cc/task/processor/proto/embedding.pb.h"
 #include "tensorflow_lite_support/cc/task/processor/proto/embedding_options.pb.h"
 #include "tensorflow_lite_support/cc/task/processor/text_preprocessor.h"
 #include "tensorflow_lite_support/cc/task/text/proto/text_embedder_options.pb.h"

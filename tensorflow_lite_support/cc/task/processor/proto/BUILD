@@ -47,22 +47,15 @@ support_py_proto_library(
 )
 
 proto_library(
-    name = "embeddings_proto",
-    srcs = ["embeddings.proto"],
+    name = "embedding_proto",
+    srcs = ["embedding.proto"],
 )
 
 cc_proto_library(
-    name = "embeddings_cc_proto",
+    name = "embedding_cc_proto",
     deps = [
-        ":embeddings_proto",
+        ":embedding_proto",
     ],
-)
-
-support_py_proto_library(
-    name = "embeddings_py_pb2",
-    srcs = ["embeddings.proto"],
-    api_version = 2,
-    proto_deps = [":embeddings_proto"],
 )
 
 proto_library(

@@ -8,7 +8,7 @@ package(
 py_library(
     name = "embeddings_pb2",
     srcs = ["embeddings_pb2.py"],
-    deps = ["//tensorflow_lite_support/cc/task/processor/proto:embeddings_py_pb2"],
+    deps = ["//tensorflow_lite_support/cc/task/vision/proto:embeddings_py_pb2"],
 )
 
 py_library(
