@@ -27,6 +27,7 @@ from tensorflow_lite_support.python.task.processor.proto import class_pb2
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio import audio_classifier
+from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
@@ -203,11 +204,11 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
         model_file, max_results=max_results)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     test_audio_path = test_util.get_test_data_path(audio_file_name)
-    tensor.load_from_wav_file(test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
@@ -249,7 +250,8 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Load the input audio file.
     test_audio_path = test_util.get_test_data_path(audio_file_name)
-    tensor.load_from_wav_file(test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
@@ -272,7 +274,8 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
-    tensor.load_from_wav_file(self.test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      self.test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
@@ -292,7 +295,8 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
-    tensor.load_from_wav_file(self.test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      self.test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
@@ -316,7 +320,8 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
-    tensor.load_from_wav_file(self.test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      self.test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
@@ -339,7 +344,8 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
-    tensor.load_from_wav_file(self.test_audio_path)
+    tensor = tensor_audio.TensorAudio.from_wav_file(
+      self.test_audio_path, classifier.required_input_buffer_size)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
