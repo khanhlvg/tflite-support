@@ -83,7 +83,4 @@ class TensorAudio(object):
     """Gets the `audio_buffer.AudioBuffer` object."""
     if self._is_from_file:
       audio_data = self._data
-    else:
-      audio_data = audio_buffer.AudioBuffer(
-        self._buffer, self._sample_count, self._format)
     return audio_data
