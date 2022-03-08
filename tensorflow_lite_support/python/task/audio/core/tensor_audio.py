@@ -30,7 +30,7 @@ class TensorAudio(object):
     """Initializes the `TensorAudio` object.
 
     Args:
-      audio_format: AudioFormat, format of the audio.
+      audio_format: audio_buffer.AudioFormat, format of the audio.
       sample_count: int, number of samples in the audio.
       audio_data: audio_buffer.AudioBuffer, contains raw audio data, buffer size
       and audio format info.
@@ -39,6 +39,7 @@ class TensorAudio(object):
     self._format = audio_format
     self._sample_count = sample_count
     self._data = audio_data
+    self._is_from_file = is_from_file
     self.clear()
 
   def clear(self):

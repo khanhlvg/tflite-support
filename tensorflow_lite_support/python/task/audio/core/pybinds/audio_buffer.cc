@@ -16,7 +16,6 @@ limitations under the License.
 
 #include "pybind11/pybind11.h"
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
-#include "pybind11_protobuf/native_proto_caster.h"  // from @pybind11_protobuf
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
 
@@ -29,8 +28,7 @@ namespace py = ::pybind11;
 
 }  //  namespace
 
-tflite::support::StatusOr<AudioBuffer>
-LoadAudioBufferFromFile(
+tflite::support::StatusOr<AudioBuffer> LoadAudioBufferFromFile(
         const std::string& wav_file, int buffer_size,
         std::vector<float>* wav_data) {
     std::string contents = ReadFile(wav_file);
@@ -57,23 +55,10 @@ PYBIND11_MODULE(audio_buffer, m) {
     // the users.
 
     py::class_<AudioBuffer::AudioFormat>(m, "AudioFormat")
-        .def(py::init([](const int channels, const int sample_rate) {
-            return AudioBuffer::AudioFormat{
-                channels, sample_rate};
-        }))
         .def_readonly("channels", &AudioBuffer::AudioFormat::channels)
         .def_readonly("sample_rate", &AudioBuffer::AudioFormat::sample_rate);
 
     py::class_<AudioBuffer>(m, "AudioBuffer")
-        .def(py::init([](py::buffer buffer, const int sample_rate) {
-            py::buffer_info info = buffer.request();
-
-            int sample_count = info.shape[0];
-            int channels = info.shape[1];
-
-            return AudioBuffer(static_cast<float *>(info.ptr), sample_count,
-                               {channels, sample_rate});
-        }))
         .def("get_audio_format", &AudioBuffer::GetAudioFormat)
         .def("get_buffer_size", &AudioBuffer::GetBufferSize)
         .def("get_float_buffer", &AudioBuffer::GetFloatBuffer);

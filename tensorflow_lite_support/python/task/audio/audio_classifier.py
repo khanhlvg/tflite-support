@@ -14,7 +14,7 @@
 """Audio classifier task."""
 
 import dataclasses
-from typing import Any, Optional
+from typing import Optional
 
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.core import task_utils
