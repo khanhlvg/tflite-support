@@ -19,7 +19,7 @@ limitations under the License.
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
 #include "pybind11_protobuf/native_proto_caster.h"  // from @pybind11_protobuf
 #include "tensorflow_lite_support/cc/port/statusor.h"
-#include "tensorflow_lite_support/examples/task/audio/desktop/utils/audio_utils.h"
+#include "tensorflow_lite_support/cc/task/audio/core/audio_buffer.h"
 
 namespace tflite {
 namespace task {
@@ -42,10 +42,11 @@ PYBIND11_MODULE(_pywrap_audio_classifier, m) {
             return AudioClassifier::CreateFromOptions(options);
           })
       .def("classify",
-           [](AudioClassifier& self, const AudioData& audio_data)
+           [](AudioClassifier& self, const AudioBuffer& audio)
                    -> tflite::support::StatusOr<ClassificationResult> {
-               ASSIGN_OR_RETURN(std::unique_ptr<AudioBuffer> audio_buffer,
-                                CreateAudioBufferFromAudioData(audio_data));
+               ASSIGN_OR_RETURN(
+                       std::unique_ptr<AudioBuffer> audio_buffer,
+                       AudioBuffer::Create(audio));
                return self.Classify(*audio_buffer);
            })
       .def("get_required_audio_format",

@@ -8,19 +8,6 @@ package(
 )
 
 pybind_extension(
-    name = "audio_utils",
-    srcs = [
-        "audio_utils.cc",
-    ],
-    module_name = "audio_utils",
-    deps = [
-        "//tensorflow_lite_support/examples/task/audio/desktop/utils:audio_utils",
-        "@pybind11",
-        "@pybind11_abseil//pybind11_abseil:status_casters",
-    ],
-)
-
-pybind_extension(
     name = "audio_buffer",
     srcs = [
         "audio_buffer.cc",
@@ -29,6 +16,7 @@ pybind_extension(
     deps = [
         "//tensorflow_lite_support/cc/port:statusor",
         "//tensorflow_lite_support/cc/task/audio/core:audio_buffer",
+        "//tensorflow_lite_support/cc/task/audio/utils:wav_io",
         "@pybind11",
         "@pybind11_abseil//pybind11_abseil:status_casters",
         "@pybind11_protobuf//pybind11_protobuf:native_proto_caster",

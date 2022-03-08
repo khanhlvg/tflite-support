@@ -18,6 +18,7 @@ limitations under the License.
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
 #include "pybind11_protobuf/native_proto_caster.h"  // from @pybind11_protobuf
 #include "tensorflow_lite_support/cc/port/statusor.h"
+#include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
 
 namespace tflite {
 namespace task {
@@ -28,11 +29,32 @@ namespace py = ::pybind11;
 
 }  //  namespace
 
+tflite::support::StatusOr<AudioBuffer>
+LoadAudioBufferFromFile(
+        const std::string& wav_file, int buffer_size,
+        std::vector<float>* wav_data) {
+    std::string contents = ReadFile(wav_file);
+
+    uint32_t decoded_sample_count;
+    uint16_t decoded_channel_count;
+    uint32_t decoded_sample_rate;
+
+    RETURN_IF_ERROR(DecodeLin16WaveAsFloatVector(
+            contents, wav_data, &decoded_sample_count, &decoded_channel_count,
+            &decoded_sample_rate));
+
+    if (decoded_sample_count > buffer_size) {
+        decoded_sample_count = buffer_size;
+    }
+
+    return AudioBuffer(
+            wav_data->data(), static_cast<int>(decoded_sample_count),
+            {decoded_channel_count, static_cast<int>(decoded_sample_rate)});
+}
+
 PYBIND11_MODULE(audio_buffer, m) {
     // python wrapper for AudioBuffer class which shouldn't be directly used by
     // the users.
-    pybind11::google::ImportStatusModule();
-    pybind11_protobuf::ImportNativeProtoCasters();
 
     py::class_<AudioBuffer::AudioFormat>(m, "AudioFormat")
         .def(py::init([](const int channels, const int sample_rate) {
@@ -43,9 +65,28 @@ PYBIND11_MODULE(audio_buffer, m) {
         .def_readonly("sample_rate", &AudioBuffer::AudioFormat::sample_rate);
 
     py::class_<AudioBuffer>(m, "AudioBuffer")
+        .def(py::init([](py::buffer buffer, const int sample_rate) {
+            py::buffer_info info = buffer.request();
+
+            int sample_count = info.shape[0];
+            int channels = info.shape[1];
+
+            return AudioBuffer(static_cast<float *>(info.ptr), sample_count,
+                               {channels, sample_rate});
+        }))
         .def("get_audio_format", &AudioBuffer::GetAudioFormat)
         .def("get_buffer_size", &AudioBuffer::GetBufferSize)
         .def("get_float_buffer", &AudioBuffer::GetFloatBuffer);
+
+    m.def("LoadAudioBufferFromFile",
+        [](const std::string& wav_file, int buffer_size, py::buffer buffer)
+        -> tflite::support::StatusOr<AudioBuffer> {
+        py::buffer_info info = buffer.request();
+
+        return LoadAudioBufferFromFile(
+                wav_file, buffer_size,
+                static_cast<std::vector<float> *>(info.ptr));
+    });
 }
 
 }  // namespace vision

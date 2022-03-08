@@ -15,7 +15,6 @@
 
 import numpy as np
 
-from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 
 
@@ -25,21 +24,29 @@ class TensorAudio(object):
   def __init__(self,
                audio_format: audio_buffer.AudioFormat,
                sample_count: int,
-               audio_data: audio_utils.AudioData = None
+               audio_data: audio_buffer.AudioBuffer = None,
+               is_from_file: bool = False,
                ) -> None:
-    """Initializes the `TensorAudio` object."""
+    """Initializes the `TensorAudio` object.
+
+    Args:
+      audio_format: AudioFormat, format of the audio.
+      sample_count: int, number of samples in the audio.
+      audio_data: audio_buffer.AudioBuffer, contains raw audio data, buffer size
+      and audio format info.
+      is_from_file: boolean, whether `audio_data` is loaded from the audio file.
+    """
     self._format = audio_format
     self._sample_count = sample_count
-    self._buffer = np.zeros([self._sample_count, self._format.channels])
     self._data = audio_data
     self.clear()
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer.fill(0)
+    self._buffer = np.zeros([self._sample_count, self._format.channels])
 
-  def load_from_file(self, file_name: str) -> audio_utils.AudioData:
-    """Loads `audio_utils.AudioData` from the WAV file
+  def load_from_wav_file(self, file_name: str):
+    """Loads `audio_buffer.AudioBuffer` from the WAV file
 
     Args:
       file_name: WAV file name.
@@ -48,9 +55,9 @@ class TensorAudio(object):
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_utils.DecodeAudioFromWaveFile(
+    self._data = audio_buffer.LoadAudioBufferFromFile(
       file_name, self._sample_count, self._buffer)
-    self._data = audio_data
+    self._is_from_file = True
 
   def get_format(self) -> audio_buffer.AudioFormat:
     """Gets the audio format of the audio."""
@@ -60,17 +67,6 @@ class TensorAudio(object):
     """Gets the sample count of the audio."""
     return self._sample_count
 
-  def get_buffer(self) -> np.ndarray:
-    """Gets the internal buffer of the audio."""
-    return self._buffer
-
-  def get_data(self) -> np.ndarray:
-    """Gets the numpy array that represents `self._audio_data`.
-
-    Returns:
-      Numpy array that represents `self._audio_data` which is an
-        `audio_utils.AudioData` object. To avoid copy, we will use
-        `return np.array(..., copy = False)`. Therefore, this `TensorAudio`
-        object should outlive the returned numpy array.
-    """
-    return np.array(self._data, copy=False)
+  def get_data(self) -> audio_buffer.AudioBuffer:
+    """Gets the `audio_buffer.AudioBuffer` object."""
+    return self._data

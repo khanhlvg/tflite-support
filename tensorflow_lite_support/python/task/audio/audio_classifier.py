@@ -21,7 +21,6 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
-from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
@@ -36,20 +35,6 @@ class AudioClassifierOptions:
   base_options: task_options.BaseOptions
   classification_options: Optional[
       classification_options_pb2.ClassificationOptions] = None
-
-  def __eq__(self, other: Any) -> bool:
-    if (not isinstance(other, self.__class__) or
-        self.base_options != other.base_options):
-      return False
-
-    if self.classification_options is None and other.classification_options is None:
-      return True
-    elif (self.classification_options and other.classification_options and
-          self.classification_options.SerializeToString()
-          == self.classification_options.SerializeToString()):
-      return True
-    else:
-      return False
 
 
 class AudioClassifier(object):
@@ -129,13 +114,8 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_utils.AudioData(
-      audio.get_data(), audio.get_format().sample_rate)
+    audio_data = audio.get_data()
     return self._classifier.classify(audio_data)
-
-  def __eq__(self, other: Any) -> bool:
-    return (isinstance(other, self.__class__) and
-            self._options == other._options)
 
   @property
   def required_input_buffer_size(self) -> int:
@@ -146,7 +126,3 @@ class AudioClassifier(object):
   def required_audio_format(self) -> audio_buffer.AudioFormat:
     """Gets the required audio format for the model."""
     return self._classifier.get_required_audio_format()
-
-  @property
-  def options(self) -> AudioClassifierOptions:
-    return self._options

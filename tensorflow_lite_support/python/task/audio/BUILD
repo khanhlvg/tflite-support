@@ -16,7 +16,7 @@ py_library(
         "//tensorflow_lite_support/python/task/processor/proto:classification_options_pb2",
         "//tensorflow_lite_support/python/task/processor/proto:classifications_pb2",
         "//tensorflow_lite_support/python/task/audio/core:tensor_audio",
-        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_utils",
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
         "//tensorflow_lite_support/python/task/audio/pybinds:_pywrap_audio_classifier",
         "//tensorflow_lite_support/python/task/audio/pybinds:audio_classifier_options_pb2",
     ],

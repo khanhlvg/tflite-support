@@ -14,11 +14,9 @@
 """Tests for tensor_audio."""
 
 from absl.testing import parameterized
-import numpy as np
 import tensorflow as tf
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
-from tensorflow_lite_support.python.task.audio.core.pybinds import audio_utils
 from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
 from tensorflow_lite_support.python.test import test_util
 
@@ -29,16 +27,19 @@ class TensorAudioTest(tf.test.TestCase, parameterized.TestCase):
     audio_file = test_util.get_test_data_path('speech.wav')
 
     # Test data
-    audio_format = audio_buffer.AudioFormat(1, 16000)
+    channels = 1
+    sample_rate = 16000
     sample_count = 15600
 
     tensor = tensor_audio.TensorAudio(
-      audio_format=audio_format, sample_count=15600)
-    audio = tensor.load_from_file(audio_file)
-    self.assertIsInstance(audio._audio_data, audio_utils.AudioData)
-    self.assertEqual(audio.get_format(), audio_format)
+      audio_format=audio_buffer.AudioFormat(channels, sample_rate),
+      sample_count=15600)
+    audio = tensor.load_from_wav_file(audio_file)
+    audio_format = audio.get_audio_format()
+    self.assertEqual(audio_format.channels, channels)
+    self.assertEqual(audio_format.sample_rate, sample_rate)
     self.assertEqual(audio.get_sample_count(), sample_count)
-    self.assertIsInstance(audio.get_data(), np.ndarray)
+    self.assertIsInstance(audio.get_data(), audio_buffer.AudioBuffer)
 
 
 if __name__ == '__main__':
