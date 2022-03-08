@@ -55,6 +55,10 @@ PYBIND11_MODULE(audio_buffer, m) {
     // the users.
 
     py::class_<AudioBuffer::AudioFormat>(m, "AudioFormat")
+        .def(py::init([](const int channels, const int sample_rate) {
+            return AudioBuffer::AudioFormat{
+                channels, sample_rate};
+        }))
         .def_readonly("channels", &AudioBuffer::AudioFormat::channels)
         .def_readonly("sample_rate", &AudioBuffer::AudioFormat::sample_rate);
 
