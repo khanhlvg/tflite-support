@@ -29,7 +29,7 @@ class TensorAudioTest(tf.test.TestCase, parameterized.TestCase):
     audio_file = test_util.get_test_data_path('speech.wav')
 
     # Test data
-    audio_format = audio_buffer.AudioBuffer(1, 16000)
+    audio_format = audio_buffer.AudioFormat(1, 16000)
     sample_count = 15600
 
     tensor = tensor_audio.TensorAudio(
