@@ -279,7 +279,7 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     classifier = self.create_classifier_from_options(
       model_file, max_results=_MAX_RESULTS)
 
-    # Create TensorAudio and AudioRecord objects.
+    # Create TensorAudio and soundevice.InputStream objects.
     tensor, audio_recorder = classifier.create_audio_recorder_input()
 
     # Records audio.
