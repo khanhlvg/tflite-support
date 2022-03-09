@@ -14,12 +14,10 @@
 """Tests for audio_classifier."""
 
 import enum
-import io
 import json
 import os
 import time
 
-import numpy as np
 from absl.testing import parameterized
 from google.protobuf import json_format
 # TODO(b/220067158): Change to import tensorflow and leverage tf.test once
