@@ -14,6 +14,7 @@
 """Audio classifier task."""
 
 import dataclasses
+import threading
 
 import sounddevice as sd
 from typing import Optional
@@ -23,7 +24,6 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
-from tensorflow_lite_support.python.task.audio.core import audio_record
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
@@ -102,14 +102,37 @@ class AudioClassifier(object):
       audio_format=self.required_audio_format,
       sample_count=self.required_input_buffer_size)
 
-  def create_input_audio_record(
+  def create_input_audio_recorder(
       self
   ) -> (tensor_audio.TensorAudio, sd.InputStream):
-    """Creates an AudioRecord instance to record audio.
-    Returns:
-        An AudioRecord instance.
-    """
-    return audio_record.AudioRecord(self.create_input_tensor_audio())
+    tensor = self.create_input_tensor_audio()
+
+    input_sample_count = tensor.get_sample_count()
+    input_audio_format = tensor.get_format()
+
+    tensor = tensor_audio.TensorAudio(
+      audio_format=input_audio_format, sample_count=input_sample_count)
+    lock = threading.Lock()
+
+    def audio_callback(audio_data, *_):
+      """A callback to receive recorded audio data from sounddevice."""
+      lock.acquire()
+      if len(audio_data) > input_sample_count:
+        # Only take the latest input if the audio data received is
+        # longer than what the TensorAudio can store.
+        tensor.load_from_array(audio_data[-input_sample_count:])
+      else:
+        tensor.load_from_array(audio_data)
+      lock.release()
+
+    # Create an input stream to continuously capture the audio data.
+    input_stream = sd.InputStream(
+      channels=input_audio_format.channels,
+      samplerate=input_audio_format.sample_rate,
+      callback=audio_callback,
+    )
+
+    return tensor, input_stream
 
   def classify(
       self,

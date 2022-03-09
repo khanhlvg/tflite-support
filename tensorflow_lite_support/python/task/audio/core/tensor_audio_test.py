@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for tensor_audio."""
-import time
-
-import numpy as np
 from absl.testing import parameterized
-from scipy.io import wavfile
 import unittest
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
