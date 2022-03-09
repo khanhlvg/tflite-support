@@ -50,9 +50,10 @@ tflite::support::StatusOr<AudioBuffer> LoadAudioBufferFromFile(
             {decoded_channel_count, static_cast<int>(decoded_sample_rate)});
 }
 
-PYBIND11_MODULE(audio_buffer, m) {
+PYBIND11_MODULE(_pywrap_audio_buffer, m) {
     // python wrapper for AudioBuffer class which shouldn't be directly used by
     // the users.
+    pybind11::google::ImportStatusModule();
 
     py::class_<AudioBuffer::AudioFormat>(m, "AudioFormat")
         .def(py::init([](const int channels, const int sample_rate) {

@@ -15,24 +15,28 @@
 
 import numpy as np
 
-from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
+from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
+
+_CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
+_CppAudioFormat = _pywrap_audio_buffer.AudioFormat
+_LoadAudioBufferFromFile = _pywrap_audio_buffer.LoadAudioBufferFromFile
 
 
 class TensorAudio(object):
   """A wrapper class to store the input audio."""
 
   def __init__(self,
-               audio_format: audio_buffer.AudioFormat,
+               audio_format: _CppAudioFormat,
                sample_count: int,
-               audio_data: audio_buffer.AudioBuffer = None,
+               audio_data: _CppAudioBuffer = None,
                is_from_file: bool = False,
                ) -> None:
     """Initializes the `TensorAudio` object.
 
     Args:
-      audio_format: audio_buffer.AudioFormat, format of the audio.
+      audio_format: C++ AudioFormat object, format of the audio.
       sample_count: int, number of samples in the audio.
-      audio_data: audio_buffer.AudioBuffer, contains raw audio data, buffer size
+      audio_data: C++ AudioBuffer object, contains raw audio data, buffer size
       and audio format info.
       is_from_file: boolean, whether `audio_data` is loaded from the audio file.
     """
@@ -63,7 +67,7 @@ class TensorAudio(object):
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio_buffer.LoadAudioBufferFromFile(
+    audio_data = _LoadAudioBufferFromFile(
       file_name, buffer_size, np.zeros([buffer_size]))
     decoded_buffer_size = audio_data.get_buffer_size()
     decoded_audio_format = audio_data.get_audio_format()
@@ -87,7 +91,7 @@ class TensorAudio(object):
     self._buffer = np.roll(self._buffer, -shift, axis=0)
     self._buffer[-shift:, :] = src
 
-  def get_format(self) -> audio_buffer.AudioFormat:
+  def get_format(self) -> _CppAudioFormat:
     """Gets the audio format of the audio."""
     return self._format
 
@@ -95,11 +99,11 @@ class TensorAudio(object):
     """Gets the sample count of the audio."""
     return self._sample_count
 
-  def get_data(self) -> audio_buffer.AudioBuffer:
+  def get_data(self) -> _CppAudioBuffer:
     """Gets the `audio_buffer.AudioBuffer` object."""
     if self._is_from_file:
       audio_data = self._data
     else:
-      audio_data = audio_buffer.AudioBuffer(
+      audio_data = _CppAudioBuffer(
         self._buffer, self._sample_count, self._format)
     return audio_data

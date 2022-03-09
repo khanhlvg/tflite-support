@@ -8,11 +8,11 @@ package(
 )
 
 pybind_extension(
-    name = "audio_buffer",
+    name = "_pywrap_audio_buffer",
     srcs = [
-        "audio_buffer.cc",
+        "_pywrap_audio_buffer.cc",
     ],
-    module_name = "audio_buffer",
+    module_name = "_pywrap_audio_buffer",
     deps = [
         "//tensorflow_lite_support/cc/port:statusor",
         "//tensorflow_lite_support/cc/task/audio/core:audio_buffer",

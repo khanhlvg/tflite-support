@@ -250,7 +250,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
       model_file, max_results=max_results)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     test_audio_path = test_util.get_test_data_path(audio_file_name)
@@ -302,7 +301,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
       model_file, max_results=_MAX_RESULTS)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     tensor = tensor_audio.TensorAudio.from_wav_file(
@@ -323,7 +321,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
       model_file, score_threshold=_SCORE_THRESHOLD)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     tensor = tensor_audio.TensorAudio.from_wav_file(
@@ -348,7 +345,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
       model_file, class_name_allowlist=_ALLOW_LIST)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     tensor = tensor_audio.TensorAudio.from_wav_file(
@@ -372,7 +368,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     classifier = self.create_classifier_from_options(
       model_file, score_threshold=0.01, class_name_denylist=_DENY_LIST)
-    tensor = classifier.create_input_tensor_audio()
 
     # Load the input audio file.
     tensor = tensor_audio.TensorAudio.from_wav_file(

@@ -11,7 +11,7 @@ py_library(
     srcs = ["tensor_audio.py"],
     deps = [
         # build rule placeholder: numpy dep,
-        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
     ],
 )
 
@@ -26,7 +26,7 @@ py_test(
         # build rule placeholder: numpy dep,
         # build rule placeholder: tensorflow dep,
         # build rule placeholder: scipy dep,
-        "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
+        "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
         "//tensorflow_lite_support/python/test:test_util",
         "@absl_py//absl/testing:parameterized",
     ],

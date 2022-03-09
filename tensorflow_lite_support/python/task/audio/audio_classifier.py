@@ -24,10 +24,11 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
-from tensorflow_lite_support.python.task.audio.core.pybinds import audio_buffer
+from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
 
+_CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _ProtoAudioClassifierOptions = audio_classifier_options_pb2.AudioClassifierOptions
 _CppAudioClassifier = _pywrap_audio_classifier.AudioClassifier
 
@@ -160,6 +161,6 @@ class AudioClassifier(object):
     return self._classifier.get_required_input_buffer_size()
 
   @property
-  def required_audio_format(self) -> audio_buffer.AudioFormat:
+  def required_audio_format(self) -> _CppAudioFormat:
     """Gets the required audio format for the model."""
     return self._classifier.get_required_audio_format()
