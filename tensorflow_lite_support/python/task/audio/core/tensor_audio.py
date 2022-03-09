@@ -71,6 +71,22 @@ class TensorAudio(object):
     return cls(decoded_audio_format, decoded_buffer_size, audio_data,
                is_from_file=True)
 
+  def load_from_array(self, src: np.ndarray) -> None:
+    """Load audio data from a NumPy array.
+    Args:
+      src: A NumPy array contains the input audio.
+    """
+    if len(src) > len(self._buffer):
+      raise ValueError('Input audio is too large.')
+    elif src.shape[1] != self._format.channels:
+      raise ValueError('Input audio contains an invalid number of channels.')
+
+    # Shift the internal buffer backward and add the incoming data to the end of
+    # the buffer.
+    shift = len(src)
+    self._buffer = np.roll(self._buffer, -shift, axis=0)
+    self._buffer[-shift:, :] = src
+
   def get_format(self) -> audio_buffer.AudioFormat:
     """Gets the audio format of the audio."""
     return self._format
@@ -83,4 +99,7 @@ class TensorAudio(object):
     """Gets the `audio_buffer.AudioBuffer` object."""
     if self._is_from_file:
       audio_data = self._data
+    else:
+      audio_data = audio_buffer.AudioBuffer(
+        self._buffer, self._sample_count, self._format)
     return audio_data

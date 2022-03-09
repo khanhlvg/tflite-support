@@ -9,7 +9,7 @@ py_test(
     name = "audio_classifier_test",
     srcs = ["audio_classifier_test.py"],
     data = [
-        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_files",
+        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_audio_clips",
         "//tensorflow_lite_support/cc/test/testdata/task/audio:test_models",
     ],
     deps = [

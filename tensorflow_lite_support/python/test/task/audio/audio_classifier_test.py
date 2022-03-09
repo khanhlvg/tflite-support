@@ -14,13 +14,19 @@
 """Tests for audio_classifier."""
 
 import enum
+import io
 import json
+import os
+import time
 
+import numpy as np
 from absl.testing import parameterized
 from google.protobuf import json_format
 # TODO(b/220067158): Change to import tensorflow and leverage tf.test once
 # fixed the dependency issue.
 import unittest
+
+from scipy.io.wavfile import write
 
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.processor.proto import class_pb2
@@ -264,6 +270,35 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     self.assertDeepAlmostEqual(
       audio_result_dict, expected_result_dict,
       delta=_ACCEPTABLE_ERROR_RANGE)
+
+  def test_classify_model_on_audio_record_input(self):
+    # Loads the model file.
+    model_file = _ExternalFile(file_name=self.model_path)
+
+    # Creates classifier.
+    classifier = self.create_classifier_from_options(
+      model_file, max_results=_MAX_RESULTS)
+
+    # Create TensorAudio and AudioRecord objects.
+    tensor, audio_recorder = classifier.create_audio_recorder_input()
+
+    # Records audio.
+    audio_recorder.start()
+    time.sleep(5)
+    audio_recorder.stop()
+
+    print(np.array(tensor.get_data().get_float_buffer(), copy=False))
+
+    # Save as WAV file for debugging.
+    write(os.path.join(os.path.expanduser("~"), 'record.wav'),
+          classifier.required_audio_format.sample_rate, tensor._buffer)
+
+    # Classifies the input.
+    audio_result = classifier.classify(tensor)
+    audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
+
+    print(audio_result_dict)
+    raise Exception('dummy exception')
 
   def test_max_results_option(self):
     # Creates classifier.

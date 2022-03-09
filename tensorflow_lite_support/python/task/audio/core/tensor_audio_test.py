@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for tensor_audio."""
+import time
+
+import numpy as np
 from absl.testing import parameterized
+from scipy.io import wavfile
 import unittest
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
@@ -42,6 +46,36 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     self.assertEqual(tensor_audio_format.channels, input_audio_format.channels)
     self.assertEqual(
       tensor_audio_format.sample_rate, input_audio_format.sample_rate)
+    self.assertIsInstance(tensor.get_data(), audio_buffer.AudioBuffer)
+
+  def test_load_from_array(self):
+    # Test data
+    input_channels = 1
+    input_sample_rate = 16000
+    input_audio_format = audio_buffer.AudioFormat(
+      input_channels, input_sample_rate)
+    input_sample_count = 15600
+
+    # Load the input audio file. Use only the beginning of the file that fits
+    # the model input size.
+    original_sample_rate, wav_data = wavfile.read(self.test_audio_path, True)
+
+    # Normalize to [-1, 1] and cast to float32
+    wav_data = (wav_data / np.iinfo(wav_data.dtype).max).astype(np.float32)
+
+    # Use only the beginning of the file that fits the model input size.
+    input_size = input_sample_count
+    wav_data = np.reshape(wav_data[:input_size], [input_size, input_channels])
+
+    # Load TensorAudio object.
+    tensor = tensor_audio.TensorAudio(
+      audio_format=input_audio_format, sample_count=input_sample_count)
+    tensor.load_from_array(wav_data)
+    tensor_audio_format = tensor.get_format()
+
+    self.assertEqual(tensor_audio_format.channels, input_channels)
+    self.assertEqual(tensor_audio_format.sample_rate, input_sample_rate)
+    self.assertEqual(tensor.get_sample_count(), input_sample_count)
     self.assertIsInstance(tensor.get_data(), audio_buffer.AudioBuffer)
 
 

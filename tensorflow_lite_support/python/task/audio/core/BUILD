@@ -19,12 +19,13 @@ py_test(
     name = "tensor_audio_test",
     srcs = ["tensor_audio_test.py"],
     data = [
-        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_files",
+        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_audio_clips",
     ],
     deps = [
         ":tensor_audio",
         # build rule placeholder: numpy dep,
         # build rule placeholder: tensorflow dep,
+        # build rule placeholder: scipy dep,
         "//tensorflow_lite_support/python/task/audio/core/pybinds:audio_buffer",
         "//tensorflow_lite_support/python/test:test_util",
         "@absl_py//absl/testing:parameterized",

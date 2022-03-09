@@ -14,6 +14,9 @@
 """Audio classifier task."""
 
 import dataclasses
+import threading
+
+import sounddevice as sd
 from typing import Optional
 
 from tensorflow_lite_support.python.task.core import task_options
@@ -98,6 +101,41 @@ class AudioClassifier(object):
       audio_format=self.required_audio_format,
       sample_count=self.required_input_buffer_size)
 
+  def create_audio_recorder_input(
+      self
+  ) -> (tensor_audio.TensorAudio, sd.InputStream):
+    """Creates an AudioRecord instance to record audio.
+    Returns:
+        An AudioRecord instance.
+    """
+    input_sample_count = self.required_input_buffer_size
+    input_audio_format = self.required_audio_format
+
+    tensor = tensor_audio.TensorAudio(
+      audio_format=input_audio_format,
+      sample_count=input_sample_count)
+    lock = threading.Lock()
+
+    def audio_callback(audio_data, *_):
+      """A callback to receive recorded audio data from sounddevice."""
+      lock.acquire()
+      if len(audio_data) > input_sample_count:
+        # Only take the latest input if the audio data received is
+        # longer than what the TensorAudio can store.
+        tensor.load_from_array(audio_data[-input_sample_count:])
+      else:
+        tensor.load_from_array(audio_data)
+      lock.release()
+
+    # Create an input stream to continuously capture the audio data.
+    input_stream = sd.InputStream(
+      channels=input_audio_format.channels,
+      samplerate=input_audio_format.sample_rate,
+      callback=audio_callback,
+    )
+
+    return tensor, input_stream
+
   def classify(
       self,
       audio: tensor_audio.TensorAudio,
@@ -114,8 +152,7 @@ class AudioClassifier(object):
         import status`, see
         https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = audio.get_data()
-    return self._classifier.classify(audio_data)
+    return self._classifier.classify(audio.get_data())
 
   @property
   def required_input_buffer_size(self) -> int:
