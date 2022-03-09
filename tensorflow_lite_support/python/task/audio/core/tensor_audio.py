@@ -16,10 +16,13 @@
 import numpy as np
 
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
+from tensorflow_lite_support.python.task.audio.core import audio_record
 
 _CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _LoadAudioBufferFromFile = _pywrap_audio_buffer.LoadAudioBufferFromFile
+
+AudioRecord = audio_record.AudioRecord
 
 
 class TensorAudio(object):
@@ -47,11 +50,11 @@ class TensorAudio(object):
     if self._is_from_file:
       self._data = audio_data
     else:
-      self._buffer = np.zeros([self._sample_count, self._format.channels])
+      self.clear()
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer.fill(0)
+    self._buffer = np.zeros([self._sample_count, self._format.channels])
 
   @classmethod
   def from_wav_file(cls,
@@ -98,6 +101,10 @@ class TensorAudio(object):
   def get_sample_count(self) -> int:
     """Gets the sample count of the audio."""
     return self._sample_count
+
+  def get_buffer(self) -> np.ndarray:
+    """Gets the internal audio buffer."""
+    return self._buffer
 
   def get_data(self) -> _CppAudioBuffer:
     """Gets the `audio_buffer.AudioBuffer` object."""

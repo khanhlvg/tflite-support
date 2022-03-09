@@ -14,7 +14,6 @@
 """Audio classifier task."""
 
 import dataclasses
-import threading
 
 import sounddevice as sd
 from typing import Optional
@@ -24,6 +23,7 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
+from tensorflow_lite_support.python.task.audio.core import audio_record
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_classifier
 from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_options_pb2
@@ -31,6 +31,9 @@ from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_o
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _ProtoAudioClassifierOptions = audio_classifier_options_pb2.AudioClassifierOptions
 _CppAudioClassifier = _pywrap_audio_classifier.AudioClassifier
+
+TensorAudio = tensor_audio.TensorAudio
+AudioRecord = audio_record.AudioRecord
 
 
 @dataclasses.dataclass
@@ -93,49 +96,21 @@ class AudioClassifier(object):
 
     return cls(options, classifier)
 
-  def create_input_tensor_audio(self) -> tensor_audio.TensorAudio:
+  def create_input_tensor_audio(self) -> TensorAudio:
     """Creates a TensorAudio instance to store the audio input.
     Returns:
         A TensorAudio instance.
     """
-    return tensor_audio.TensorAudio(
+    return TensorAudio(
       audio_format=self.required_audio_format,
       sample_count=self.required_input_buffer_size)
 
-  def create_audio_recorder_input(
-      self
-  ) -> (tensor_audio.TensorAudio, sd.InputStream):
+  def create_input_audio_record(self) -> (TensorAudio, sd.InputStream):
     """Creates an AudioRecord instance to record audio.
     Returns:
         An AudioRecord instance.
     """
-    input_sample_count = self.required_input_buffer_size
-    input_audio_format = self.required_audio_format
-
-    tensor = tensor_audio.TensorAudio(
-      audio_format=input_audio_format,
-      sample_count=input_sample_count)
-    lock = threading.Lock()
-
-    def audio_callback(audio_data, *_):
-      """A callback to receive recorded audio data from sounddevice."""
-      lock.acquire()
-      if len(audio_data) > input_sample_count:
-        # Only take the latest input if the audio data received is
-        # longer than what the TensorAudio can store.
-        tensor.load_from_array(audio_data[-input_sample_count:])
-      else:
-        tensor.load_from_array(audio_data)
-      lock.release()
-
-    # Create an input stream to continuously capture the audio data.
-    input_stream = sd.InputStream(
-      channels=input_audio_format.channels,
-      samplerate=input_audio_format.sample_rate,
-      callback=audio_callback,
-    )
-
-    return tensor, input_stream
+    return AudioRecord(self.create_input_tensor_audio())
 
   def classify(
       self,

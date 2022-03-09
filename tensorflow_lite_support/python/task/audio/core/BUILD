@@ -7,10 +7,19 @@ package(
 )
 
 py_library(
+    name = "audio_record",
+    srcs = ["audio_record.py"],
+    deps = [
+        # build rule placeholder: sounddevice dep,
+    ],
+)
+
+py_library(
     name = "tensor_audio",
     srcs = ["tensor_audio.py"],
     deps = [
         # build rule placeholder: numpy dep,
+        ":audio_record",
         "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
     ],
 )

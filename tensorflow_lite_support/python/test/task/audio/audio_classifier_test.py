@@ -277,12 +277,14 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
       model_file, max_results=_MAX_RESULTS)
 
     # Create TensorAudio and soundevice.InputStream objects.
-    tensor, audio_recorder = classifier.create_audio_recorder_input()
+    audio_recorder = classifier.create_input_audio_record()
 
     # Records audio.
-    audio_recorder.start()
+    audio_recorder.start_recording()
     time.sleep(5)
     audio_recorder.stop()
+
+    tensor = audio_recorder.get_tensor_audio()
 
     # Save as WAV file for debugging.
     write(os.path.join(os.path.expanduser("~"), 'record.wav'),
