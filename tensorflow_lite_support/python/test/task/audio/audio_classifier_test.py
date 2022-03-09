@@ -287,8 +287,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     time.sleep(5)
     audio_recorder.stop()
 
-    print(np.array(tensor.get_data().get_float_buffer(), copy=False))
-
     # Save as WAV file for debugging.
     write(os.path.join(os.path.expanduser("~"), 'record.wav'),
           classifier.required_audio_format.sample_rate, tensor._buffer)
