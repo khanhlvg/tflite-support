@@ -32,9 +32,6 @@ _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _ProtoAudioClassifierOptions = audio_classifier_options_pb2.AudioClassifierOptions
 _CppAudioClassifier = _pywrap_audio_classifier.AudioClassifier
 
-TensorAudio = tensor_audio.TensorAudio
-AudioRecord = audio_record.AudioRecord
-
 
 @dataclasses.dataclass
 class AudioClassifierOptions:
@@ -96,21 +93,23 @@ class AudioClassifier(object):
 
     return cls(options, classifier)
 
-  def create_input_tensor_audio(self) -> TensorAudio:
+  def create_input_tensor_audio(self) -> tensor_audio.TensorAudio:
     """Creates a TensorAudio instance to store the audio input.
     Returns:
         A TensorAudio instance.
     """
-    return TensorAudio(
+    return tensor_audio.TensorAudio(
       audio_format=self.required_audio_format,
       sample_count=self.required_input_buffer_size)
 
-  def create_input_audio_record(self) -> (TensorAudio, sd.InputStream):
+  def create_input_audio_record(
+      self
+  ) -> (tensor_audio.TensorAudio, sd.InputStream):
     """Creates an AudioRecord instance to record audio.
     Returns:
         An AudioRecord instance.
     """
-    return AudioRecord(self.create_input_tensor_audio())
+    return audio_record.AudioRecord(self.create_input_tensor_audio())
 
   def classify(
       self,

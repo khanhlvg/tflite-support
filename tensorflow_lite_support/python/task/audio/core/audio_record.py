@@ -15,14 +15,16 @@
 import threading
 import sounddevice as sd
 
+from tensorflow_lite_support.python.task.audio.core import tensor_audio
+
 
 class AudioRecord(object):
   """A class to record audio in a streaming basis."""
 
-  def __init__(self, tensor_audio) -> None:
+  def __init__(self, tensor: tensor_audio.TensorAudio) -> None:
     self._lock = threading.Lock()
-    self._tensor = tensor_audio
-    self._audio_buffer = tensor_audio.get_buffer()
+    self._tensor = tensor
+    self._audio_buffer = tensor.get_buffer()
 
     input_sample_count = self._tensor.get_sample_count()
     input_audio_format = self._tensor.get_format()
@@ -45,7 +47,7 @@ class AudioRecord(object):
       callback=audio_callback,
     )
 
-  def get_tensor_audio(self):
+  def get_tensor_audio(self) -> tensor_audio.TensorAudio:
     """Gets the TensorAudio object."""
     return self._tensor
 
