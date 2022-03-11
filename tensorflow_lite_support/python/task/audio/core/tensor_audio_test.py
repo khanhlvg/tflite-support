@@ -86,13 +86,25 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     self.assertNotEqual(tensor_audio_data.buffer_size, input_sample_count)
 
   def test_load_from_array_fails_with_too_many_input_samples(self):
-    # Fails loading TensorAudio object from a NumPy with a sample count
+    # Fails loading TensorAudio object from a NumPy array with a sample count
     # exceeding TensorAudio's internal buffer capacity.
     tensor = tensor_audio.TensorAudio(
       audio_format=_CppAudioFormat(1, 16000), sample_count=15000)
     array = np.random.random((20000, 1))
 
     with self.assertRaisesRegex(ValueError, r'Input audio is too large.'):
+      tensor.load_from_array(array)
+
+  def test_load_from_array_fails_with_invalid_input_channels(self):
+    # Fails loading TensorAudio object from a NumPy array with input audio
+    # containing an invalid number of channels.
+    tensor = tensor_audio.TensorAudio(
+      audio_format=_CppAudioFormat(1, 16000), sample_count=15000)
+    array = np.random.random((15000, 4))
+
+    with self.assertRaisesRegex(
+        ValueError,
+        r'Input audio contains an invalid number of channels.'):
       tensor.load_from_array(array)
 
 
