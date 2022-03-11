@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for tensor_audio."""
+import numpy as np
+from numpy.testing import assert_almost_equal
 from absl.testing import parameterized
 import unittest
+from scipy.io import wavfile
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
@@ -46,6 +49,30 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     self.assertEqual(
       tensor_audio_format.sample_rate, input_audio_format.sample_rate)
     self.assertIsInstance(tensor.get_data(), _CppAudioBuffer)
+
+  def test_load_from_array(self):
+    # Test data
+    input_channels = 1
+    input_sample_rate = 16000
+    input_audio_format = _CppAudioFormat(
+      input_channels, input_sample_rate)
+    input_sample_count = 15600
+
+    array = np.random.random((input_sample_count, input_channels))
+
+    # Load TensorAudio object.
+    tensor = tensor_audio.TensorAudio(
+      audio_format=input_audio_format, sample_count=input_sample_count)
+    tensor.load_from_array(array)
+
+    tensor_audio_data = tensor.get_data()
+    tensor_audio_format = tensor_audio_data.audio_format
+
+    self.assertEqual(tensor_audio_format.channels, input_channels)
+    self.assertEqual(tensor_audio_format.sample_rate, input_sample_rate)
+    self.assertEqual(tensor_audio_data.buffer_size, input_sample_count)
+    self.assertIsInstance(tensor_audio_data, _CppAudioBuffer)
+    assert_almost_equal(tensor_audio_data.float_buffer, array)
 
 
 if __name__ == '__main__':

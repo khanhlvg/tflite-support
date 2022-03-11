@@ -15,6 +15,7 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/task/audio/core/audio_buffer.h"
 
 #include "pybind11/pybind11.h"
+#include "pybind11/numpy.h"
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
 #include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
@@ -63,7 +64,7 @@ PYBIND11_MODULE(_pywrap_audio_buffer, m) {
         .def_readonly("channels", &AudioBuffer::AudioFormat::channels)
         .def_readonly("sample_rate", &AudioBuffer::AudioFormat::sample_rate);
 
-    py::class_<AudioBuffer>(m, "AudioBuffer")
+    py::class_<AudioBuffer>(m, "AudioBuffer", py::buffer_protocol())
         .def(py::init([](
                 py::buffer buffer, const int sample_count,
                 const AudioBuffer::AudioFormat& audio_format) {
@@ -72,9 +73,21 @@ PYBIND11_MODULE(_pywrap_audio_buffer, m) {
             return AudioBuffer(static_cast<float *>(info.ptr),
                                sample_count, audio_format);
         }))
-        .def("get_audio_format", &AudioBuffer::GetAudioFormat)
-        .def("get_buffer_size", &AudioBuffer::GetBufferSize)
-        .def("get_float_buffer", &AudioBuffer::GetFloatBuffer);
+        .def_property_readonly("audio_format", &AudioBuffer::GetAudioFormat)
+        .def_property_readonly("buffer_size", &AudioBuffer::GetBufferSize)
+        .def_property_readonly("float_buffer", [](AudioBuffer& self) {
+            py::object py_object =
+                    py::cast(self, py::return_value_policy::reference);
+
+            py::array_t<float, py::array::c_style> contiguous_data;
+
+            contiguous_data = py::array_t<float, py::array::c_style>(
+                {self.GetBufferSize(), self.GetAudioFormat().channels},
+                reinterpret_cast<const float*>(self.GetFloatBuffer()),
+                py_object);
+
+            return contiguous_data;
+        });
 
     m.def("LoadAudioBufferFromFile",
         [](const std::string& wav_file, int buffer_size, py::buffer buffer)

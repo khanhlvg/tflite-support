@@ -51,7 +51,8 @@ class TensorAudio(object):
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer = np.zeros([self._sample_count, self._format.channels])
+    self._buffer = np.ascontiguousarray(
+      np.zeros([self._sample_count, self._format.channels]), dtype=np.float32)
 
   @classmethod
   def from_wav_file(cls,
@@ -67,13 +68,9 @@ class TensorAudio(object):
         the module to catch this error: `from pybind11_abseil import status`,
         see https://github.com/pybind/pybind11_abseil#abslstatusor.
     """
-    audio_data = _LoadAudioBufferFromFile(
+    audio = _LoadAudioBufferFromFile(
       file_name, buffer_size, np.zeros([buffer_size]))
-    decoded_buffer_size = audio_data.get_buffer_size()
-    decoded_audio_format = audio_data.get_audio_format()
-
-    return cls(decoded_audio_format, decoded_buffer_size, audio_data,
-               is_from_file=True)
+    return cls(audio.audio_format, audio.buffer_size, audio, is_from_file=True)
 
   def load_from_array(self, src: np.ndarray) -> None:
     """Load audio data from a NumPy array.
@@ -105,5 +102,5 @@ class TensorAudio(object):
       audio_data = self._data
     else:
       audio_data = _CppAudioBuffer(
-        np.squeeze(self._buffer), self._sample_count, self._format)
+        self._buffer, self._sample_count, self._format)
     return audio_data
