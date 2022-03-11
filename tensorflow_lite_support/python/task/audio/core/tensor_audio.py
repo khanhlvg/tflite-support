@@ -57,7 +57,7 @@ class TensorAudio(object):
   def from_wav_file(cls,
                     file_name: str,
                     buffer_size: int) -> "TensorAudio":
-    """Loads C++ AudioFormat object from the WAV file
+    """Loads C++ AudioBuffer object from the WAV file
 
     Args:
       file_name: WAV file name.
@@ -100,7 +100,7 @@ class TensorAudio(object):
     return self._sample_count
 
   def get_data(self) -> _CppAudioBuffer:
-    """Gets the C++ AudioFormat object object."""
+    """Gets the C++ AudioBuffer object object."""
     if self._is_from_file:
       audio_data = self._data
     else:
