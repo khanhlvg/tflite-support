@@ -19,8 +19,8 @@ from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
 from tensorflow_lite_support.python.test import test_util
 
-CppAudioFormat = _pywrap_audio_buffer.AudioFormat
-CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
+_CppAudioFormat = _pywrap_audio_buffer.AudioFormat
+_CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
 
 
 class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
@@ -32,7 +32,7 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     # Test data
     input_channels = 1
     input_sample_rate = 16000
-    input_audio_format = CppAudioFormat(
+    input_audio_format = _CppAudioFormat(
       input_channels, input_sample_rate)
     input_sample_count = 15600
 
@@ -45,7 +45,7 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
     self.assertEqual(tensor_audio_format.channels, input_audio_format.channels)
     self.assertEqual(
       tensor_audio_format.sample_rate, input_audio_format.sample_rate)
-    self.assertIsInstance(tensor.get_data(), CppAudioBuffer)
+    self.assertIsInstance(tensor.get_data(), _CppAudioBuffer)
 
 
 if __name__ == '__main__':

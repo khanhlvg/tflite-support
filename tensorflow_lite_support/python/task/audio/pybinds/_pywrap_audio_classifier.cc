@@ -44,10 +44,7 @@ PYBIND11_MODULE(_pywrap_audio_classifier, m) {
       .def("classify",
            [](AudioClassifier& self, const AudioBuffer& audio)
                    -> tflite::support::StatusOr<ClassificationResult> {
-               ASSIGN_OR_RETURN(
-                       std::unique_ptr<AudioBuffer> audio_buffer,
-                       AudioBuffer::Create(audio));
-               return self.Classify(*audio_buffer);
+               return self.Classify(audio);
            })
       .def("get_required_audio_format",
            &AudioClassifier::GetRequiredAudioFormat)

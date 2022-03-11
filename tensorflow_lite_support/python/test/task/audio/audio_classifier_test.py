@@ -24,8 +24,6 @@ from google.protobuf import json_format
 # fixed the dependency issue.
 import unittest
 
-from scipy.io.wavfile import write
-
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.processor.proto import class_pb2
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
@@ -284,12 +282,15 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     time.sleep(5)
     audio_record.stop()
 
+    from scipy.io import wavfile
+
     # Save as WAV file for debugging.
-    write(os.path.join(os.path.expanduser("~"), 'record.wav'),
+    wavfile.write(os.path.join(os.path.expanduser("~"), 'record.wav'),
           classifier.required_audio_format.sample_rate, tensor._buffer)
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
+    tensor.clear()
     audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
 
     print(audio_result_dict)

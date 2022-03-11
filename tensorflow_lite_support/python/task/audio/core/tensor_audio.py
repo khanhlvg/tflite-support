@@ -57,7 +57,7 @@ class TensorAudio(object):
   def from_wav_file(cls,
                     file_name: str,
                     buffer_size: int) -> "TensorAudio":
-    """Loads `audio_buffer.AudioBuffer` from the WAV file
+    """Loads C++ AudioFormat object from the WAV file
 
     Args:
       file_name: WAV file name.
@@ -99,15 +99,11 @@ class TensorAudio(object):
     """Gets the sample count of the audio."""
     return self._sample_count
 
-  def get_buffer(self) -> np.ndarray:
-    """Gets the internal audio buffer."""
-    return self._buffer
-
   def get_data(self) -> _CppAudioBuffer:
-    """Gets the `audio_buffer.AudioBuffer` object."""
+    """Gets the C++ AudioFormat object object."""
     if self._is_from_file:
       audio_data = self._data
     else:
       audio_data = _CppAudioBuffer(
-        self._buffer, self._sample_count, self._format)
+        np.squeeze(self._buffer), self._sample_count, self._format)
     return audio_data

@@ -47,15 +47,6 @@ class AudioBuffer {
                                           audio_format);
   }
 
-  // Overloaded factory method for creating an AudioBuffer object using
-  // AudioBuffer
-  static tflite::support::StatusOr<std::unique_ptr<AudioBuffer>> Create(
-       const AudioBuffer& audio_buffer) {
-    return absl::make_unique<AudioBuffer>(
-            audio_buffer.GetFloatBuffer(), audio_buffer.GetBufferSize(),
-            audio_buffer.GetAudioFormat());
-  }
-
   // AudioBuffer for internal use only. Uses the factory method to construct
   // AudioBuffer instance. The internal buffer does not take the ownership of
   // the input backing buffer.
