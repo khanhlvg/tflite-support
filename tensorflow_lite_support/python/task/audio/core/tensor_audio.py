@@ -100,7 +100,7 @@ class TensorAudio(object):
     return self._sample_count
 
   def get_data(self) -> _CppAudioBuffer:
-    """Gets the C++ AudioBuffer object object."""
+    """Gets the C++ AudioBuffer object."""
     if self._is_from_file:
       audio_data = self._data
     else:
