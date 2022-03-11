@@ -16,7 +16,6 @@ import numpy as np
 from numpy.testing import assert_almost_equal
 from absl.testing import parameterized
 import unittest
-from scipy.io import wavfile
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer

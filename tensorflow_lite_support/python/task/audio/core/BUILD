@@ -25,7 +25,6 @@ py_test(
         ":tensor_audio",
         # build rule placeholder: numpy dep,
         # build rule placeholder: tensorflow dep,
-        # build rule placeholder: scipy dep,
         "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
         "//tensorflow_lite_support/python/test:test_util",
         "@absl_py//absl/testing:parameterized",
