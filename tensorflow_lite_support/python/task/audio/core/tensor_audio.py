@@ -51,8 +51,8 @@ class TensorAudio(object):
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer = np.ascontiguousarray(
-      np.zeros([self._sample_count, self._format.channels]), dtype=np.float32)
+    self._buffer = np.zeros(
+      [self._sample_count, self._format.channels], dtype=np.float32)
 
   @classmethod
   def from_wav_file(cls,
