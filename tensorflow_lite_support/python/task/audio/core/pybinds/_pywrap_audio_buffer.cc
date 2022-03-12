@@ -79,14 +79,10 @@ PYBIND11_MODULE(_pywrap_audio_buffer, m) {
             py::object py_object =
                     py::cast(self, py::return_value_policy::reference);
 
-            py::array_t<float, py::array::c_style> contiguous_data;
-
-            contiguous_data = py::array_t<float, py::array::c_style>(
+            return py::array_t<float, py::array::c_style>(
                 {self.GetBufferSize(), self.GetAudioFormat().channels},
                 reinterpret_cast<const float*>(self.GetFloatBuffer()),
                 py_object);
-
-            return contiguous_data;
         });
 
     m.def("LoadAudioBufferFromFile",
