@@ -58,11 +58,15 @@ class TensorAudio(object):
   def from_wav_file(cls,
                     file_name: str,
                     buffer_size: int) -> "TensorAudio":
-    """Loads C++ AudioBuffer object from the WAV file
+    """Creates `TensorAudio` object from the WAV file.
 
     Args:
       file_name: WAV file name.
       buffer_size: Required input buffer size.
+
+    Returns:
+      `TensorImage` object.
+
     Raises:
       status.StatusNotOk if the audio file can't be decoded. Need to import
         the module to catch this error: `from pybind11_abseil import status`,
@@ -73,9 +77,14 @@ class TensorAudio(object):
     return cls(audio.audio_format, audio.buffer_size, audio, is_from_file=True)
 
   def load_from_array(self, src: np.ndarray) -> None:
-    """Load audio data from a NumPy array.
+    """Load audio data to `self._buffer` from a NumPy array.
+
     Args:
       src: A NumPy array contains the input audio.
+
+    Raises:
+      ValueError if the input audio is too large or if it contains an invalid
+      number of channels.
     """
     if len(src) > len(self._buffer):
       raise ValueError('Input audio is too large.')
