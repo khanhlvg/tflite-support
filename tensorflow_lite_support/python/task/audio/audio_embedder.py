@@ -130,10 +130,6 @@ class AudioEmbedder(object):
     """
     return self._embedder.embed(audio.get_data())
 
-  @property
-  def options(self) -> AudioEmbedderOptions:
-    return self._options
-
   def cosine_similarity(self, u: embeddings_pb2.FeatureVector,
                         v: embeddings_pb2.FeatureVector) -> float:
     """Computes cosine similarity [1] between two feature vectors."""
