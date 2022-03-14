@@ -41,12 +41,16 @@ PYBIND11_MODULE(_pywrap_audio_embedder, m) {
           [](const AudioEmbedderOptions& options) {
             return AudioEmbedder::CreateFromOptions(options);
           })
+      .def_static("cosine_similarity", &AudioEmbedder::CosineSimilarity)
       .def("embed",
            [](AudioEmbedder& self, const AudioBuffer& audio)
                    -> tflite::support::StatusOr<
                            tflite::task::processor::EmbeddingResult> {
                return self.Embed(audio);
            })
+      .def("get_embedding_dimension", &AudioEmbedder::GetEmbeddingDimension)
+      .def("get_number_of_output_layers",
+           &AudioEmbedder::GetNumberOfOutputLayers)
       .def("get_required_audio_format",
            &AudioEmbedder::GetRequiredAudioFormat)
       .def("get_required_input_buffer_size",

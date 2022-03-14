@@ -16,14 +16,12 @@
 import enum
 
 from absl.testing import parameterized
-from google.protobuf import json_format
 # TODO(b/220067158): Change to import tensorflow and leverage tf.test once
 # fixed the dependency issue.
 import unittest
 
 from tensorflow_lite_support.python.task.core import task_options
 from tensorflow_lite_support.python.task.processor.proto import embedding_options_pb2
-from tensorflow_lite_support.python.task.processor.proto import embeddings_pb2
 from tensorflow_lite_support.python.task.audio import audio_embedder
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
 from tensorflow_lite_support.python.test import base_test
@@ -95,11 +93,13 @@ class AudioEmbedderTest(parameterized.TestCase, base_test.BaseTestCase):
       self.assertIsInstance(embedder, _AudioEmbedder)
 
   @parameterized.parameters(
-    (_YAMNET_EMBEDDING_MODEL_FILE, False, False, ModelFileType.FILE_NAME, 521),
-    (_YAMNET_EMBEDDING_MODEL_FILE, True, True, ModelFileType.FILE_CONTENT, 521),
+    (_YAMNET_EMBEDDING_MODEL_FILE, False, False, ModelFileType.FILE_NAME, 521,
+     1),
+    (_YAMNET_EMBEDDING_MODEL_FILE, True, True, ModelFileType.FILE_CONTENT, 521,
+     1)
   )
-  def test_embed(self, model_name, l2_normalize, quantize,
-                 model_file_type, embedding_length):
+  def test_embed(self, model_name, l2_normalize, quantize, model_file_type,
+                 embedding_length, expected_similarity):
     # Create embedder.
     model_path = test_util.get_test_data_path(model_name)
     if model_file_type is ModelFileType.FILE_NAME:
@@ -123,8 +123,13 @@ class AudioEmbedderTest(parameterized.TestCase, base_test.BaseTestCase):
       test_util.get_test_data_path("speech.wav"),
       embedder.required_input_buffer_size)
 
+    tensor1 = tensor_audio.TensorAudio.from_wav_file(
+      test_util.get_test_data_path("speech.wav"),
+      embedder.required_input_buffer_size)
+
     # Extract embeddings.
     result0 = embedder.embed(tensor0)
+    result1 = embedder.embed(tensor1)
 
     # Check embedding sizes.
     def _check_embedding_size(result):
@@ -136,6 +141,35 @@ class AudioEmbedderTest(parameterized.TestCase, base_test.BaseTestCase):
         self.assertLen(feature_vector.value_float, embedding_length)
 
     _check_embedding_size(result0)
+    _check_embedding_size(result1)
+
+    result0_feature_vector = result0.embeddings[0].feature_vector
+    result1_feature_vector = result1.embeddings[0].feature_vector
+
+    if quantize:
+      self.assertLen(result0_feature_vector.value_string, 521)
+      self.assertLen(result1_feature_vector.value_string, 521)
+    else:
+      self.assertLen(result0_feature_vector.value_float, 521)
+      self.assertLen(result1_feature_vector.value_float, 521)
+
+    # Checks cosine similarity.
+    similarity = embedder.cosine_similarity(
+      result0_feature_vector, result1_feature_vector)
+    self.assertAlmostEqual(similarity, expected_similarity, places=6)
+
+  def test_get_embedding_dimension(self):
+    options = _AudioEmbedderOptions(
+      _BaseOptions(model_file=_ExternalFile(file_name=self.model_path)))
+    embedder = _AudioEmbedder.create_from_options(options)
+    self.assertEqual(embedder.get_embedding_dimension(0), 521)
+    self.assertEqual(embedder.get_embedding_dimension(1), -1)
+
+  def test_number_of_output_layers(self):
+    options = _AudioEmbedderOptions(
+      _BaseOptions(model_file=_ExternalFile(file_name=self.model_path)))
+    embedder = _AudioEmbedder.create_from_options(options)
+    self.assertEqual(embedder.number_of_output_layers, 1)
 
 
 if __name__ == '__main__':

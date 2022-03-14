@@ -134,6 +134,26 @@ class AudioEmbedder(object):
   def options(self) -> AudioEmbedderOptions:
     return self._options
 
+  def cosine_similarity(self, u: embeddings_pb2.FeatureVector,
+                        v: embeddings_pb2.FeatureVector) -> float:
+    """Computes cosine similarity [1] between two feature vectors."""
+    return self._embedder.cosine_similarity(u, v)
+
+  def get_embedding_dimension(self, output_index: int) -> int:
+    """Gets the dimensionality of the embedding output.
+    Args:
+      output_index: The output index of output layer.
+    Returns:
+      Dimensionality of the embedding output by the output_index'th output
+      layer. Returns -1 if `output_index` is out of bounds.
+    """
+    return self._embedder.get_embedding_dimension(output_index)
+
+  @property
+  def number_of_output_layers(self) -> int:
+    """Gets the number of output layers of the model."""
+    return self._embedder.get_number_of_output_layers()
+
   @property
   def required_input_buffer_size(self) -> int:
     """Gets the required input buffer size for the model."""
