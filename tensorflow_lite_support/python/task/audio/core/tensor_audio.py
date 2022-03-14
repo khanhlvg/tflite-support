@@ -65,7 +65,7 @@ class TensorAudio(object):
       buffer_size: Required input buffer size.
 
     Returns:
-      `TensorImage` object.
+      `TensorAudio` object.
 
     Raises:
       status.StatusNotOk if the audio file can't be decoded. Need to import

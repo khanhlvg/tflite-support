@@ -32,58 +32,75 @@ class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
 
   def test_from_file(self):
     # Test data
-    input_channels = 1
-    input_sample_rate = 16000
-    input_audio_format = _CppAudioFormat(input_channels, input_sample_rate)
-    input_sample_count = 15600
+    test_channels = 1
+    test_sample_rate = 16000
+    test_audio_format = _CppAudioFormat(test_channels, test_sample_rate)
+    test_sample_count = 15600
 
     # Loads TensorAudio object from WAV file.
     tensor = tensor_audio.TensorAudio.from_wav_file(
       self.test_audio_path, 15600)
     tensor_audio_format = tensor.get_format()
 
-    self.assertEqual(tensor.get_sample_count(), input_sample_count)
-    self.assertEqual(tensor_audio_format.channels, input_audio_format.channels)
+    self.assertEqual(tensor.get_sample_count(), test_sample_count)
+    self.assertEqual(tensor_audio_format.channels, test_audio_format.channels)
     self.assertEqual(
-      tensor_audio_format.sample_rate, input_audio_format.sample_rate)
+      tensor_audio_format.sample_rate, test_audio_format.sample_rate)
     self.assertIsInstance(tensor.get_data(), _CppAudioBuffer)
 
   def test_load_from_array(self):
     # Test data
-    input_channels = 1
-    input_sample_rate = 16000
-    input_audio_format = _CppAudioFormat(
-      input_channels, input_sample_rate)
-    input_sample_count = 15600
-
-    array = np.random.random((input_sample_count, input_channels))
+    test_channels = 1
+    test_sample_rate = 16000
+    test_audio_format = _CppAudioFormat(
+      test_channels, test_sample_rate)
+    test_sample_count = 15600
+    tensor = tensor_audio.TensorAudio(
+      audio_format=test_audio_format, sample_count=test_sample_count)
 
     # Loads TensorAudio object from a NumPy array.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=input_audio_format, sample_count=input_sample_count)
+    array = np.random.random((test_sample_count, test_channels))
     tensor.load_from_array(array)
 
     tensor_audio_data = tensor.get_data()
     tensor_audio_format = tensor_audio_data.audio_format
 
-    self.assertEqual(tensor_audio_format.channels, input_channels)
-    self.assertEqual(tensor_audio_format.sample_rate, input_sample_rate)
-    self.assertEqual(tensor_audio_data.buffer_size, input_sample_count)
+    self.assertEqual(tensor_audio_format.channels, test_channels)
+    self.assertEqual(tensor_audio_format.sample_rate, test_sample_rate)
+    self.assertEqual(tensor_audio_data.buffer_size, test_sample_count)
     self.assertIsInstance(tensor_audio_data, _CppAudioBuffer)
     assert_almost_equal(tensor_audio_data.float_buffer, array)
 
-  def test_load_from_array_with_different_sample_count(self):
+  def test_load_from_array_succeeds_with_input_size_matching_sample_rate(self):
     # Load TensorAudio object from a NumPy array.
-    input_sample_count = 10000
+    test_sample_rate = test_sample_count = 16000
     tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(1, 16000), sample_count=15600)
-    array = np.random.random((input_sample_count, 1))
+      audio_format=_CppAudioFormat(1, test_sample_rate),
+      sample_count=test_sample_count)
 
-    # Loads TensorAudio object from a NumPy array.
+    # Loads TensorAudio object from a NumPy array with input sample count same
+    # as test sample rate.
+    array = np.random.random((test_sample_rate, 1))
     tensor.load_from_array(array)
     tensor_audio_data = tensor.get_data()
+    assert_almost_equal(tensor_audio_data.float_buffer, array)
 
-    self.assertNotEqual(tensor_audio_data.buffer_size, input_sample_count)
+  def test_load_from_array_succeeds_with_input_size_less_than_sample_rate(self):
+    # Load TensorAudio object from a NumPy array.
+    test_sample_rate = 16000
+    test_sample_count = 15600
+    tensor = tensor_audio.TensorAudio(
+      audio_format=_CppAudioFormat(1, test_sample_rate),
+      sample_count=test_sample_count)
+
+    # Loads TensorAudio object from a NumPy array with input sample count less
+    # than test sample rate.
+    input_buffer_size = 10000
+    array = np.random.random((input_buffer_size, 1))
+    tensor.load_from_array(array)
+    tensor_audio_data = tensor.get_data()
+    assert_almost_equal(
+      tensor_audio_data.float_buffer[-input_buffer_size:, :], array)
 
   def test_load_from_array_fails_with_too_many_input_samples(self):
     # Fails loading TensorAudio object from a NumPy array with a sample count
