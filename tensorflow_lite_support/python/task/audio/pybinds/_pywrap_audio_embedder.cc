@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow_lite_support/cc/task/audio/audio_classifier.h"
+#include "tensorflow_lite_support/cc/task/audio/audio_embedder.h"
 
 #include "pybind11/pybind11.h"
 #include "pybind11_abseil/status_casters.h"  // from @pybind11_abseil
@@ -29,27 +29,28 @@ namespace {
 namespace py = ::pybind11;
 }  // namespace
 
-PYBIND11_MODULE(_pywrap_audio_classifier, m) {
-  // python wrapper for C++ AudioClassifier class which shouldn't be directly used
+PYBIND11_MODULE(_pywrap_audio_embedder, m) {
+  // python wrapper for C++ AudioEmbedder class which shouldn't be directly used
   // by the users.
   pybind11::google::ImportStatusModule();
   pybind11_protobuf::ImportNativeProtoCasters();
 
-  py::class_<AudioClassifier>(m, "AudioClassifier")
+  py::class_<AudioEmbedder>(m, "AudioEmbedder")
       .def_static(
           "create_from_options",
-          [](const AudioClassifierOptions& options) {
-            return AudioClassifier::CreateFromOptions(options);
+          [](const AudioEmbedderOptions& options) {
+            return AudioEmbedder::CreateFromOptions(options);
           })
-      .def("classify",
-           [](AudioClassifier& self, const AudioBuffer& audio)
-                   -> tflite::support::StatusOr<ClassificationResult> {
-               return self.Classify(audio);
+      .def("embed",
+           [](AudioEmbedder& self, const AudioBuffer& audio)
+                   -> tflite::support::StatusOr<
+                           tflite::task::processor::EmbeddingResult> {
+               return self.Embed(audio);
            })
       .def("get_required_audio_format",
-           &AudioClassifier::GetRequiredAudioFormat)
+           &AudioEmbedder::GetRequiredAudioFormat)
       .def("get_required_input_buffer_size",
-           &AudioClassifier::GetRequiredInputBufferSize);
+           &AudioEmbedder::GetRequiredInputBufferSize);
 }
 
 }  // namespace vision

@@ -13,6 +13,6 @@
 # limitations under the License.
 """AudioClassifierOptions protobuf."""
 
-from tensorflow_lite_support.cc.task.audio.proto import audio_classifier_options_pb2 as classifier_options_pb2
+from tensorflow_lite_support.cc.task.audio.proto import audio_embedder_options_pb2 as embedder_options_pb2
 
-AudioClassifierOptions = classifier_options_pb2.AudioClassifierOptions
+AudioEmbedderOptions = embedder_options_pb2.AudioEmbedderOptions

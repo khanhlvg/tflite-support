@@ -9,20 +9,20 @@ package(
 )
 
 py_library(
-    name = "audio_classifier_options_pb2",
-    srcs = ["audio_classifier_options_pb2.py"],
-    deps = ["//tensorflow_lite_support/cc/task/audio/proto:audio_classifier_options_py_pb2"],
+    name = "audio_embedder_options_pb2",
+    srcs = ["audio_embedder_options_pb2.py"],
+    deps = ["//tensorflow_lite_support/cc/task/audio/proto:audio_embedder_options_py_pb2"],
 )
 
 pybind_extension(
-    name = "_pywrap_audio_classifier",
+    name = "_pywrap_audio_embedder",
     srcs = [
-        "_pywrap_audio_classifier.cc",
+        "_pywrap_audio_embedder.cc",
     ],
-    module_name = "_pywrap_audio_classifier",
+    module_name = "_pywrap_audio_embedder",
     deps = [
         "//tensorflow_lite_support/cc/port:statusor",
-        "//tensorflow_lite_support/cc/task/audio:audio_classifier",
+        "//tensorflow_lite_support/cc/task/audio:audio_embedder",
         "//tensorflow_lite_support/cc/task/audio/core:audio_buffer",
         "@pybind11",
         "@pybind11_abseil//pybind11_abseil:status_casters",

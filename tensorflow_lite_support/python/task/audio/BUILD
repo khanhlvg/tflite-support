@@ -6,18 +6,18 @@ package(
 )
 
 py_library(
-    name = "audio_classifier",
+    name = "audio_embedder",
     srcs = [
-        "audio_classifier.py",
+        "audio_embedder.py",
     ],
     deps = [
         "//tensorflow_lite_support/python/task/core:task_options",
         "//tensorflow_lite_support/python/task/core:task_utils",
-        "//tensorflow_lite_support/python/task/processor/proto:classification_options_pb2",
-        "//tensorflow_lite_support/python/task/processor/proto:classifications_pb2",
+        "//tensorflow_lite_support/python/task/processor/proto:embedding_options_pb2",
+        "//tensorflow_lite_support/python/task/processor/proto:embeddings_pb2",
         "//tensorflow_lite_support/python/task/audio/core:tensor_audio",
         "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
-        "//tensorflow_lite_support/python/task/audio/pybinds:_pywrap_audio_classifier",
-        "//tensorflow_lite_support/python/task/audio/pybinds:audio_classifier_options_pb2",
+        "//tensorflow_lite_support/python/task/audio/pybinds:_pywrap_audio_embedder",
+        "//tensorflow_lite_support/python/task/audio/pybinds:audio_embedder_options_pb2",
     ],
 )

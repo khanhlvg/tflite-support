@@ -57,7 +57,7 @@ cc_library_with_tflite(
         "//tensorflow_lite_support/cc/port:status_macros",
         "//tensorflow_lite_support/cc/port:statusor",
         "//tensorflow_lite_support/cc/task/audio/proto:audio_embedder_options_cc_proto",
-        "//tensorflow_lite_support/cc/task/processor/proto:embeddings_cc_proto",
+        "//tensorflow_lite_support/cc/task/processor/proto:embedding_cc_proto",
         "//tensorflow_lite_support/cc/task/processor/proto:embedding_options_cc_proto",
         "@com_google_absl//absl/status",
         "@org_tensorflow//tensorflow/lite/c:common",

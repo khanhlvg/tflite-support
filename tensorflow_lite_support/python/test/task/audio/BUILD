@@ -6,18 +6,17 @@ package(
 )
 
 py_test(
-    name = "audio_classifier_test",
-    srcs = ["audio_classifier_test.py"],
+    name = "audio_embedder_test",
+    srcs = ["audio_embedder_test.py"],
     data = [
         "//tensorflow_lite_support/cc/test/testdata/task/audio:test_audio_clips",
         "//tensorflow_lite_support/cc/test/testdata/task/audio:test_models",
     ],
     deps = [
         "//tensorflow_lite_support/python/task/core:task_options",
-        "//tensorflow_lite_support/python/task/processor/proto:class_pb2",
-        "//tensorflow_lite_support/python/task/processor/proto:classification_options_pb2",
-        "//tensorflow_lite_support/python/task/processor/proto:classifications_pb2",
-        "//tensorflow_lite_support/python/task/audio:audio_classifier",
+        "//tensorflow_lite_support/python/task/processor/proto:embedding_options_pb2",
+        "//tensorflow_lite_support/python/task/processor/proto:embeddings_pb2",
+        "//tensorflow_lite_support/python/task/audio:audio_embedder",
         "//tensorflow_lite_support/python/test:base_test",
         "//tensorflow_lite_support/python/test:test_util",
         "@absl_py//absl/testing:parameterized",
