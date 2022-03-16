@@ -273,14 +273,18 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
     # Creates classifier.
     classifier = self.create_classifier_from_options(
       model_file, max_results=_MAX_RESULTS)
+    tensor = classifier.create_input_tensor_audio()
 
-    # Creates TensorAudio and sounddevice.InputStream objects.
-    tensor, audio_record = classifier.create_input_audio_recorder()
+    # Creates an AudioRecord instance to record audio.
+    audio_record = classifier.create_audio_record()
 
     # Records audio.
-    audio_record.start()
+    audio_record.start_recording()
     time.sleep(5)
     audio_record.stop()
+
+    # Loads recording to the Tensor Audio object.
+    tensor.load_from_audio_record(audio_record)
 
     from scipy.io import wavfile
 
@@ -290,7 +294,6 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Classifies the input.
     audio_result = classifier.classify(tensor)
-    tensor.clear()
     audio_result_dict = json.loads(json_format.MessageToJson(audio_result))
 
     print(audio_result_dict)

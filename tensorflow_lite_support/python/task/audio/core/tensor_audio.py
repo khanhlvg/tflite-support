@@ -16,6 +16,7 @@
 import numpy as np
 
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
+from tensorflow_lite_support.python.task.audio.core import audio_record
 
 _CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
@@ -76,8 +77,34 @@ class TensorAudio(object):
       file_name, buffer_size, np.zeros([buffer_size]))
     return cls(audio.audio_format, audio.buffer_size, audio, is_from_file=True)
 
+  def load_from_audio_record(self, record: audio_record.AudioRecord) -> None:
+    """Loads audio data from an AudioRecord instance.
+    Args:
+      record: An AudioRecord instance.
+    Raises:
+      ValueError: Raised if the audio record's config is invalid.
+    """
+    if record.buffer_size < self._sample_count:
+      raise ValueError(
+        "The audio record's buffer size cannot be smaller than the tensor "
+        "audio's sample count.")
+
+    if record.channels != self._format.channels:
+      raise ValueError(
+        f"The audio record's channel count doesn't match. "
+        f"Expects {self._format.channels} channel(s).")
+
+    if record.sampling_rate != self._format.sample_rate:
+      raise ValueError(
+        f"The audio record's sampling rate doesn't match. "
+        f"Expects {self._format.sample_rate}Hz.")
+
+    # Load audio data from the AudioRecord instance.
+    data = record.read(self._sample_count)
+    self.load_from_array(data)
+
   def load_from_array(self, src: np.ndarray) -> None:
-    """Load audio data to `self._buffer` from a NumPy array.
+    """Loads audio data from a NumPy array.
 
     Args:
       src: A NumPy array contains the input audio.
@@ -91,11 +118,16 @@ class TensorAudio(object):
     elif src.shape[1] != self._format.channels:
       raise ValueError('Input audio contains an invalid number of channels.')
 
-    # Shift the internal buffer backward and add the incoming data to the end of
-    # the buffer.
-    shift = len(src)
-    self._buffer = np.roll(self._buffer, -shift, axis=0)
-    self._buffer[-shift:, :] = src
+    if len(src) != len(self._buffer):
+      raise ValueError(
+        f"Input audio contains an invalid number of samples. "
+        f"Expect {len(self._buffer)}.")
+    elif src.shape[1] != self._format.channels:
+      raise ValueError(
+        f"Input audio contains an invalid number of channels. "
+        f"Expect {self._format.channels}.")
+
+    self._buffer = src
 
   def get_format(self) -> _CppAudioFormat:
     """Gets the audio format of the audio."""
