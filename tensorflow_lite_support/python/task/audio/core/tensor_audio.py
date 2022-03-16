@@ -113,11 +113,6 @@ class TensorAudio(object):
       ValueError if the input audio is too large or if it contains an invalid
       number of channels.
     """
-    if len(src) > len(self._buffer):
-      raise ValueError('Input audio is too large.')
-    elif src.shape[1] != self._format.channels:
-      raise ValueError('Input audio contains an invalid number of channels.')
-
     if len(src) != len(self._buffer):
       raise ValueError(
         f"Input audio contains an invalid number of samples. "
