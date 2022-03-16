@@ -14,9 +14,7 @@
 """Audio classifier task."""
 
 import dataclasses
-import threading
 
-import sounddevice as sd
 from typing import Optional
 
 from tensorflow_lite_support.python.task.core import task_options
@@ -24,6 +22,7 @@ from tensorflow_lite_support.python.task.core import task_utils
 from tensorflow_lite_support.python.task.processor.proto import embedding_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import embeddings_pb2
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
+from tensorflow_lite_support.python.task.audio.core import audio_record
 from tensorflow_lite_support.python.task.audio.core.pybinds import _pywrap_audio_buffer
 from tensorflow_lite_support.python.task.audio.pybinds import _pywrap_audio_embedder
 from tensorflow_lite_support.python.task.audio.pybinds import audio_embedder_options_pb2
@@ -31,6 +30,8 @@ from tensorflow_lite_support.python.task.audio.pybinds import audio_embedder_opt
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _ProtoAudioEmbedderOptions = audio_embedder_options_pb2.AudioEmbedderOptions
 _CppAAudioEmbedder = _pywrap_audio_embedder.AudioEmbedder
+_BaseOptions = task_options.BaseOptions
+_ExternalFile = task_options.ExternalFile
 
 
 @dataclasses.dataclass
@@ -45,9 +46,29 @@ class AudioEmbedder(object):
 
   def __init__(self, options: AudioEmbedderOptions,
                cpp_embedder: _CppAAudioEmbedder) -> None:
-    """Initializes the `AudioEmbedder` object."""
+    # Creates the object of C++ AudioEmbedder class.
     self._options = options
     self._embedder = cpp_embedder
+
+  @classmethod
+  def create_from_file(cls, file_path: str) -> "AudioEmbedder":
+    """Creates the `AudioEmbedder` object from a TensorFlow Lite model.
+    Args:
+      file_path: Path to the model.
+    Returns:
+      `AudioEmbedder` object that's created from `options`.
+    Raises:
+      status.StatusNotOk if failed to create `AudioEmbedder` object from the
+      provided file such as invalid file.
+    """
+    # TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
+    # Need to import the module to catch this error:
+    # `from pybind11_abseil import status`
+    # see https://github.com/pybind/pybind11_abseil#abslstatusor.
+    base_options = _BaseOptions(
+      model_file=_ExternalFile(file_name=file_path))
+    options = AudioEmbedderOptions(base_options=base_options)
+    return cls.create_from_options(options)
 
   @classmethod
   def create_from_options(cls, options: AudioEmbedderOptions) -> "AudioEmbedder":
@@ -57,13 +78,13 @@ class AudioEmbedder(object):
     Returns:
       `AudioEmbedder` object that's created from `options`.
     Raises:
-      TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
       status.StatusNotOk if failed to create `AudioEmbedder` object from
-        `AudioEmbedderOptions` such as missing the model. Need to import the
-        module to catch this error: `from pybind11_abseil import status`, see
-        https://github.com/pybind/pybind11_abseil#abslstatusor.
+      `AudioEmbedderOptions` such as missing the model.
     """
-    # Creates the object of C++ AudioEmbedder class.
+    # TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
+    # Need to import the module to catch this error:
+    # `from pybind11_abseil import status`
+    # see https://github.com/pybind/pybind11_abseil#abslstatusor.
     proto_options = _ProtoAudioEmbedderOptions()
     proto_options.base_options.CopyFrom(
       task_utils.ConvertToProtoBaseOptions(options.base_options))
@@ -82,37 +103,14 @@ class AudioEmbedder(object):
       audio_format=self.required_audio_format,
       sample_count=self.required_input_buffer_size)
 
-  def create_input_audio_recorder(
-      self
-  ) -> (tensor_audio.TensorAudio, sd.InputStream):
-    tensor = self.create_input_tensor_audio()
-
-    input_sample_count = tensor.get_sample_count()
-    input_audio_format = tensor.get_format()
-
-    tensor = tensor_audio.TensorAudio(
-      audio_format=input_audio_format, sample_count=input_sample_count)
-    lock = threading.Lock()
-
-    def audio_callback(audio_data, *_):
-      """A callback to receive recorded audio data from sounddevice."""
-      lock.acquire()
-      if len(audio_data) > input_sample_count:
-        # Only take the latest input if the audio data received is
-        # longer than what the TensorAudio can store.
-        tensor.load_from_array(audio_data[-input_sample_count:])
-      else:
-        tensor.load_from_array(audio_data)
-      lock.release()
-
-    # Create an input stream to continuously capture the audio data.
-    input_stream = sd.InputStream(
-      channels=input_audio_format.channels,
-      samplerate=input_audio_format.sample_rate,
-      callback=audio_callback,
-    )
-
-    return tensor, input_stream
+  def create_audio_record(self) -> audio_record.AudioRecord:
+    """Creates an AudioRecord instance to record audio.
+    Returns:
+        An AudioRecord instance.
+    """
+    return audio_record.AudioRecord(self.required_audio_format.channels,
+                                    self.required_audio_format.sample_rate,
+                                    self.required_input_buffer_size)
 
   def embed(
       self,
