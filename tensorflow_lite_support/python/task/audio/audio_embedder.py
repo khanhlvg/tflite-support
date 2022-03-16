@@ -37,7 +37,7 @@ _ExternalFile = task_options.ExternalFile
 @dataclasses.dataclass
 class AudioEmbedderOptions:
   """Options for the audio embedder task."""
-  base_options: task_options.BaseOptions
+  base_options: _BaseOptions
   embedding_options: Optional[embedding_options_pb2.EmbeddingOptions] = None
 
 
