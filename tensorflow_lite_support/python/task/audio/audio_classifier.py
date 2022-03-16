@@ -14,9 +14,7 @@
 """Audio classifier task."""
 
 import dataclasses
-import threading
 
-import sounddevice as sd
 from typing import Optional
 
 from tensorflow_lite_support.python.task.core import task_options
@@ -32,12 +30,14 @@ from tensorflow_lite_support.python.task.audio.pybinds import audio_classifier_o
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _ProtoAudioClassifierOptions = audio_classifier_options_pb2.AudioClassifierOptions
 _CppAudioClassifier = _pywrap_audio_classifier.AudioClassifier
+_BaseOptions = task_options.BaseOptions
+_ExternalFile = task_options.ExternalFile
 
 
 @dataclasses.dataclass
 class AudioClassifierOptions:
   """Options for the audio classifier task."""
-  base_options: task_options.BaseOptions
+  base_options: _BaseOptions
   classification_options: Optional[
       classification_options_pb2.ClassificationOptions] = None
 
@@ -53,22 +53,41 @@ class AudioClassifier(object):
     self._classifier = classifier
 
   @classmethod
+  def create_from_file(cls, file_path: str) -> "AudioClassifier":
+    """Creates the `AudioClassifier` object from a TensorFlow Lite model.
+    Args:
+      file_path: Path to the model.
+    Returns:
+      `AudioClassifier` object that's created from `options`.
+    Raises:
+      status.StatusNotOk if failed to create `AudioClassifier` object from the
+      provided file such as invalid file.
+    """
+    # TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
+    # Need to import the module to catch this error:
+    # `from pybind11_abseil import status`
+    # see https://github.com/pybind/pybind11_abseil#abslstatusor.
+    base_options = _BaseOptions(
+      model_file=_ExternalFile(file_name=file_path))
+    options = AudioClassifierOptions(base_options=base_options)
+    return cls.create_from_options(options)
+
+  @classmethod
   def create_from_options(cls,
                           options: AudioClassifierOptions) -> "AudioClassifier":
     """Creates the `AudioClassifier` object from audio classifier options.
-
     Args:
       options: Options for the audio classifier task.
     Returns:
       `AudioClassifier` object that's created from `options`.
     Raises:
       status.StatusNotOk if failed to create `AudioClassifier` object from
-        `AudioClassifierOptions` such as missing the model. Need to import the
-        module to catch this error: `from pybind11_abseil
-        import status`, see
-        https://github.com/pybind/pybind11_abseil#abslstatusor.
+      `AudioClassifierOptions` such as missing the model.
     """
-    # Creates the object of C++ AudioClassifier class.
+    # TODO(b/220931229): Raise RuntimeError instead of status.StatusNotOk.
+    # Need to import the module to catch this error:
+    # `from pybind11_abseil import status`
+    # see https://github.com/pybind/pybind11_abseil#abslstatusor.
     proto_options = _ProtoAudioClassifierOptions()
     proto_options.base_options.CopyFrom(
         task_utils.ConvertToProtoBaseOptions(options.base_options))

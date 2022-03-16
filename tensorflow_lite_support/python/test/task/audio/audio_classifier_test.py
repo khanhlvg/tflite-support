@@ -145,6 +145,11 @@ class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
 
     return expected_result_dict
 
+  def test_create_from_file_succeeds_with_valid_model_path(self):
+    # Creates with default option and valid model file successfully.
+    classifier = _AudioClassifier.create_from_file(self.model_path)
+    self.assertIsInstance(classifier, _AudioClassifier)
+
   def test_create_from_options_succeeds_with_valid_model_path(self):
     # Creates with options containing model file successfully.
     base_options = _BaseOptions(
