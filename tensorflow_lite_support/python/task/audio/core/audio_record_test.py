@@ -15,19 +15,30 @@
 
 import unittest
 import numpy as np
-import sounddevice as sd
 
 from numpy.testing import assert_almost_equal
 from absl.testing import parameterized
+from unittest import mock
 
 from tensorflow_lite_support.python.task.audio.core import audio_record
 
 
-class MockInputStream(sd.InputStream):
-  def __init__(self, input_data, callback=None, **kwargs):
-    def audio_callback(data, *_):
-      return callback(input_data, *_)
-    super().__init__(callback=audio_callback, **kwargs)
+def query_devices(device=None):
+  device_settings: dict = {
+    "name": "Test audio device",
+    "hostapi": 0,
+    "max_input_channels": 2,
+    "max_output_channels": 2,
+    "default_low_input_latency": 0.00870751953125,
+    "default_low_output_latency": 0.00870751953125,
+    "default_high_input_latency": 0.034830078125,
+    "default_high_output_latency": 0.034830078125,
+    "default_samplerate": 44099.81494981215,
+  }
+  if device == None:
+    return [device_settings]
+  else:
+    return device_settings
 
 
 class AudioRecordTest(parameterized.TestCase, unittest.TestCase):
@@ -38,7 +49,17 @@ class AudioRecordTest(parameterized.TestCase, unittest.TestCase):
     self.buffer_size = 15600
     self.input_data = np.random.rand(15600, 1).astype(float)
 
-  def test_audio_record_read(self):
+  @mock.patch('tensorflow_lite_support.python.task.audio.core.'
+              'audio_record.sd.query_devices', side_effect=query_devices)
+  def test_audio_record_read(self, *args):
+    import sounddevice as sd
+
+    class MockInputStream(sd.InputStream):
+      def __init__(self, input_data, callback=None, **kwargs):
+        def audio_callback(data, *_):
+          return callback(input_data, *_)
+        super().__init__(callback=audio_callback, **kwargs)
+
     record = audio_record.AudioRecord(
       self.channels, self.sampling_rate, self.buffer_size)
     record._stream = MockInputStream(self.input_data,
