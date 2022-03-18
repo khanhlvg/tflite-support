@@ -15,46 +15,51 @@
 
 import unittest
 import numpy as np
+import sounddevice as sd
 
 from numpy.testing import assert_almost_equal
 from absl.testing import parameterized
-from unittest import mock
 
 from tensorflow_lite_support.python.task.audio.core import audio_record
+
+
+class MockInputStream(sd.InputStream):
+  def __init__(self, input_data, callback=None, **kwargs):
+    def audio_callback(data, *_):
+      return callback(input_data, *_)
+    super().__init__(callback=audio_callback, **kwargs)
 
 
 class AudioRecordTest(parameterized.TestCase, unittest.TestCase):
   def setUp(self):
     super().setUp()
-    self.channels = 1
+    self.test_channels = 1
     self.sampling_rate = 16000
     self.buffer_size = 15600
+    self.input_data = np.random.rand(15600, 1).astype(float)
 
-  @mock.patch("tensorflow_lite_support.python.task.audio.core.audio_record.sd")
-  def test_audio_record_read(self, *args):
-    input_data = np.zeros([self.buffer_size, self.channels], dtype=float)
+  def test_audio_record_read(self):
     record = audio_record.AudioRecord(
       self.channels, self.sampling_rate, self.buffer_size)
-
-    # Replace input stream data with dummy data.
-    record._stream.read.return_value = input_data.tobytes()
+    record._stream = MockInputStream(self.input_data,
+                                     callback=record._callback)
 
     # Start recording.
     record.start_recording()
     self.assertTrue(record._stream.active)
 
-    # Reads audio data captured in the buffer.
-    recorded_audio_data = record.read(self.buffer_size)
-
     # Stop recording.
     record.stop()
     self.assertTrue(record._stream.stopped)
+
+    # Reads audio data captured in the buffer.
+    recorded_audio_data = record.read(self.buffer_size)
 
     # Close the stream.
     record._stream.close()
 
     # Compare recorded audio data with the dummy array.
-    assert_almost_equal(recorded_audio_data, input_data)
+    assert_almost_equal(recorded_audio_data, self.input_data)
 
 
 if __name__ == '__main__':
