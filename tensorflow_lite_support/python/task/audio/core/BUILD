@@ -15,6 +15,16 @@ py_library(
     ],
 )
 
+py_test(
+    name = "audio_record_test",
+    srcs = ["audio_record_test.py"],
+    deps = [
+        ":audio_record",
+        # build rule placeholder: numpy dep,
+        "@absl_py//absl/testing:parameterized",
+    ],
+)
+
 py_library(
     name = "tensor_audio",
     srcs = ["tensor_audio.py"],
