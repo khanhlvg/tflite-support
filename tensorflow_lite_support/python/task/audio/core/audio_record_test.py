@@ -33,7 +33,7 @@ class MockInputStream(sd.InputStream):
 class AudioRecordTest(parameterized.TestCase, unittest.TestCase):
   def setUp(self):
     super().setUp()
-    self.test_channels = 1
+    self.channels = 1
     self.sampling_rate = 16000
     self.buffer_size = 15600
     self.input_data = np.random.rand(15600, 1).astype(float)
