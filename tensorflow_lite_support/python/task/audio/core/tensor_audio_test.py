@@ -14,7 +14,6 @@
 """Tests for tensor_audio."""
 import numpy as np
 from numpy.testing import assert_almost_equal
-from absl.testing import parameterized
 import unittest
 
 from tensorflow_lite_support.python.task.audio.core import tensor_audio
@@ -26,7 +25,7 @@ _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
 
 
-class TensorAudioTest(parameterized.TestCase, unittest.TestCase):
+class TensorAudioTest(unittest.TestCase):
   def setUp(self):
     super().setUp()
     self.test_audio_path = test_util.get_test_data_path('speech.wav')

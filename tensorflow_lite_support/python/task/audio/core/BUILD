@@ -21,7 +21,6 @@ py_test(
     deps = [
         ":audio_record",
         # build rule placeholder: numpy dep,
-        "@absl_py//absl/testing:parameterized",
     ],
 )
 
@@ -47,7 +46,6 @@ py_test(
         # build rule placeholder: tensorflow dep,
         "//tensorflow_lite_support/python/task/audio/core/pybinds:_pywrap_audio_buffer",
         "//tensorflow_lite_support/python/test:test_util",
-        "@absl_py//absl/testing:parameterized",
     ],
 )
 
