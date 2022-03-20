@@ -49,13 +49,11 @@ class AudioRecord(object):
         self._buffer[-shift:, :] = np.copy(data)
       self._lock.release()
 
-    self._callback = audio_callback
-
     # Create an input stream to continuously capture the audio data.
     self._stream = sd.InputStream(
         channels=channels,
         samplerate=sampling_rate,
-        callback=self._callback,
+        callback=audio_callback,
     )
 
   @property
