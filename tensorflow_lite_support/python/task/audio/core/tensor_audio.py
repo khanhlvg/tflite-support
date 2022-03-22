@@ -48,15 +48,15 @@ class TensorAudio(object):
     if self._is_from_file:
       self._data = audio_data
     else:
-      self.clear()
+      self._buffer = np.zeros(
+        [self._sample_count, self._format.channels], dtype=np.float32)
 
   def clear(self):
     """Clear the internal buffer and fill it with zeros."""
-    self._buffer = np.zeros(
-      [self._sample_count, self._format.channels], dtype=np.float32)
+    self._buffer.fill(0)
 
   @classmethod
-  def from_wav_file(cls,
+  def create_from_wav_file(cls,
                     file_name: str,
                     buffer_size: int) -> "TensorAudio":
     """Creates `TensorAudio` object from the WAV file.
@@ -124,15 +124,18 @@ class TensorAudio(object):
 
     self._buffer = src
 
-  def get_format(self) -> _CppAudioFormat:
+  @property
+  def format(self) -> _CppAudioFormat:
     """Gets the audio format of the audio."""
     return self._format
 
-  def get_sample_count(self) -> int:
+  @property
+  def sample_count(self) -> int:
     """Gets the sample count of the audio."""
     return self._sample_count
 
-  def get_data(self) -> _CppAudioBuffer:
+  @property
+  def data(self) -> _CppAudioBuffer:
     """Gets the C++ AudioBuffer object."""
     if self._is_from_file:
       audio_data = self._data

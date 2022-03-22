@@ -24,158 +24,116 @@ from tensorflow_lite_support.python.test import test_util
 _CppAudioFormat = _pywrap_audio_buffer.AudioFormat
 _CppAudioBuffer = _pywrap_audio_buffer.AudioBuffer
 
+_CHANNELS = 1
+_SAMPLE_RATE = 16000
+_SAMPLE_COUNT = 15600
+
 
 class TensorAudioTest(unittest.TestCase):
   def setUp(self):
     super().setUp()
     self.test_audio_path = test_util.get_test_data_path('speech.wav')
-    self.test_channels = 1
-    self.test_sample_rate = 16000
-    self.test_sample_count = 15600
+    self.test_audio_format = _CppAudioFormat(_CHANNELS, _SAMPLE_RATE)
+    self.test_tensor_audio = tensor_audio.TensorAudio(
+      audio_format=self.test_audio_format, sample_count=_SAMPLE_COUNT)
 
-  def test_from_file(self):
-    # Test data.
-    test_audio_format = _CppAudioFormat(self.test_channels, self.test_sample_rate)
-
+  def test_create_from_wav_file(self):
     # Loads TensorAudio object from WAV file.
-    tensor = tensor_audio.TensorAudio.from_wav_file(
-      self.test_audio_path, self.test_sample_count)
-    tensor_audio_format = tensor.get_format()
+    tensor = tensor_audio.TensorAudio.create_from_wav_file(
+      self.test_audio_path, _SAMPLE_COUNT)
+    tensor_audio_format = tensor.format
 
-    self.assertEqual(tensor.get_sample_count(), self.test_sample_count)
-    self.assertEqual(tensor_audio_format.channels, test_audio_format.channels)
-    self.assertEqual(
-      tensor_audio_format.sample_rate, test_audio_format.sample_rate)
-    self.assertIsInstance(tensor.get_data(), _CppAudioBuffer)
+    self.assertEqual(tensor_audio_format.channels, _CHANNELS)
+    self.assertEqual(tensor_audio_format.sample_rate, _SAMPLE_RATE)
+    self.assertEqual(tensor.sample_count, _SAMPLE_COUNT)
+    self.assertIsInstance(tensor.data, _CppAudioBuffer)
 
   def test_load_from_array(self):
-    # Test data.
-    test_audio_format = _CppAudioFormat(
-      self.test_channels, self.test_sample_rate)
-    tensor = tensor_audio.TensorAudio(
-      audio_format=test_audio_format, sample_count=self.test_sample_count)
-
     # Loads TensorAudio object from a NumPy array.
-    array = np.random.rand(
-      self.test_sample_count, self.test_channels).astype(np.float32)
-    tensor.load_from_array(array)
+    array = np.random.rand(_SAMPLE_COUNT, _CHANNELS).astype(np.float32)
+    self.test_tensor_audio.load_from_array(array)
 
-    tensor_audio_data = tensor.get_data()
-    tensor_audio_format = tensor_audio_data.audio_format
+    # Gets the C++ AudioBuffer object.
+    cpp_audio_buffer = self.test_tensor_audio.data
+    audio_format = cpp_audio_buffer.audio_format
 
-    self.assertEqual(tensor_audio_format.channels, self.test_channels)
-    self.assertEqual(tensor_audio_format.sample_rate, self.test_sample_rate)
-    self.assertEqual(tensor_audio_data.buffer_size, self.test_sample_count)
-    self.assertIsInstance(tensor_audio_data, _CppAudioBuffer)
-    assert_almost_equal(tensor_audio_data.float_buffer, array)
+    self.assertEqual(audio_format.channels, _CHANNELS)
+    self.assertEqual(audio_format.sample_rate, _SAMPLE_RATE)
+    self.assertEqual(cpp_audio_buffer.buffer_size, _SAMPLE_COUNT)
+    self.assertIsInstance(cpp_audio_buffer, _CppAudioBuffer)
+    assert_almost_equal(cpp_audio_buffer.float_buffer, array)
 
   def test_load_from_array_succeeds_with_input_size_matching_sample_rate(self):
-    # Test data.
-    test_sample_rate = test_sample_count = self.test_sample_rate
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, test_sample_rate),
-      sample_count=test_sample_count)
-
-    # Loads TensorAudio object from a NumPy array with input sample count same
-    # as test sample rate.
-    array = np.random.rand(
-      test_sample_rate, self.test_channels).astype(np.float32)
-    tensor.load_from_array(array)
-    tensor_audio_data = tensor.get_data()
-    assert_almost_equal(tensor_audio_data.float_buffer, array)
-
-  def test_load_from_array_fails_with_input_size_less_than_sample_rate(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
+    # Fails loading TensorAudio object from a NumPy array with an input size
+    # matching sample rate.
     with self.assertRaisesRegex(
         ValueError,
         f"Input audio contains an invalid number of samples. "
-        f"Expect {self.test_sample_count}."):
+        f"Expect {_SAMPLE_COUNT}."):
+      array = np.random.rand(_SAMPLE_RATE, _CHANNELS).astype(np.float32)
+      self.test_tensor_audio.load_from_array(array)
+
+  def test_load_from_array_fails_with_input_size_less_than_sample_rate(self):
+    # Fails loading TensorAudio object from a NumPy array with an input size
+    # less than sample rate.
+    with self.assertRaisesRegex(
+        ValueError,
+        f"Input audio contains an invalid number of samples. "
+        f"Expect {_SAMPLE_COUNT}."):
       input_buffer_size = 10000
-      array = np.random.rand(
-        input_buffer_size, self.test_channels).astype(np.float32)
-      tensor.load_from_array(array)
+      self.assertLess(input_buffer_size, _SAMPLE_RATE)
+      array = np.random.rand(input_buffer_size, _CHANNELS).astype(np.float32)
+      self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_array_fails_with_invalid_number_of_channels(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
     # Fails loading TensorAudio object from a NumPy array with an invalid
     # number of input channels.
     with self.assertRaisesRegex(
         ValueError,
         f"Input audio contains an invalid number of channels. "
-        f"Expect {self.test_channels}."):
-      array = np.random.rand(self.test_sample_count, 2).astype(np.float32)
-      tensor.load_from_array(array)
+        f"Expect {_CHANNELS}."):
+      array = np.random.rand(_SAMPLE_COUNT, 2).astype(np.float32)
+      self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_array_fails_with_too_many_input_samples(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
     # Fails loading TensorAudio object from a NumPy array with a sample count
     # exceeding TensorAudio's internal buffer capacity.
     with self.assertRaisesRegex(
         ValueError,
         f"Input audio contains an invalid number of samples. "
-        f"Expect {self.test_sample_count}."):
-      array = np.random.rand(20000, self.test_channels).astype(np.float32)
-      tensor.load_from_array(array)
+        f"Expect {_SAMPLE_COUNT}."):
+      array = np.random.rand(20000, _CHANNELS).astype(np.float32)
+      self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_audio_record_fails_with_invalid_buffer_size(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
     # Fails loading TensorAudio object from an AudioRecord instance having
     # a buffer size less than that of TensorAudio.
     with self.assertRaisesRegex(
         ValueError,
         "The audio record's buffer size cannot be smaller than the tensor "
         "audio's sample count."):
-      record = audio_record.AudioRecord(
-        self.test_channels, self.test_sample_rate, 10000)
-      tensor.load_from_audio_record(record)
+      record = audio_record.AudioRecord(_CHANNELS, _SAMPLE_RATE, 10000)
+      self.test_tensor_audio.load_from_audio_record(record)
 
   def test_load_from_audio_record_fails_with_invalid_number_of_channels(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
     # Fails loading TensorAudio object from an AudioRecord instance having
     # an invalid number of channels.
     with self.assertRaisesRegex(
         ValueError,
         f"The audio record's channel count doesn't match. "
-        f"Expects {self.test_channels} channel\(s\)."):
-      record = audio_record.AudioRecord(
-        2, self.test_sample_rate, self.test_sample_count)
-      tensor.load_from_audio_record(record)
+        f"Expects {_CHANNELS} channel\(s\)."):
+      record = audio_record.AudioRecord(2, _SAMPLE_RATE, _SAMPLE_COUNT)
+      self.test_tensor_audio.load_from_audio_record(record)
 
   def test_load_from_audio_record_fails_with_invalid_sample_rate(self):
-    # Test data.
-    tensor = tensor_audio.TensorAudio(
-      audio_format=_CppAudioFormat(self.test_channels, self.test_sample_rate),
-      sample_count=self.test_sample_count)
-
     # Fails loading TensorAudio object from an AudioRecord instance having
     # an invalid sample rate.
     with self.assertRaisesRegex(
         ValueError,
         f"The audio record's sampling rate doesn't match. "
-        f"Expects {self.test_sample_rate}Hz."):
-      record = audio_record.AudioRecord(
-        self.test_channels, 20000, self.test_sample_count)
-      tensor.load_from_audio_record(record)
+        f"Expects {_SAMPLE_RATE}Hz."):
+      record = audio_record.AudioRecord(_CHANNELS, 20000, _SAMPLE_COUNT)
+      self.test_tensor_audio.load_from_audio_record(record)
 
 
 if __name__ == '__main__':
