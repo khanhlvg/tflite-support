@@ -48,7 +48,7 @@ class TensorAudioTest(unittest.TestCase):
     self.assertIsInstance(tensor.data, _CppAudioBuffer)
 
   def test_load_from_array(self):
-    # Loads TensorAudio object from a NumPy array.
+    # Loads audio data from a NumPy array.
     array = np.random.rand(_SAMPLE_COUNT, _CHANNELS).astype(np.float32)
     self.test_tensor_audio.load_from_array(array)
 
@@ -63,7 +63,7 @@ class TensorAudioTest(unittest.TestCase):
     assert_almost_equal(cpp_audio_buffer.float_buffer, array)
 
   def test_load_from_array_fails_with_input_size_matching_sample_rate(self):
-    # Fails loading TensorAudio object from a NumPy array with an input size
+    # Fails loading audio data from a NumPy array with an input size
     # matching sample rate.
     with self.assertRaisesRegex(
         ValueError,
@@ -73,7 +73,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_array_fails_with_input_size_less_than_sample_rate(self):
-    # Fails loading TensorAudio object from a NumPy array with an input size
+    # Fails loading audio data from a NumPy array with an input size
     # less than sample rate.
     with self.assertRaisesRegex(
         ValueError,
@@ -85,7 +85,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_array_fails_with_invalid_number_of_channels(self):
-    # Fails loading TensorAudio object from a NumPy array with an invalid
+    # Fails loading audio data from a NumPy array with an invalid
     # number of input channels.
     with self.assertRaisesRegex(
         ValueError,
@@ -95,7 +95,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_array_fails_with_too_many_input_samples(self):
-    # Fails loading TensorAudio object from a NumPy array with a sample count
+    # Fails loading audio data from a NumPy array with a sample count
     # exceeding TensorAudio's internal buffer capacity.
     with self.assertRaisesRegex(
         ValueError,
@@ -105,7 +105,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_array(array)
 
   def test_load_from_audio_record_fails_with_invalid_buffer_size(self):
-    # Fails loading TensorAudio object from an AudioRecord instance having
+    # Fails loading audio data from an AudioRecord instance having
     # a buffer size less than that of TensorAudio.
     with self.assertRaisesRegex(
         ValueError,
@@ -115,7 +115,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_audio_record(record)
 
   def test_load_from_audio_record_fails_with_invalid_number_of_channels(self):
-    # Fails loading TensorAudio object from an AudioRecord instance having
+    # Fails loading audio data from an AudioRecord instance having
     # an invalid number of channels.
     with self.assertRaisesRegex(
         ValueError,
@@ -125,7 +125,7 @@ class TensorAudioTest(unittest.TestCase):
       self.test_tensor_audio.load_from_audio_record(record)
 
   def test_load_from_audio_record_fails_with_invalid_sample_rate(self):
-    # Fails loading TensorAudio object from an AudioRecord instance having
+    # Fails loading audio data from an AudioRecord instance having
     # an invalid sample rate.
     with self.assertRaisesRegex(
         ValueError,
