@@ -48,8 +48,7 @@ class AudioRecordTest(unittest.TestCase):
     self.sampling_rate = 16000
     self.buffer_size = 15600
 
-  @mock.patch('tensorflow_lite_support.python.task.audio.core.audio_record.'
-              'sd.query_devices', side_effect=query_devices)
+  @mock.patch('sounddevice.query_devices', side_effect=query_devices)
   def test_audio_record_read(self, *args):
     # Ensure the test audio device is being used.
     self.assertEqual(sd.query_devices()[0]['name'], query_devices()[0]['name'])
@@ -64,8 +63,7 @@ class AudioRecordTest(unittest.TestCase):
           return callback(input_data, *_)
         super().__init__(callback=audio_callback, **kwargs)
 
-    with mock.patch('tensorflow_lite_support.python.task.audio.core.'
-                    'audio_record.sd.InputStream', side_effect=MockInputStream):
+    with mock.patch('sounddevice.InputStream', side_effect=MockInputStream):
       record = audio_record.AudioRecord(
         self.channels, self.sampling_rate, self.buffer_size)
 
