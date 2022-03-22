@@ -33,9 +33,8 @@ class TensorAudioTest(unittest.TestCase):
   def setUp(self):
     super().setUp()
     self.test_audio_path = test_util.get_test_data_path('speech.wav')
-    self.test_audio_format = _CppAudioFormat(_CHANNELS, _SAMPLE_RATE)
     self.test_tensor_audio = tensor_audio.TensorAudio(
-      audio_format=self.test_audio_format, sample_count=_SAMPLE_COUNT)
+      _CppAudioFormat(_CHANNELS, _SAMPLE_RATE), _SAMPLE_COUNT)
 
   def test_create_from_wav_file(self):
     # Loads TensorAudio object from WAV file.
@@ -55,15 +54,15 @@ class TensorAudioTest(unittest.TestCase):
 
     # Gets the C++ AudioBuffer object.
     cpp_audio_buffer = self.test_tensor_audio.data
-    audio_format = cpp_audio_buffer.audio_format
+    cpp_audio_format = cpp_audio_buffer.audio_format
 
-    self.assertEqual(audio_format.channels, _CHANNELS)
-    self.assertEqual(audio_format.sample_rate, _SAMPLE_RATE)
+    self.assertEqual(cpp_audio_format.channels, _CHANNELS)
+    self.assertEqual(cpp_audio_format.sample_rate, _SAMPLE_RATE)
     self.assertEqual(cpp_audio_buffer.buffer_size, _SAMPLE_COUNT)
     self.assertIsInstance(cpp_audio_buffer, _CppAudioBuffer)
     assert_almost_equal(cpp_audio_buffer.float_buffer, array)
 
-  def test_load_from_array_succeeds_with_input_size_matching_sample_rate(self):
+  def test_load_from_array_fails_with_input_size_matching_sample_rate(self):
     # Fails loading TensorAudio object from a NumPy array with an input size
     # matching sample rate.
     with self.assertRaisesRegex(
