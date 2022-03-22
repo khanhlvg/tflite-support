@@ -15,74 +15,77 @@
 
 import unittest
 import numpy as np
-import sounddevice as sd
 
-from numpy.testing import assert_almost_equal
+from numpy import testing
 from unittest import mock
 
 from tensorflow_lite_support.python.task.audio.core import audio_record
 
-
-def query_devices(device=None):
-  device_settings: dict = {
-    "name": "Test audio device",
-    "hostapi": 0,
-    "max_input_channels": 2,
-    "max_output_channels": 2,
-    "default_low_input_latency": 0.00870751953125,
-    "default_low_output_latency": 0.00870751953125,
-    "default_high_input_latency": 0.034830078125,
-    "default_high_output_latency": 0.034830078125,
-    "default_samplerate": 44099.81494981215,
-  }
-  if device == None:
-    return [device_settings]
-  else:
-    return device_settings
+_CHANNELS = 1
+_SAMPLING_RATE = 16000
+_BUFFER_SIZE = 15600
 
 
 class AudioRecordTest(unittest.TestCase):
   def setUp(self):
     super().setUp()
-    self.channels = 1
-    self.sampling_rate = 16000
-    self.buffer_size = 15600
 
-  @mock.patch('sounddevice.query_devices', side_effect=query_devices)
-  def test_audio_record_read(self, *args):
-    # Ensure the test audio device is being used.
-    self.assertEqual(sd.query_devices()[0]['name'], query_devices()[0]['name'])
+    # Mock sounddevice.InputStream.
+    self.mock_input_stream = mock.MagicMock()
 
-    # Dummy audio input data.
-    input_data = np.random.rand(15600, 1).astype(float)
+    with mock.patch('sounddevice.InputStream',
+                    return_value=self.mock_input_stream) as mock_input_stream:
+      self.record = audio_record.AudioRecord(_CHANNELS, _SAMPLING_RATE,
+                                             _BUFFER_SIZE)
 
-    # Create a mock of sd.InputStream and pass in data to the callback.
-    class MockInputStream(sd.InputStream):
-      def __init__(self, callback=None, **kwargs):
-        def audio_callback(data, *_):
-          return callback(input_data, *_)
-        super().__init__(callback=audio_callback, **kwargs)
+      # Save the initialization arguments of InputStream for later assertion.
+      self.assertEqual(mock_input_stream.call_count, 1)
+      _, self.init_args = mock_input_stream.call_args
 
-    with mock.patch('sounddevice.InputStream', side_effect=MockInputStream):
-      record = audio_record.AudioRecord(
-        self.channels, self.sampling_rate, self.buffer_size)
+  def test_init_args(self):
+    # Assert parameters of InputStream initialization.
+    self.assertEqual(
+      self.init_args['channels'], _CHANNELS,
+      "InputStream's channels doesn't match the initialization argument.")
+    self.assertEqual(
+      self.init_args['samplerate'], _SAMPLING_RATE,
+      "InputStream's samplerate doesn't match the initialization argument.")
 
-      # Start recording.
-      record.start_recording()
-      self.assertTrue(record._stream.active)
+  def test_life_cycle(self):
+    # Assert start recording routine.
+    self.record.start_recording()
+    self.mock_input_stream.start.assert_called_once()
+    self.assertTrue(self.mock_input_stream.active)
 
-      # Stop recording.
-      record.stop()
-      self.assertTrue(record._stream.stopped)
+    # Assert stop recording routine.
+    self.record.stop()
+    self.mock_input_stream.stop.assert_called_once()
+    self.assertTrue(self.mock_input_stream.stopped)
 
-      # Reads audio data captured in the buffer.
-      recorded_audio_data = record.read(self.buffer_size)
+  def test_buffer_data(self):
+    callback_fn = self.init_args['callback']
 
-      # Close the stream.
-      record._stream.close()
+    # Create dummy data to feed to the AudioRecord instance.
+    chunk_size = int(_BUFFER_SIZE * 0.5)
+    input_data = []
+    for _ in range(3):
+      dummy_data = np.random.rand(chunk_size, 1).astype(float)
+      input_data.append(dummy_data)
+      callback_fn(dummy_data)
 
-      # Compare recorded audio data with the dummy array.
-      assert_almost_equal(recorded_audio_data, input_data)
+    # Assert read data of a single chunk.
+    recorded_audio_data = self.record.read(chunk_size)
+    testing.assert_almost_equal(recorded_audio_data, input_data[-1])
+
+    # Assert read all data in buffer.
+    recorded_audio_data = self.record.read(chunk_size * 2)
+    expected_data = np.concatenate(input_data[-2:])
+    testing.assert_almost_equal(recorded_audio_data, expected_data)
+
+    # Assert exception if read too much data.
+    with self.assertRaisesRegex(
+        ValueError, 'Cannot read more samples than the size of the buffer.'):
+      self.record.read(chunk_size * 3)
 
 
 if __name__ == '__main__':
