@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = 'TensorFlowLiteTaskText'
-  s.version          = '${TFLS_BUILD_VERSION}'
+  s.version          = '0.0.1'
   s.authors          = 'Google Inc.'
   s.license          = { :type => 'Apache' }
   s.homepage         = 'https://github.com/tensorflow/tflite-support'
-  s.source           = { :http => '${TFLS_DOWNLOAD_URL}' }
+  s.source           = { :http => "file:///Users/priankakariat/Desktop/0.0.1-dev/TensorFlowLiteTaskVision-0.0.1-dev.tar.gz"}
   s.summary          = 'TensorFlow Lite Task Library - Text'
   s.description      = 'The Natural Language APIs of the TFLite Task Library'
 
@@ -30,7 +30,12 @@ Pod::Spec.new do |s|
   s.module_map = objc_dir + 'apis/framework.modulemap'
   s.pod_target_xcconfig = {
     'HEADER_SEARCH_PATHS' =>
-      '"${PODS_TARGET_SRCROOT/.."/**',
+      '"${PODS_TARGET_SRCROOT}" ' +
+      '"${PODS_TARGET_SRCROOT}/' + cc_dir + 'nlclassifier" ' +
+      '"${PODS_TARGET_SRCROOT}/' + cc_dir + 'qa" ' +
+      '"${PODS_TARGET_SRCROOT}/' + objc_dir + 'apis" ' +
+      '"${PODS_TARGET_SRCROOT}/' + objc_dir + 'nlclassifier/Sources" ' +
+      '"${PODS_TARGET_SRCROOT}/' + objc_dir + 'qa/Sources"',
     'VALID_ARCHS' => 'x86_64 armv7 arm64',
   }
 

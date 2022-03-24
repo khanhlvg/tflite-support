@@ -1,0 +1,62 @@
+Pod::Spec.new do |s|
+  s.name             = 'TensorFlowLiteTaskVision'
+  s.version          = '${TFLS_BUILD_VERSION}'
+  s.authors          = 'Google Inc.'
+  s.license          = { :type => 'Apache' }
+  s.homepage         = 'https://github.com/tensorflow/tflite-support'
+  s.source           = { :http => "file:///Users/priankakariat/Desktop/0.0.1-dev/TensorFlowLiteTaskVision-0.0.1-dev.tar.gz"}
+  s.summary          = 'TensorFlow Lite Task Library - Vision'
+  s.description      = 'The Natural Language APIs of the TFLite Task Library'
+
+  s.ios.deployment_target = '9.0'
+
+  s.module_name = 'TensorFlowLiteTaskVision'
+  s.static_framework = true
+
+  objc_dir =  'tensorflow_lite_support/ios/'
+  core_objc_dir = objc_dir + 'task/core/'
+  processor_objc_dir = objc_dir + 'task/proceessor/'
+  vision_objc_dir = objc_dir + 'task/vision/'
+  gml_image_dir = 'tensorflow_lite_support/odml/ios/image/'
+  s.public_header_files = [
+    objc_dir + 'TFLCommon.h',
+    core_objc_dir + 'sources/TFLBaseOptions.h',
+    processor_objc_dir + 'sources/{TFLCategory,TFLClassificationOptions,TFLClassificationResult,TFLDetectionResult,TFLSegmentationResult}.h',
+    vision_objc_dir + 'apis/*.h',
+    vision_objc_dir + 'sources/*.h',
+    gml_image_dir + 'apis/*.h'
+  ]
+
+  c_dir = 'tensorflow_lite_support/c/task/'
+  s.source_files = [
+    c_dir + '*.h',
+    objc_dir + 'sources/*',
+    core_objc_dir + 'sources/*',
+    processor_objc_dir + 'sources/*',
+    vision_objc_dir + 'apis/*.h',
+    vision_objc_dir + 'sources/*',
+    vision_objc_dir + 'sources/*/sources/*',
+    gml_image_dir + 'apis/*.h',
+    gml_image_dir + 'sources/*.h'
+  ]
+
+  s.module_map = vision_objc_dir + 'apis/framework.modulemap'
+  s.pod_target_xcconfig = {
+    'HEADER_SEARCH_PATHS' =>
+      '"${PODS_TARGET_SRCROOT}" ' +
+      '"${PODS_TARGET_SRCROOT}/' + c_dir + 'core" ' +
+      '"${PODS_TARGET_SRCROOT}/' + c_dir + 'processor" ' +
+      '"${PODS_TARGET_SRCROOT}/' + c_dir + 'vision" ' +
+      '"${PODS_TARGET_SRCROOT}/' + c_dir + 'vision/core" ' +
+      '"${PODS_TARGET_SRCROOT}/' + objc_dir + 'sources" ' +
+      '"${PODS_TARGET_SRCROOT}/' + core_objc_dir + 'sources" ' +
+      '"${PODS_TARGET_SRCROOT}/' + processor_objc_dir + 'sources" ' +
+      '"${PODS_TARGET_SRCROOT}/' + vision_objc_dir + 'apis" ' +
+      '"${PODS_TARGET_SRCROOT}/' + vision_objc_dir + 'sources" ' +
+      '"${PODS_TARGET_SRCROOT}/' + gml_image_dir + 'apis" ' +
+    'VALID_ARCHS' => 'x86_64 armv7 arm64',
+  }
+
+  s.library = 'c++'
+  s.vendored_frameworks = 'Frameworks/TensorFlowLiteTaskVisionC.framework'
+end
