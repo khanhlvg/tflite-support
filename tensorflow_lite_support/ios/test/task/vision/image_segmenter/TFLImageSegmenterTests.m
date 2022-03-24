@@ -20,9 +20,9 @@
 #import "tensorflow_lite_support/ios/test/task/vision/utils/sources/GMLImage+Helpers.h"
 
 #define VerifyColoredLabel(coloredLabel, expectedR, expectedG, expectedB, expectedLabel) \
-  XCTAssertEqual(coloredLabel.r, expectedR);                              \
-  XCTAssertEqual(coloredLabel.g, expectedG);                              \
-  XCTAssertEqual(coloredLabel.b, expectedB);                              \
+  XCTAssertEqual(coloredLabel.r, expectedR);                                             \
+  XCTAssertEqual(coloredLabel.g, expectedG);                                             \
+  XCTAssertEqual(coloredLabel.b, expectedB);                                             \
   XCTAssertEqualObjects(coloredLabel.label, expectedLabel)
 
 // The maximum fraction of pixels in the candidate mask that can have a
@@ -56,12 +56,12 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   XCTAssertNotNil(self.modelPath);
 }
 
-- (void)compareWithDepLabV3PartialColoredLabels:(NSArray<TFLColoredLabel *> *)coloredLabels {
+- (void)compareWithDeepLabV3PartialColoredLabels:(NSArray<TFLColoredLabel *> *)coloredLabels {
   VerifyColoredLabel(coloredLabels[0],
-                     0,             // expectedR
-                     0,             // expectedG
-                     0,             // expectedB
-                     @"background");// expectedLabel
+                     0,               // expectedR
+                     0,               // expectedG
+                     0,               // expectedB
+                     @"background");  // expectedLabel
 
   VerifyColoredLabel(coloredLabels[1],
                      128,          // expectedR
@@ -204,7 +204,7 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   );
 }
 
-- (void)testSuccessfullImageSegmentationWithCategoryMask {
+- (void)testSuccessfulImageSegmentationWithCategoryMask {
   TFLImageSegmenterOptions *imageSegmenterOptions =
       [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
 
@@ -224,7 +224,7 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   XCTAssertEqual(segmentationResult.segmentations.count, 1);
 
   XCTAssertNotNil(segmentationResult.segmentations[0].coloredLabels);
-  [self compareWithDepLabV3PartialColoredLabels:segmentationResult.segmentations[0].coloredLabels];
+  [self compareWithDeepLabV3PartialColoredLabels:segmentationResult.segmentations[0].coloredLabels];
 
   XCTAssertNotNil(segmentationResult.segmentations[0].categoryMask);
   XCTAssertTrue(segmentationResult.segmentations[0].categoryMask.mask != nil);
