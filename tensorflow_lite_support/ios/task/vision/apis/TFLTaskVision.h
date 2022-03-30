@@ -15,7 +15,13 @@
 #import "GMLImage.h"
 #import "TFLCommon.h"
 #import "TFLBaseOptions.h"
+#import "TFLClassificationOptions.h"
+#import "TFLCategory.h"
+#import "TFLClassificationResult.h"
+#import "TFLDetectionResult.h"
 #import "TFLSegmentationResult.h"
+#import "TFLImageClassifier.h"
+#import "TFLObjectDetector.h"
 #import "TFLImageSegmenter.h"
 
 

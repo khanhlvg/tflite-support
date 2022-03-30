@@ -16,6 +16,7 @@
 
 # Set the following variables as appropriate.
 #   * BAZEL: path to bazel. defaults to the first one available in PATH
+#   * FRAMEWORK_NAME: Name of the iOS framework to be built.
 #   * TFLS_BUILD_VERSION: to specify the release version. defaults to 0.0.1-dev
 #   * IS_RELEASE_BUILD: set as true if this build should be a release build
 #   * ARCHIVE_FRAMEWORK: set as true if the framework should be archived
@@ -37,10 +38,25 @@ if [[ ! -x "${BAZEL}" ]]; then
   exit 1
 fi
 
-if [[ -z "${DEST_DIR}" || "${DEST_DIR}" == ${TFLS_ROOT_DIR}* ]]; then
+if [ -z ${FRAMEWORK_NAME+x} ]; then
+  echo "Name of the iOS framework, which is to be built, must be set."
+  exit 1
+fi
+
+case $FRAMEWORK_NAME in
+  "TensorFlowLiteTaskVision"|"TensorFlowLiteTaskText")
+    ;;
+  *)
+    echo "Wrong framework name"
+    exit 1
+  ;;
+esac
+
+if [[ -z "${DEST_DIR+x}" || "${DEST_DIR}" == ${TFLS_ROOT_DIR}* ]]; then
   echo "DEST_DIR variable must be set and not be under the repository root."
   exit 1
 fi
+
 
 # Builds the C API framework for the specified framework for iOS.
 function build_c_api_framework {
@@ -81,29 +97,63 @@ function create_framework_archive {
   # ----- (1) Copy ssource files -----
   pushd "${TFLS_ROOT_DIR}"
 
-  # Source files to be archived along with the static framework.
-  SRC_PATTERNS="
-    */c/common.h
-    */c/task/core/base_options.h
-    */c/task/processor/category.h
-    */c/task/processor/bounding_box.h
-    */c/task/processor/classification_options.h
-    */c/task/processor/classification_result.h
-    */c/task/processor/detection_result.h
-    */c/task/processor/segmentation_result.h
-    */c/task/vision/image_classifier.h
-    */c/task/vision/object_detector.h
-    */c/task/vision/image_segmenter.h
-    */c/task/vision/core/*.h
-    */ios/sources/*
-    */ios/task/core/sources/*
-    */ios/task/processor/sources/*
-    */ios/task/vision/sources/*
-    */ios/task/vision/apis/*
-    */ios/task/vision/*/sources/*
-    */odml/ios/image/apis/*.h
-    */odml/ios/image/sources/*.m
-  "
+  # Set Source files and iOS header files which are to be stripped off header prefixes,
+  # to be archived along with the static framework.
+  case $FRAMEWORK_NAME in
+    "TensorFlowLiteTaskVision")
+      SRC_PATTERNS="
+        */c/common.h
+        */c/task/core/base_options.h
+        */c/task/processor/category.h
+        */c/task/processor/bounding_box.h
+        */c/task/processor/classification_options.h
+        */c/task/processor/classification_result.h
+        */c/task/processor/detection_result.h
+        */c/task/processor/segmentation_result.h
+        */c/task/vision/image_classifier.h
+        */c/task/vision/object_detector.h
+        */c/task/vision/image_segmenter.h
+        */c/task/vision/core/*.h
+        */ios/sources/*
+        */ios/task/core/sources/*
+        */ios/task/processor/sources/*
+        */ios/task/vision/sources/*
+        */ios/task/vision/apis/*
+        */ios/task/vision/*/sources/*
+        */odml/ios/image/apis/*.h
+        */odml/ios/image/sources/*.m
+      "
+
+      IOS_HEADER_PATTERNS="
+        */ios/sources/TFLCommon.h
+        */ios/task/core/sources/TFLBaseOptions.h
+        */ios/task/processor/sources/TFLCategory.h
+        */ios/task/processor/sources/TFLClassificationOptions.h
+        */ios/task/processor/sources/TFLClassificationResult.h
+        */ios/task/processor/sources/TFLDetectionResult.h
+        */ios/task/processor/sources/TFLSegmentationResult.h
+        */ios/task/processor/sources/TFLSegmentationResult.h
+        */ios/task/vision/apis/*.h
+        */ios/task/vision/sources/*.h
+        */odml/ios/image/apis/*.h
+      "
+    ;;
+    "TensorFlowLiteTaskText")
+      SRC_PATTERNS="
+        */c/task/text/*.h
+        */ios/task/text/*/Sources/*
+        */ios/task/text/apis/*
+      "
+
+      IOS_HEADER_PATTERNS="
+        */ios/task/text/*/Sources/*.h
+      "
+    ;;
+    *)
+      echo "Framework Name Provided is not in the list of buildable frameworks."
+      exit 1
+    ;;
+  esac
 
   # List of individual files obtained from the patterns above.
   SRC_FILES=$(xargs -n1 find * -wholename <<< "${SRC_PATTERNS}" | sort | uniq)
@@ -112,19 +162,6 @@ function create_framework_archive {
   xargs -n1 -I{} rsync -R {} "${TFLS_TMPDIR}" <<< "${SRC_FILES}"
   popd
 
-  IOS_HEADER_PATTERNS="
-    */ios/sources/TFLCommon.h
-    */ios/task/core/sources/TFLBaseOptions.h
-    */ios/task/processor/sources/TFLCategory.h
-    */ios/task/processor/sources/TFLClassificationOptions.h
-    */ios/task/processor/sources/TFLClassificationResult.h
-    */ios/task/processor/sources/TFLDetectionResult.h
-    */ios/task/processor/sources/TFLSegmentationResult.h
-    */ios/task/processor/sources/TFLSegmentationResult.h
-    */ios/task/vision/apis/*.h
-    */ios/task/vision/sources/*.h
-    */odml/ios/image/apis/*.h
-  "
   pushd "${TFLS_ROOT_DIR}"
   # List of individual files obtained from the patterns above.
   IOS_HEADER_FILES=$(xargs -n1 find * -wholename <<< "${IOS_HEADER_PATTERNS}" | sort | uniq) 
@@ -139,7 +176,6 @@ function create_framework_archive {
   for filename in ${IOS_HEADER_FILES}
   do
     LAST_PATH_COMPONENT=$(basename ${filename})
-    echo "Last: $LAST_PATH_COMPONENT"
     FULL_SOURCE_PATH="$TFLS_TMPDIR/$filename"
     sed -i '' -E 's|#import ".+\/([^/]+.h)"|#import "\1"|' $FULL_SOURCE_PATH
   done
@@ -182,5 +218,5 @@ function create_framework_archive {
 }
 
 cd "${TFLS_ROOT_DIR}"
-build_c_api_framework TensorFlowLiteTaskVision
-create_framework_archive TensorFlowLiteTaskVision
+build_c_api_framework $FRAMEWORK_NAME
+create_framework_archive $FRAMEWORK_NAME
