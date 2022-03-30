@@ -112,6 +112,38 @@ function create_framework_archive {
   xargs -n1 -I{} rsync -R {} "${TFLS_TMPDIR}" <<< "${SRC_FILES}"
   popd
 
+  IOS_HEADER_PATTERNS="
+    */ios/sources/TFLCommon.h
+    */ios/task/core/sources/TFLBaseOptions.h
+    */ios/task/processor/sources/TFLCategory.h
+    */ios/task/processor/sources/TFLClassificationOptions.h
+    */ios/task/processor/sources/TFLClassificationResult.h
+    */ios/task/processor/sources/TFLDetectionResult.h
+    */ios/task/processor/sources/TFLSegmentationResult.h
+    */ios/task/processor/sources/TFLSegmentationResult.h
+    */ios/task/vision/apis/*.h
+    */ios/task/vision/sources/*.h
+    */odml/ios/image/apis/*.h
+  "
+  pushd "${TFLS_ROOT_DIR}"
+  # List of individual files obtained from the patterns above.
+  IOS_HEADER_FILES=$(xargs -n1 find * -wholename <<< "${IOS_HEADER_PATTERNS}" | sort | uniq) 
+  popd
+  
+  # STRIPPED_HEADERS_DIR="${TFLS_TMPDIR}/stripped_headers"
+  
+  # # # pushd "${HOME}/Documents"
+  # mkdir -p ${STRIPPED_HEADERS_DIR}
+  # # # popd
+
+  for filename in ${IOS_HEADER_FILES}
+  do
+    LAST_PATH_COMPONENT=$(basename ${filename})
+    echo "Last: $LAST_PATH_COMPONENT"
+    FULL_SOURCE_PATH="$TFLS_TMPDIR/$filename"
+    sed -i '' -E 's|#import ".+\/([^/]+.h)"|#import "\1"|' $FULL_SOURCE_PATH
+  done
+
   # ----- (2) Unzip the prebuilt C API framework -----
   unzip "${C_API_FRAMEWORK_NAME}_framework.zip" -d "${TFLS_TMPDIR}"/Frameworks
 

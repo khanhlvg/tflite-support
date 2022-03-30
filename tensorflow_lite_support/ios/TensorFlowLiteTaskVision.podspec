@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.authors          = 'Google Inc.'
   s.license          = { :type => 'Apache' }
   s.homepage         = 'https://github.com/tensorflow/tflite-support'
-  s.source           = { :http => "file:///Users/priankakariat/Documents/fol1/TensorFlowLiteTaskVision-0.0.1-dev.tar.gz"}
+  s.source           = { :http => "file:///Users/priankakariat/Desktop/tfl-ios-2/TensorFlowLiteTaskVision-0.0.1-dev.tar.gz"}
   s.summary          = 'TensorFlow Lite Task Library - Vision'
   s.description      = 'The Natural Language APIs of the TFLite Task Library'
 
