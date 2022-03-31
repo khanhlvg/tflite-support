@@ -123,7 +123,7 @@ void VerfiyClassificationResultForFloatModel(TfLiteClassificationResult *classif
   const int kNumCategories = 1001;
   VerfiyClassificationResult(classification_result);
   VerifyClassificationsWithUnboundedMaxResults(classification_result->classifications[0], 0, kNumCategories);
-  PartiallyVerifyCategoriesForQuantizedModel(classification_result->classifications[0].categories);
+  PartiallyVerifyCategoriesForFloatModel(classification_result->classifications[0].categories);
 }
 
 class ImageClassifierFromOptionsTest : public tflite_shims::testing::Test {};
@@ -274,7 +274,7 @@ class ImageClassifierQuantizedModelClassifyTest : public tflite_shims::testing::
 };
 
 TEST_F(ImageClassifierQuantizedModelClassifyTest, SucceedsWithImageData) {
-  SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
+  SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger.jpg"));
 
   TfLiteFrameBuffer frame_buffer = {
       .format = kRGB,
@@ -297,7 +297,7 @@ class ImageClassifierFloatModelClassifyTest : public tflite_shims::testing::Test
   void SetUp() override {
     std::string model_path =
         JoinPath("./" /*test src dir*/, kTestDataDirectory,
-                 kMobileNetQuantizedWithMetadata);
+                 kMobileNetFloatWithMetadata);
 
     TfLiteImageClassifierOptions options = TfLiteImageClassifierOptionsCreate();
     options.base_options.model_file.file_path = model_path.data();
@@ -310,7 +310,7 @@ class ImageClassifierFloatModelClassifyTest : public tflite_shims::testing::Test
 };
 
 TEST_F(ImageClassifierFloatModelClassifyTest, SucceedsWithImageData) {
-  SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
+  SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger.jpg"));
 
   TfLiteFrameBuffer frame_buffer = {
       .format = kRGB,
