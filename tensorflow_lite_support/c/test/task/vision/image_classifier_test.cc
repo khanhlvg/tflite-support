@@ -27,6 +27,8 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/test/test_utils.h"
 #include "tensorflow_lite_support/examples/task/vision/desktop/utils/image_utils.h"
 
+#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+
 namespace tflite {
 namespace task {
 namespace vision {
@@ -43,9 +45,85 @@ constexpr char kTestDataDirectory[] =
 constexpr char kMobileNetQuantizedWithMetadata[] =
     "mobilenet_v1_0.25_224_quant.tflite";
 
+// Float model.
+constexpr char kMobileNetFloatWithMetadata[] = 
+    "mobilenet_v2_1.0_224.tflite";
+
 StatusOr<ImageData> LoadImage(const char* image_name) {
   return DecodeImageFromFile(JoinPath("./" /*test src dir*/,
                                       kTestDataDirectory, image_name));
+}
+
+void VerifyCategoryApproximatelyEqual(const TfLiteCategory& actual,
+                              const TfLiteCategory& expected) {
+  const float kPrecision = 1e-6;
+  EXPECT_EQ(actual.index, expected.index);
+  EXPECT_EQ(actual.score, expected.score);
+  if (actual.label && expected.label)
+    EXPECT_EQ(strcmp(actual.label,expected.label), 0);
+  if (actual.display_name && expected.display_name)
+    EXPECT_EQ(strcmp(actual.display_name,expected.display_name), 0);
+  EXPECT_NEAR(actual.score, expected.score, kPrecision);                                                
+}
+
+void PartiallyVerifyCategoriesForFloatModel(const TfLiteCategory* categories) {
+  const int numCategoriesToTest = 3;
+  TfLiteCategory firstCategory = {.index = 934, .score = 0.7399742, .label = "cheeseburger"};
+  TfLiteCategory secondCategory = {.index = 925, .score = 0.026928535, .label = "guacamole"};
+  TfLiteCategory thirdCategory = {.index = 932, .score = 0.025737215, .label = "bagel"};
+
+  TfLiteCategory expectedCategories[] = {
+                                          firstCategory, 
+                                          secondCategory,
+                                          thirdCategory
+                                        };
+
+  for (int i = 0; i < numCategoriesToTest; i++) 
+    VerifyCategoryApproximatelyEqual(categories[i], expectedCategories[i]);                                                 
+}
+
+void PartiallyVerifyCategoriesForQuantizedModel(const TfLiteCategory* categories) {
+  const int numCategoriesToTest = 3;
+  TfLiteCategory firstCategory = {.index = 934, .score = 0.96484375, .label = "cheeseburger"};
+  TfLiteCategory secondCategory = {.index = 948, .score = 0.0078125, .label = "mushroom"};
+  TfLiteCategory thirdCategory = {.index = 924, .score = 0.00390625, .label = "plate"};
+  TfLiteCategory expectedCategories[] = {
+                                          firstCategory, 
+                                          secondCategory,
+                                          thirdCategory
+  };
+
+  for (int i = 0; i < numCategoriesToTest; i++) 
+    VerifyCategoryApproximatelyEqual(categories[i], expectedCategories[i]);                          
+                              
+}
+
+void VerifyClassificationsWithUnboundedMaxResults(const TfLiteClassifications& classifications,
+                              const int expected_head_index,
+                              const int expected_size) {
+  EXPECT_EQ(classifications.head_index, expected_head_index);
+  EXPECT_EQ(classifications.size, expected_size);
+  EXPECT_NE(classifications.categories, nullptr);                                        
+}
+
+void VerfiyClassificationResult(TfLiteClassificationResult *classification_result) {
+  ASSERT_NE(classification_result, nullptr);
+  EXPECT_GE(classification_result->size, 1);
+  EXPECT_NE(classification_result->classifications, nullptr);
+}
+
+void VerfiyClassificationResultForQuantizedModel(TfLiteClassificationResult *classification_result) {
+  const int kNumCategories = 1001;
+  VerfiyClassificationResult(classification_result);
+  VerifyClassificationsWithUnboundedMaxResults(classification_result->classifications[0], 0, kNumCategories);
+  PartiallyVerifyCategoriesForQuantizedModel(classification_result->classifications[0].categories);
+}
+
+void VerfiyClassificationResultForFloatModel(TfLiteClassificationResult *classification_result) {
+  const int kNumCategories = 1001;
+  VerfiyClassificationResult(classification_result);
+  VerifyClassificationsWithUnboundedMaxResults(classification_result->classifications[0], 0, kNumCategories);
+  PartiallyVerifyCategoriesForQuantizedModel(classification_result->classifications[0].categories);
 }
 
 class ImageClassifierFromOptionsTest : public tflite_shims::testing::Test {};
@@ -178,7 +256,7 @@ TEST(ImageClassifierNullClassifierClassifyTest,
   TfLiteSupportErrorDelete(error);
 }
 
-class ImageClassifierClassifyTest : public tflite_shims::testing::Test {
+class ImageClassifierQuantizedModelClassifyTest : public tflite_shims::testing::Test {
  protected:
   void SetUp() override {
     std::string model_path =
@@ -195,7 +273,43 @@ class ImageClassifierClassifyTest : public tflite_shims::testing::Test {
   TfLiteImageClassifier* image_classifier;
 };
 
-TEST_F(ImageClassifierClassifyTest, SucceedsWithImageData) {
+TEST_F(ImageClassifierQuantizedModelClassifyTest, SucceedsWithImageData) {
+  SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
+
+  TfLiteFrameBuffer frame_buffer = {
+      .format = kRGB,
+      .orientation = kTopLeft,
+      .dimension = {.width = image_data.width, .height = image_data.height},
+      .buffer = image_data.pixel_data};
+
+  TfLiteClassificationResult* classification_result =
+      TfLiteImageClassifierClassify(image_classifier, &frame_buffer, nullptr);
+
+  ImageDataFree(&image_data);
+  
+  VerfiyClassificationResultForQuantizedModel(classification_result);
+
+  TfLiteClassificationResultDelete(classification_result);
+}
+
+class ImageClassifierFloatModelClassifyTest : public tflite_shims::testing::Test {
+ protected:
+  void SetUp() override {
+    std::string model_path =
+        JoinPath("./" /*test src dir*/, kTestDataDirectory,
+                 kMobileNetQuantizedWithMetadata);
+
+    TfLiteImageClassifierOptions options = TfLiteImageClassifierOptionsCreate();
+    options.base_options.model_file.file_path = model_path.data();
+    image_classifier = TfLiteImageClassifierFromOptions(&options, nullptr);
+    ASSERT_NE(image_classifier, nullptr);
+  }
+
+  void TearDown() override { TfLiteImageClassifierDelete(image_classifier); }
+  TfLiteImageClassifier* image_classifier;
+};
+
+TEST_F(ImageClassifierFloatModelClassifyTest, SucceedsWithImageData) {
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
 
   TfLiteFrameBuffer frame_buffer = {
@@ -209,20 +323,12 @@ TEST_F(ImageClassifierClassifyTest, SucceedsWithImageData) {
 
   ImageDataFree(&image_data);
 
-  ASSERT_NE(classification_result, nullptr);
-  EXPECT_GE(classification_result->size, 1);
-  EXPECT_NE(classification_result->classifications, nullptr);
-  EXPECT_GE(classification_result->classifications->size, 1);
-  EXPECT_NE(classification_result->classifications->categories, nullptr);
-  EXPECT_EQ(strcmp(classification_result->classifications->categories[0].label,
-                   "cheeseburger"),
-            0);
-  EXPECT_GE(classification_result->classifications->categories[0].score, 0.90);
-
+  VerfiyClassificationResultForFloatModel(classification_result);
+  
   TfLiteClassificationResultDelete(classification_result);
 }
 
-TEST_F(ImageClassifierClassifyTest, FailsWithNullFrameBufferAndError) {
+TEST_F(ImageClassifierQuantizedModelClassifyTest, FailsWithNullFrameBufferAndError) {
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
 
   TfLiteSupportError* error = nullptr;
@@ -243,7 +349,7 @@ TEST_F(ImageClassifierClassifyTest, FailsWithNullFrameBufferAndError) {
   TfLiteSupportErrorDelete(error);
 }
 
-TEST_F(ImageClassifierClassifyTest, FailsWithNullImageDataAndError) {
+TEST_F(ImageClassifierQuantizedModelClassifyTest, FailsWithNullImageDataAndError) {
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
 
   TfLiteFrameBuffer frame_buffer = {.format = kRGB, .orientation = kTopLeft};
@@ -266,7 +372,7 @@ TEST_F(ImageClassifierClassifyTest, FailsWithNullImageDataAndError) {
   TfLiteSupportErrorDelete(error);
 }
 
-TEST_F(ImageClassifierClassifyTest, SucceedsWithRoiWithinImageBounds) {
+TEST_F(ImageClassifierQuantizedModelClassifyTest, SucceedsWithRoiWithinImageBounds) {
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
 
   TfLiteFrameBuffer frame_buffer = {
@@ -297,7 +403,7 @@ TEST_F(ImageClassifierClassifyTest, SucceedsWithRoiWithinImageBounds) {
   TfLiteClassificationResultDelete(classification_result);
 }
 
-TEST_F(ImageClassifierClassifyTest, FailsWithRoiOutsideImageBoundsAndError) {
+TEST_F(ImageClassifierQuantizedModelClassifyTest, FailsWithRoiOutsideImageBoundsAndError) {
   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadImage("burger-224.png"));
 
   TfLiteFrameBuffer frame_buffer = {
