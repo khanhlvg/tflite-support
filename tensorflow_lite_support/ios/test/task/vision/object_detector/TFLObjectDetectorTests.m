@@ -45,6 +45,8 @@
   XCTAssertNotNil(detectionResult);                                               \
   XCTAssertEqual(detectionResult.detections.count, expectedDetectionsCount)
 
+static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
+
 @interface TFLObjectDetectorTests : XCTestCase
 @property(nonatomic, nullable) NSString *modelPath;
 @end
@@ -197,6 +199,57 @@
                  0.488281,  // expectedScore
                  @"dog",  // expectedLabel
                  nil        // expectedDisplaName
+  );
+}
+
+- (void)testErrorForSimultaneousClassNameBlackListAndWhiteList {
+
+  TFLObjectDetectorOptions *objectDetectorOptions =
+      [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
+
+  objectDetectorOptions.classificationOptions.labelDenyList =
+      [NSArray arrayWithObjects:@"cat", nil];
+  objectDetectorOptions.classificationOptions.labelAllowList =
+      [NSArray arrayWithObjects:@"dog", nil];
+
+  NSError *error = nil;
+  
+  TFLObjectDetector *objectDetector =
+      [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:&error];
+  XCTAssertNil(objectDetector);
+  XCTAssertNotNil(error);
+
+  const NSInteger expectedErrorCode = 2;
+  NSString *const expectedLocalizedDescription =
+      @"INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` are mutually exclusive "
+      @"options";
+  VerifyError(error,
+              expectedErrorDomain,          // expectedDomain
+              expectedErrorCode,            // expectedCode
+              expectedLocalizedDescription  // expectedLocalizedDescription
+  );
+}
+
+- (void)testErrorForInvalidMaxResults {
+
+  TFLObjectDetectorOptions *objectDetectorOptions =
+      [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
+  objectDetectorOptions.classificationOptions.maxResults = 0;
+
+
+  NSError *error = nil;
+   TFLObjectDetector *objectDetector =
+      [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:&error];
+  XCTAssertNil(objectDetector);
+  XCTAssertNotNil(error);
+
+  const NSInteger expectedErrorCode = 2;
+  NSString *const expectedLocalizedDescription =
+      @"INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0";
+  VerifyError(error,
+              expectedErrorDomain,          // expectedDomain
+              expectedErrorCode,            // expectedCode
+              expectedLocalizedDescription  // expectedLocalizedDescription
   );
 }
 
