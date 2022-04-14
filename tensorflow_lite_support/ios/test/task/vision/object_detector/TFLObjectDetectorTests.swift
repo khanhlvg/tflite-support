@@ -24,47 +24,40 @@ class TFLObjectDetectorTests: XCTestCase {
     forResource: "coco_ssd_mobilenet_v1_1.0_quant_2018_06_29",
     ofType: "tflite")!
 
-  func verifyError(
-    _ error: Error,
-    expectedLocalizedDescription: String
-  ) {
-    XCTAssert(
-      error.localizedDescription.contains(expectedLocalizedDescription))
-  }
+  func verifyDetectionResult(_ detectionResult: TFLDetectionResult) {
+    XCTAssertGreaterThan(detectionResult.detections.count, 0)
 
-  func verifyCategory(
-    _ category: TFLCategory,
-    expectedIndex: NSInteger,
-    expectedScore: Float,
-    expectedLabel: String,
-    expectedDisplayName: String?
-  ) {
-    XCTAssertEqual(
-      category.index,
-      expectedIndex)
-    XCTAssertEqual(
-      category.score, 
-      expectedScore, 
-      accuracy: 1e-6); 
+    self.verifyDetection(
+      detectionResult.detections[0],
+      expectedBoundingBox: CGRect(x: 54, y: 396, width: 393, height: 199),
+      expectedFirstScore: 0.632812,
+      expectedFirstLabel: "cat")
 
-    XCTAssertEqual(
-      category.label,
-      expectedLabel)
-    
-    XCTAssertEqual(
-      category.displayName,
-      expectedDisplayName)
+    self.verifyDetection(
+      detectionResult.detections[1],
+      expectedBoundingBox: CGRect(x: 602, y: 157, width: 394, height: 447),
+      expectedFirstScore: 0.609375,
+      expectedFirstLabel: "cat")
+
+    self.verifyDetection(
+      detectionResult.detections[2],
+      expectedBoundingBox: CGRect(x: 260, y: 394, width: 179, height: 209),
+      expectedFirstScore: 0.5625,
+      expectedFirstLabel: "cat")
+
+    self.verifyDetection(
+      detectionResult.detections[3],
+      expectedBoundingBox: CGRect(x: 387, y: 197, width: 281, height: 409),
+      expectedFirstScore: 0.488281,
+      expectedFirstLabel: "dog")
   }
 
   func verifyDetection(
-    _ detection: TFLDetection,
-    expectedCategoryCount: NSInteger,
-    expectedBoundingBox: CGRect
+    _ detection: TFLDetection, expectedBoundingBox: CGRect,
+    expectedFirstScore: Float,
+    expectedFirstLabel: String
   ) {
-    XCTAssertEqual(
-      detection.categories.count,
-      expectedCategoryCount)
-    
+    XCTAssertGreaterThan(detection.categories.count, 0)
     XCTAssertEqual(
       detection.boundingBox.origin.x,
       expectedBoundingBox.origin.x)
@@ -77,19 +70,15 @@ class TFLObjectDetectorTests: XCTestCase {
     XCTAssertEqual(
       detection.boundingBox.size.height,
       expectedBoundingBox.size.height)
-  }
-
-  func verifyDetectionResult(
-    _ detectionResult: TFLDetectionResult,
-    expectedDetectionsCount: NSInteger
-  ) {
     XCTAssertEqual(
-      detectionResult.detections.count,
-      expectedDetectionsCount)
+      detection.categories[0].label,
+      expectedFirstLabel)
+    XCTAssertEqualWithAccuracy(
+      detection.categories[0].score,
+      expectedFirstScore, accuracy: 0.001)
   }
 
-
-  func testObjectDetectionOnMLImageWithUIImage() throws {
+  func testSuccessfullInferenceOnMLImageWithUIImage() throws {
 
     let modelPath = try XCTUnwrap(TFLObjectDetectorTests.modelPath)
 
@@ -104,52 +93,10 @@ class TFLObjectDetectorTests: XCTestCase {
         class: type(of: self),
         filename: "cats_and_dogs",
         type: "jpg"))
-    let detectionResult: TFLDetectionResult =
+    let detectionResults: TFLDetectionResult =
       try objectDetector.detect(gmlImage: gmlImage)
 
-    let expectedDetectionsCount = 10
-    self.verifyDetectionResult(detectionResult, 
-                                    expectedDetectionsCount: expectedDetectionsCount)
-
-    let expectedCategoryCount = 1
-    self.verifyDetection(detectionResult.detections[0], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 54, y: 396, width: 393, height: 199) )
-  
-    // TODO: match the score as image_classifier_test.cc
-    self.verifyCategory(detectionResult.detections[0].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.632812,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);
-
-    self.verifyDetection(detectionResult.detections[1], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 602, y: 157, width: 394, height: 447))
-    self.verifyCategory(detectionResult.detections[1].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.609375,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);
-
-    
-    self.verifyDetection(detectionResult.detections[2], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 260, y: 394, width: 179, height: 209))
-    self.verifyCategory(detectionResult.detections[2].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.5625,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);                       
-    
-    self.verifyDetection(detectionResult.detections[3], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 387, y: 197, width: 281, height: 409))
-    self.verifyCategory(detectionResult.detections[3].categories[0], 
-                        expectedIndex: 17, 
-                        expectedScore: 0.488281,
-                        expectedLabel: "dog", 
-                        expectedDisplayName: nil);  
+    self.verifyDetectionResult(detectionResults)
   }
 
   func testModelOptionsWithMaxResults() throws {
@@ -159,7 +106,8 @@ class TFLObjectDetectorTests: XCTestCase {
     let objectDetectorOptions = TFLObjectDetectorOptions(modelPath: modelPath)
     XCTAssertNotNil(objectDetectorOptions)
 
-    objectDetectorOptions!.classificationOptions.maxResults = 4
+    let maxResults = 3
+    objectDetectorOptions!.classificationOptions.maxResults = maxResults
 
     let objectDetector =
       try TFLObjectDetector.objectDetector(options: objectDetectorOptions!)
@@ -172,91 +120,24 @@ class TFLObjectDetectorTests: XCTestCase {
     let detectionResult: TFLDetectionResult = try objectDetector.detect(
       gmlImage: gmlImage)
 
-    self.verifyDetectionResult(detectionResult, 
-                                    expectedDetectionsCount: objectDetectorOptions!.classificationOptions.maxResults)
+    XCTAssertLessThanOrEqual(detectionResult.detections.count, maxResults)
 
-    let expectedCategoryCount = 1
-    self.verifyDetection(detectionResult.detections[0], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 54, y: 396, width: 393, height: 199) )
-  
-    // TODO: match the score as image_classifier_test.cc
-    self.verifyCategory(detectionResult.detections[0].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.632812,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);
+    self.verifyDetection(
+      detectionResult.detections[0],
+      expectedBoundingBox: CGRect(x: 54, y: 396, width: 393, height: 199),
+      expectedFirstScore: 0.632812,
+      expectedFirstLabel: "cat")
 
-    self.verifyDetection(detectionResult.detections[1], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 602, y: 157, width: 394, height: 447))
-    self.verifyCategory(detectionResult.detections[1].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.609375,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);
+    self.verifyDetection(
+      detectionResult.detections[1],
+      expectedBoundingBox: CGRect(x: 602, y: 157, width: 394, height: 447),
+      expectedFirstScore: 0.609375,
+      expectedFirstLabel: "cat")
 
-    
-    self.verifyDetection(detectionResult.detections[2], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 260, y: 394, width: 179, height: 209))
-    self.verifyCategory(detectionResult.detections[2].categories[0], 
-                        expectedIndex: 16, 
-                        expectedScore: 0.5625,
-                        expectedLabel: "cat", 
-                        expectedDisplayName: nil);                       
-    
-    self.verifyDetection(detectionResult.detections[3], 
-                               expectedCategoryCount: expectedCategoryCount,
-                               expectedBoundingBox: CGRect(x: 387, y: 197, width: 281, height: 409))
-    self.verifyCategory(detectionResult.detections[3].categories[0], 
-                        expectedIndex: 17, 
-                        expectedScore: 0.488281,
-                        expectedLabel: "dog", 
-                        expectedDisplayName: nil);  
+    self.verifyDetection(
+      detectionResult.detections[2],
+      expectedBoundingBox: CGRect(x: 260, y: 394, width: 179, height: 209),
+      expectedFirstScore: 0.5625,
+      expectedFirstLabel: "cat")
   }
-
-  func testErrorForSimultaneousLabelAllowListAndDenyList() throws {
-
-    let modelPath = try XCTUnwrap(TFLObjectDetectorTests.modelPath)
-
-    let objectDetectorOptions = try XCTUnwrap(TFLObjectDetectorOptions(modelPath: modelPath))
-    objectDetectorOptions.classificationOptions.labelAllowList = ["cheeseburger"];
-    objectDetectorOptions.classificationOptions.labelDenyList = ["cheeseburger"];
-
-    do {
-      let objectDetector =
-        try TFLObjectDetector.objectDetector(options: objectDetectorOptions)
-      XCTAssertNil(objectDetector)
-    }
-    catch  {
-      let expectedLocalizedDescription =
-        "INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` are mutually exclusive options"
-      self.verifyError(error,
-                       expectedLocalizedDescription: expectedLocalizedDescription)
-    }
-  }
-
-  func testErrorForOptionsWithInvalidMaxResults() throws { 
-    let modelPath = try XCTUnwrap(TFLObjectDetectorTests.modelPath)
-
-    let objectDetectorOptions = try XCTUnwrap(TFLObjectDetectorOptions(modelPath: modelPath))
-    
-    let maxResults = 0
-    objectDetectorOptions.classificationOptions.maxResults = maxResults
-    
-    do {
-      let objectDetector =
-        try TFLObjectDetector.objectDetector(options: objectDetectorOptions)
-      XCTAssertNil(objectDetector)
-    }
-    catch {
-      let expectedLocalizedDescription =
-        "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
-      self.verifyError(error,
-                       expectedLocalizedDescription: expectedLocalizedDescription)
-    }
-  }
-
-    
 }
