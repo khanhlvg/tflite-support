@@ -163,63 +163,63 @@
 
 @implementation UIImage (RawPixelDataUtils)
 
-- (CGImage)rgbPixelBufferWithFormatType:(CVPixelBufferGetPixelFormatType)pixelBufferFormatType {
-  size_t width = CGImageGetWidth([self CGImage]);
-  size_t height = CGImageGetHeight([self CGImage]);
+// - (CGImage)rgbPixelBufferWithFormatType:(CVPixelBufferGetPixelFormatType)pixelBufferFormatType {
+//   size_t width = CGImageGetWidth([self CGImage]);
+//   size_t height = CGImageGetHeight([self CGImage]);
 
-  CVPixelBufferRef pixelBuffer = nil;
+//   CVPixelBufferRef pixelBuffer = nil;
 
-  CFDictionaryRef options = (__bridge CFDictionaryRef) @{
-                            kCVPixelBufferCGImageCompatibilityKey: [NSNumber numberWithBool:YES],
-                            kCVPixelBufferCGBitmapContextCompatibilityKey: [NSNumber numberWithBool:YES]
-                            }
+//   CFDictionaryRef options = (__bridge CFDictionaryRef) @{
+//                             kCVPixelBufferCGImageCompatibilityKey: [NSNumber numberWithBool:YES],
+//                             kCVPixelBufferCGBitmapContextCompatibilityKey: [NSNumber numberWithBool:YES]
+//                             }
 
-  if (CVPixelBufferCreate(kCFAllocatorDefault, width, height, pixelBufferFormatType, options, &pixelBuffer) != kCVReturnSuccess && !pixelBuffer) {
-    return nil;
+//   if (CVPixelBufferCreate(kCFAllocatorDefault, width, height, pixelBufferFormatType, options, &pixelBuffer) != kCVReturnSuccess && !pixelBuffer) {
+//     return nil;
 
 
-  CVPixelBufferLockBaseAddress(pixelBuffer, 0)
+//   CVPixelBufferLockBaseAddress(pixelBuffer, 0)
   
 
-  NSInteger bitsPerComponent = 8;
+//   NSInteger bitsPerComponent = 8;
 
-  uint32_t bitMapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
+//   uint32_t bitMapInfo = kCGImageAlphaLast | kCGBitmapByteOrder32Big;
 
-  switch pixelBufferFormatType {
-    case kCVPixelFormatType_24RGB: {
-        bitMapInfo = kCGImageAlphaNone | kCGBitmapByteOrder32Big;
-        break;
-    }
-    case kCVPixelFormatType_32ARGB:{
-        bitMapInfo = kCGImageAlphaFirst | kCGBitmapByteOrder32Big;
-        break;
-    }
-    default:
-      break;
-  }
+//   switch pixelBufferFormatType {
+//     case kCVPixelFormatType_24RGB: {
+//         bitMapInfo = kCGImageAlphaNone | kCGBitmapByteOrder32Big;
+//         break;
+//     }
+//     case kCVPixelFormatType_32ARGB:{
+//         bitMapInfo = kCGImageAlphaFirst | kCGBitmapByteOrder32Big;
+//         break;
+//     }
+//     default:
+//       break;
+//   }
 
-  CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+//   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 
-  CGContextRef context =
-      CGBitmapContextCreate(CVPixelBufferGetBaseAddress(pixelBuffer), width, height, bitsPerComponent, CVPixelBufferGetBytesPerRow(pixelBuffer), colorSpace,
-                            bitMapInfo);
+//   CGContextRef context =
+//       CGBitmapContextCreate(CVPixelBufferGetBaseAddress(pixelBuffer), width, height, bitsPerComponent, CVPixelBufferGetBytesPerRow(pixelBuffer), colorSpace,
+//                             bitMapInfo);
   
-  CGContextConcatCTM(context, CGAffineTransformMakeRotation(0));
-  CGAffineTransform flipVertical = CGAffineTransformMake( 1, 0, 0, -1, 0, height );
-    CGContextConcatCTM(context, flipVertical);
-    CGAffineTransform flipHorizontal = CGAffineTransformMake( -1.0, 0.0, 0.0, 1.0, width, 0.0 );
-    CGContextConcatCTM(context, flipHorizontal);
+//   CGContextConcatCTM(context, CGAffineTransformMakeRotation(0));
+//   CGAffineTransform flipVertical = CGAffineTransformMake( 1, 0, 0, -1, 0, height );
+//     CGContextConcatCTM(context, flipVertical);
+//     CGAffineTransform flipHorizontal = CGAffineTransformMake( -1.0, 0.0, 0.0, 1.0, width, 0.0 );
+//     CGContextConcatCTM(context, flipHorizontal);
     
-    CGContextDrawImage(context, CGRectMake(0, 0, height,
-                                           width), [self CGImage]);
+//     CGContextDrawImage(context, CGRectMake(0, 0, height,
+//                                            width), [self CGImage]);
 
-    context.makeImage                                     
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
+//     context.makeImage                                     
+//     CGColorSpaceRelease(colorSpace);
+//     CGContextRelease(context);
     
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-    return pixelBuffer;
-}
+//     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//     return pixelBuffer;
+// }
 
 - (TfLiteFrameBuffer *)frameBufferWithError:(NSError **)error {
   TfLiteFrameBuffer *frameBuffer = nil;
