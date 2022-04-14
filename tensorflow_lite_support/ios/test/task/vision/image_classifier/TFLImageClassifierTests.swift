@@ -28,8 +28,12 @@ class ImageClassifierTests: XCTestCase {
     _ error: Error,
     expectedLocalizedDescription: String
   ) {
-    XCTAssert(
-      error.localizedDescription.contains(expectedLocalizedDescription))
+    // // print("Hello")
+    //  print(error.localizedDescription)
+    //   print(expectedLocalizedDescription)
+
+    
+    XCTAssertEqual(error.localizedDescription, expectedLocalizedDescription)
   }
 
   func verifyCategory(
@@ -136,7 +140,7 @@ class ImageClassifierTests: XCTestCase {
     do {
       let imageClassifier =
         try ImageClassifier.imageClassifier(options: imageClassifierOptions)
-      XCTAssertNil(imageClassifier)
+        XCTAssertNil(imageClassifier)
     }
     catch  {
       let expectedLocalizedDescription =
@@ -144,6 +148,9 @@ class ImageClassifierTests: XCTestCase {
       self.verifyError(error,
                        expectedLocalizedDescription: expectedLocalizedDescription)
     }
+
+    print("Hello")
+    
   }
     
   func testModelOptionsWithMaxResults() throws {
@@ -204,18 +211,22 @@ class ImageClassifierTests: XCTestCase {
     
     let maxResults = 0
     imageClassifierOptions.classificationOptions.maxResults = maxResults
+
+    let imageClassifier = try ImageClassifier.imageClassifier(options: imageClassifierOptions)
+
     
-    do {
-      let imageClassifier =
-        try ImageClassifier.imageClassifier(options: imageClassifierOptions)
-        XCTAssertNil(imageClassifier)
-    }
-    catch {
-      let expectedLocalizedDescription =
-        "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
-      self.verifyError(error,
-                       expectedLocalizedDescription: expectedLocalizedDescription)
-    }
+    // do {
+    //   let imageClassifier =
+    //     try ImageClassifier.imageClassifier(options: imageClassifierOptions)
+    //     XCTAssertNil(imageClassifier)
+    // }
+    // catch {
+    //   print(error.localizedDescription)
+    //   let expectedLocalizedDescription =
+    //     "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
+    //   self.verifyError(error,
+    //                    expectedLocalizedDescription: expectedLocalizedDescription)
+    // }
   }
 
   func testInferenceWithBoundingBox() throws {
