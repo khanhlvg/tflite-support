@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (CVPixelBufferRef)grayScalePixelBuffer;
 
+- (CGImageRef)rgbPixelBufferWithFormatType:(CVPixelBufferGetPixelFormatType)pixelBufferFormatType;
+
 /**
  * Loads an image from a file in an app bundle into a GMLImage object.
  *
