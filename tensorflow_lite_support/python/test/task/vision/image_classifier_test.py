@@ -25,7 +25,6 @@ from tensorflow_lite_support.python.task.processor.proto import classification_o
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
 from tensorflow_lite_support.python.task.vision import image_classifier
 from tensorflow_lite_support.python.task.vision.core import tensor_image
-from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
 _BaseOptions = base_options_pb2.BaseOptions
@@ -63,7 +62,7 @@ class ModelFileType(enum.Enum):
   FILE_NAME = 2
 
 
-class ImageClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
+class ImageClassifierTest(parameterized.TestCase, tf.test.TestCase):
 
   def setUp(self):
     super().setUp()

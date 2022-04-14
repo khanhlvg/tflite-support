@@ -24,7 +24,6 @@ from tensorflow_lite_support.python.task.processor.proto import detection_option
 from tensorflow_lite_support.python.task.processor.proto import detections_pb2
 from tensorflow_lite_support.python.task.vision import object_detector
 from tensorflow_lite_support.python.task.vision.core import tensor_image
-from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
 _BaseOptions = base_options_pb2.BaseOptions
@@ -109,7 +108,7 @@ def _build_test_data(expected_detections):
   return expected_result
 
 
-class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
+class ObjectDetectorTest(parameterized.TestCase, tf.test.TestCase):
 
   def setUp(self):
     super().setUp()

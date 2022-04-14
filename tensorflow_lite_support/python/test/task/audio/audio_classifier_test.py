@@ -25,7 +25,6 @@ from tensorflow_lite_support.python.task.core.proto import base_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import class_pb2
 from tensorflow_lite_support.python.task.processor.proto import classification_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import classifications_pb2
-from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
 _mock = test.mock
@@ -115,7 +114,7 @@ def _build_test_data(classifications):
   return expected_result
 
 
-class AudioClassifierTest(parameterized.TestCase, base_test.BaseTestCase):
+class AudioClassifierTest(parameterized.TestCase, tf.test.TestCase):
 
   def setUp(self):
     super().setUp()
