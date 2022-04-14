@@ -18,32 +18,17 @@
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLObjectDetector.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
-#define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
-  XCTAssertNotNil(error);                                                               \
-  XCTAssertEqual(error.domain, expectedDomain);                                         \
-  XCTAssertEqual(error.code, expectedCode);                                             \
-  XCTAssertNotEqual(                                                                    \
-      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location, \
-      NSNotFound)
 
-#define VerifyCategory(category, expectedIndex, expectedScore, expectedLabel, expectedDisplayName) \
-  XCTAssertEqual(category.index, expectedIndex);                                                   \
-  XCTAssertEqualWithAccuracy(category.score, expectedScore, 1e-6);                                 \
-  XCTAssertEqualObjects(category.label, expectedLabel);                                            \
-  XCTAssertEqualObjects(category.displayName, expectedDisplayName);
-
-
-#define VerifyDetection(detection, expectedCategoryCount, expectedBoundingBox) \
-  XCTAssertEqual(detection.categories.count, expectedCategoryCount);               \
+#define VerifyDetection(detection, expectedBoundingBox, expectedFirstScore, expectedFirstLabel) \
+  XCTAssertGreaterThan([detection.categories count], 0);                                        \
+  NSLog(@"Detected %f", detection.categories[0].score);                                         \
+  NSLog(@"Expected %f", expectedFirstScore);                                                    \
   XCTAssertEqual(detection.boundingBox.origin.x, expectedBoundingBox.origin.x);                 \
   XCTAssertEqual(detection.boundingBox.origin.y, expectedBoundingBox.origin.y);                 \
   XCTAssertEqual(detection.boundingBox.size.width, expectedBoundingBox.size.width);             \
-  XCTAssertEqual(detection.boundingBox.size.height, expectedBoundingBox.size.height)           
- 
-
-#define VerifyDetectionResult(detectionResult, expectedDetectionsCount) \
-  XCTAssertNotNil(detectionResult);                                               \
-  XCTAssertEqual(detectionResult.detections.count, expectedDetectionsCount)
+  XCTAssertEqual(detection.boundingBox.size.height, expectedBoundingBox.size.height);           \
+  XCTAssertEqualObjects(detection.categories[0].label, expectedFirstLabel);                     \
+  XCTAssertEqualWithAccuracy(detection.categories[0].score, expectedFirstScore, 0.001)
 
 @interface TFLObjectDetectorTests : XCTestCase
 @property(nonatomic, nullable) NSString *modelPath;
@@ -61,8 +46,31 @@
   XCTAssertNotNil(self.modelPath);
 }
 
-- (void)testSuccessfullObjectDetectionOnMLImageWithUIImage {
+- (void)verifyResults:(TFLDetectionResult *)detectionResult {
+  XCTAssertGreaterThan([detectionResult.detections count], 0);
+  VerifyDetection(detectionResult.detections[0],
+                  CGRectMake(54, 396, 393, 199),  // expectedBoundingBox
+                  0.632812,                       // expectedFirstScore
+                  @"cat"                          // expectedFirstLabel
+  );
+  VerifyDetection(detectionResult.detections[1],
+                  CGRectMake(602, 157, 394, 447),  // expectedBoundingBox
+                  0.609375,                        // expectedFirstScore
+                  @"cat"                           // expectedFirstLabel
+  );
+  VerifyDetection(detectionResult.detections[2],
+                  CGRectMake(260, 394, 179, 209),  // expectedBoundingBox
+                  0.5625,                          // expectedFirstScore
+                  @"cat"                           // expectedFirstLabel
+  );
+  VerifyDetection(detectionResult.detections[3],
+                  CGRectMake(387, 197, 281, 409),  // expectedBoundingBox
+                  0.488281,                        // expectedFirstScore
+                  @"dog"                           // expectedFirstLabel
+  );
+}
 
+- (void)testSuccessfullObjectDetectionOnMLImageWithUIImage {
   TFLObjectDetectorOptions *objectDetectorOptions =
       [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
 
@@ -70,133 +78,47 @@
       [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
   XCTAssertNotNil(objectDetector);
 
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:[self class]
                                                  fileName:@"cats_and_dogs"
                                                    ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);
 
-  TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];
-
-  const NSInteger expectedDetectionsCount = 10;
-  NSLog(@"%d", detectionResult.detections.count );
-
-  VerifyDetectionResult(detectionResult, expectedDetectionsCount);
-
-  NSLog(@"%f", detectionResult.detections[0].categories[0].score );
-
-  const NSInteger expectedCategoriesCount = 1;
-  VerifyDetection(detectionResult.detections[0],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(54, 396, 393, 199)   // expectedBoundingBox
-  );
-
-  VerifyCategory(detectionResult.detections[0].categories[0],
-                 16,       // expectedIndex
-                 0.632812,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
-  VerifyDetection(detectionResult.detections[1],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(602, 157, 394, 447)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[1].categories[0],
-                 16,       // expectedIndex
-                 0.609375,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
-  VerifyDetection(detectionResult.detections[2],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(260, 394, 179, 209)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[2].categories[0],
-                 16,       // expectedIndex
-                 0.5625,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
-  VerifyDetection(detectionResult.detections[3],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(387, 197, 281, 409)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[3].categories[0],
-                 17,       // expectedIndex
-                 0.488281,  // expectedScore
-                 @"dog",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
+  TFLDetectionResult *detectionResults = [objectDetector detectWithGMLImage:gmlImage error:nil];
+  [self verifyResults:detectionResults];
 }
 
 - (void)testModelOptionsWithMaxResults {
-   TFLObjectDetectorOptions *objectDetectorOptions =
+  TFLObjectDetectorOptions *objectDetectorOptions =
       [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
-  
-  objectDetectorOptions.classificationOptions.maxResults = 4;
+  int maxResults = 3;
+  objectDetectorOptions.classificationOptions.maxResults = maxResults;
 
   TFLObjectDetector *objectDetector =
       [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
   XCTAssertNotNil(objectDetector);
 
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:[self class]
                                                  fileName:@"cats_and_dogs"
                                                    ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);
 
   TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];
 
-  const NSInteger expectedDetectionsCount = 4;
-
-  VerifyDetectionResult(detectionResult, expectedDetectionsCount);
-
-  const NSInteger expectedCategoriesCount = 1;
+  XCTAssertLessThanOrEqual([detectionResult.detections count], maxResults);
   VerifyDetection(detectionResult.detections[0],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(54, 396, 393, 199)   // expectedBoundingBox
+                  CGRectMake(54, 396, 393, 199),  // expectedBoundingBox
+                  0.632812,                       // expectedFirstScore
+                  @"cat"                          // expectedFirstLabel
   );
-
-  VerifyCategory(detectionResult.detections[0].categories[0],
-                 16,       // expectedIndex
-                 0.632812,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
   VerifyDetection(detectionResult.detections[1],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(602, 157, 394, 447)  // expectedBoundingBox
+                  CGRectMake(602, 157, 394, 447),  // expectedBoundingBox
+                  0.609375,                        // expectedFirstScore
+                  @"cat"                           // expectedFirstLabel
   );
-  VerifyCategory(detectionResult.detections[1].categories[0],
-                 16,       // expectedIndex
-                 0.609375,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
   VerifyDetection(detectionResult.detections[2],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(260, 394, 179, 209)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[2].categories[0],
-                 16,       // expectedIndex
-                 0.5625,  // expectedScore
-                 @"cat",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-
-  VerifyDetection(detectionResult.detections[3],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(387, 197, 281, 409)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[3].categories[0],
-                 17,       // expectedIndex
-                 0.488281,  // expectedScore
-                 @"dog",  // expectedLabel
-                 nil        // expectedDisplaName
+                  CGRectMake(260, 394, 179, 209),  // expectedBoundingBox
+                  0.5625,                          // expectedFirstScore
+                  @"cat"                           // expectedFirstLabel
   );
 }
 
