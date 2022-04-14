@@ -80,19 +80,25 @@
 
   [options.baseOptions copyToCOptions:&(cOptions.base_options)];
 
-  TfLiteSupportError *createClassifierError = nil;
-  TfLiteImageClassifier *imageClassifier =
-      TfLiteImageClassifierFromOptions(&cOptions, &createClassifierError);
+  TfLiteSupportError *cCreateClassifierError = NULL;
+  TfLiteImageClassifier *cImageClassifier =
+      TfLiteImageClassifierFromOptions(&cOptions, &cCreateClassifierError);
 
   [options.classificationOptions
       deleteCStringArraysOfClassificationOptions:&(cOptions.classification_options)];
+  
+  // Populate iOS error if TfliteSupportError is not null and afterwards delete  it.
+  if (![TFLCommonUtils checkCError:cCreateClassifierError toError:error]) {
+    TfLiteSupportErrorDelete(cCreateClassifierError);
+  }
 
-  if (![TFLCommonUtils checkCError:createClassifierError toError:error] || !imageClassifier) {
-    TfLiteSupportErrorDelete(createClassifierError);
+  // Return nil if classifier evaluates to nil. If an error was generted by the C layer, it has
+  // already been populated to an NSError and deleted before returning from the method.
+  if (!cImageClassifier) {
     return nil;
   }
 
-  return [[TFLImageClassifier alloc] initWithImageClassifier:imageClassifier];
+  return [[TFLImageClassifier alloc] initWithImageClassifier:cImageClassifier];
 }
 
 - (nullable TFLClassificationResult *)classifyWithGMLImage:(GMLImage *)image
@@ -123,18 +129,24 @@
                                    .width = roi.size.width,
                                    .height = roi.size.height};
 
-  TfLiteSupportError *classifyError = nil;
+  TfLiteSupportError *classifyError = NULL;
   TfLiteClassificationResult *cClassificationResult = TfLiteImageClassifierClassifyWithRoi(
       _imageClassifier, cFrameBuffer, &boundingBox, &classifyError);
 
   free(cFrameBuffer->buffer);
-  cFrameBuffer->buffer = nil;
+  cFrameBuffer->buffer = NULL;
 
   free(cFrameBuffer);
-  cFrameBuffer = nil;
+  cFrameBuffer = NULL;
 
-  if (![TFLCommonUtils checkCError:classifyError toError:error] || !cClassificationResult) {
+  // Populate iOS error if C Error is not null and afterwards delete it.
+  if (![TFLCommonUtils checkCError:classifyError toError:error]) {
     TfLiteSupportErrorDelete(classifyError);
+  }
+
+  // Return nil if C result evaluates to nil. If an error was generted by the C layer, it has
+  // already been populated to an NSError and deleted before returning from the method.
+  if (!cClassificationResult) {
     return nil;
   }
 
