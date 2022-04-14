@@ -42,11 +42,13 @@ typedef NS_ENUM(NSUInteger, TFLOutputType) {
    */
   TFLConfidenceMasksOutputType,
 
-};
+}NS_SWIFT_NAME(OutputType);
+
 
 /**
  * Options to configure TFLImageSegmenter.
  */
+NS_SWIFT_NAME(ImageSegmenterOptions)
 @interface TFLImageSegmenterOptions : NSObject
 
 /**
@@ -60,7 +62,7 @@ typedef NS_ENUM(NSUInteger, TFLOutputType) {
  * of the image segmentation operation.
  * @seealso TFLOutputType
  */
-@property(nonatomic, assign) TFLOutputType outputType;
+@property(nonatomic) TFLOutputType outputType;
 
 /** Display names local for display names*/
 @property(nonatomic, copy) NSString *displayNamesLocale;
@@ -79,10 +81,11 @@ typedef NS_ENUM(NSUInteger, TFLOutputType) {
  * @return An instance of TFLImageSegmenterOptions set to the specified
  * modelPath.
  */
-- (nullable instancetype)initWithModelPath:(nonnull NSString *)modelPath;
+- (instancetype)initWithModelPath:(NSString *)modelPath;
 
 @end
 
+NS_SWIFT_NAME(ImageSegmenter)
 @interface TFLImageSegmenter : NSObject
 
 /**

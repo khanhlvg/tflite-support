@@ -13,6 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLImageSegmenter.h"
+#import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+Helpers.h"
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLSegmentationResult+Helpers.h"
@@ -33,7 +34,7 @@
   return self;
 }
 
-- (nullable instancetype)initWithModelPath:(nonnull NSString *)modelPath {
+- (instancetype)initWithModelPath:(NSString *)modelPath {
   self = [self init];
   if (self) {
     self.baseOptions.modelFile.filePath = modelPath;
@@ -80,6 +81,14 @@
 
 - (nullable TFLSegmentationResult *)segmentWithGMLImage:(GMLImage *)image
                                                   error:(NSError *_Nullable *)error {
+
+  if (!image) {
+    [TFLCommonUtils createCustomError:error
+                             withCode:TFLSupportErrorCodeInvalidArgumentError
+                          description:@"GMLImage argument cannot be nil."];
+    return nil;
+  }
+                                                    
   TfLiteFrameBuffer *cFrameBuffer = [image cFrameBufferWithError:error];
 
   if (!cFrameBuffer) {
