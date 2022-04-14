@@ -22,7 +22,7 @@ class ImageClassifierTests: XCTestCase {
   static let bundle = Bundle(for: ImageClassifierTests.self)
   static let modelPath = bundle.path(
     forResource: "mobilenet_v2_1.0_224",
-    ofType: "tfite")
+    ofType: "tflite")
   
   func verifyError(
     _ error: Error,
@@ -195,7 +195,7 @@ class ImageClassifierTests: XCTestCase {
                         expectedDisplayName: nil);
   }
 
-    func testErrorForOptionsWithInvalidMaxResults() throws {
+  func testErrorForOptionsWithInvalidMaxResults() throws {
     
     let modelPath = try XCTUnwrap(ImageClassifierTests.modelPath)
     
