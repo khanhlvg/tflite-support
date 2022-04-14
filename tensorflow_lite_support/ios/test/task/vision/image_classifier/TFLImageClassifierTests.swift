@@ -28,10 +28,6 @@ class ImageClassifierTests: XCTestCase {
     _ error: Error,
     expectedLocalizedDescription: String
   ) {
-    // // print("Hello")
-    //  print(error.localizedDescription)
-    //   print(expectedLocalizedDescription)
-
     
     XCTAssertEqual(error.localizedDescription, expectedLocalizedDescription)
   }
@@ -144,7 +140,7 @@ class ImageClassifierTests: XCTestCase {
     }
     catch  {
       let expectedLocalizedDescription =
-        "INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` are mutually exclusive options"
+        "INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` are mutually exclusive options."
       self.verifyError(error,
                        expectedLocalizedDescription: expectedLocalizedDescription)
     }
@@ -211,22 +207,18 @@ class ImageClassifierTests: XCTestCase {
     
     let maxResults = 0
     imageClassifierOptions.classificationOptions.maxResults = maxResults
-
-    let imageClassifier = try ImageClassifier.imageClassifier(options: imageClassifierOptions)
-
-    
-    // do {
-    //   let imageClassifier =
-    //     try ImageClassifier.imageClassifier(options: imageClassifierOptions)
-    //     XCTAssertNil(imageClassifier)
-    // }
-    // catch {
-    //   print(error.localizedDescription)
-    //   let expectedLocalizedDescription =
-    //     "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
-    //   self.verifyError(error,
-    //                    expectedLocalizedDescription: expectedLocalizedDescription)
-    // }
+    do {
+      let imageClassifier =
+        try ImageClassifier.imageClassifier(options: imageClassifierOptions)
+        XCTAssertNil(imageClassifier)
+    }
+    catch {
+      print(error.localizedDescription)
+      let expectedLocalizedDescription =
+        "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
+      self.verifyError(error,
+                       expectedLocalizedDescription: expectedLocalizedDescription)
+    }
   }
 
   func testInferenceWithBoundingBox() throws {

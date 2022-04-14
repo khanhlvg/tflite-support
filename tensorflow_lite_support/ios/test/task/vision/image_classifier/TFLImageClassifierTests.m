@@ -322,31 +322,31 @@ NS_ASSUME_NONNULL_BEGIN
   );
 }
 
-- (void)testErrorForUnsupportedGMLImageSourceType {
-  TFLImageClassifierOptions *imageClassifierOptions =
-      [[TFLImageClassifierOptions alloc] initWithModelPath:self.modelPath];
+// - (void)testErrorForUnsupportedGMLImageSourceType {
+//   TFLImageClassifierOptions *imageClassifierOptions =
+//       [[TFLImageClassifierOptions alloc] initWithModelPath:self.modelPath];
 
-  TFLImageClassifier *imageClassifier =
-      [TFLImageClassifier imageClassifierWithOptions:imageClassifierOptions error:nil];
-  XCTAssertNotNil(imageClassifier);
+//   TFLImageClassifier *imageClassifier =
+//       [TFLImageClassifier imageClassifierWithOptions:imageClassifierOptions error:nil];
+//   XCTAssertNotNil(imageClassifier);
 
-  NSError *error = nil;
+//   NSError *error = nil;
 
-  // Initialize an invalid GMLImage with no source.
-  GMLImage *gmlImage = [GMLImage new];
-  TFLClassificationResult *classificationResult = [imageClassifier classifyWithGMLImage:gmlImage
-                                                                                  error:&error];
-  XCTAssertNil(classificationResult);
+//   // Initialize an invalid GMLImage with no source.
+//   GMLImage *gmlImage = [GMLImage new];
+//   TFLClassificationResult *classificationResult = [imageClassifier classifyWithGMLImage:gmlImage
+//                                                                                   error:&error];
+//   XCTAssertNil(classificationResult);
 
-  const NSInteger expectedErrorCode = 2;
-  NSString *const expectedLocalizedDescription =
-      @"Invalid source type for GMLImage.";
-  VerifyError(error,
-              expectedErrorDomain,          // expectedDomain
-              expectedErrorCode,            // expectedCode
-              expectedLocalizedDescription  // expectedLocalizedDescription
-  );
-}
+//   const NSInteger expectedErrorCode = 2;
+//   NSString *const expectedLocalizedDescription =
+//       @"Invalid source type for GMLImage.";
+//   VerifyError(error,
+//               expectedErrorDomain,          // expectedDomain
+//               expectedErrorCode,            // expectedCode
+//               expectedLocalizedDescription  // expectedLocalizedDescription
+//   );
+// }
 
 @end
 
