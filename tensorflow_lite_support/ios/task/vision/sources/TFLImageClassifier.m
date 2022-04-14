@@ -40,7 +40,7 @@
   return self;
 }
 
-- (nullable instancetype)initWithModelPath:(NSString *)modelPath {
+- (instancetype)initWithModelPath:(NSString *)modelPath {
   self = [self init];
   if (self) {
     self.baseOptions.modelFile.filePath = modelPath;
@@ -65,6 +65,14 @@
 
 + (nullable instancetype)imageClassifierWithOptions:(TFLImageClassifierOptions *)options
                                               error:(NSError **)error {
+
+  if (!options) {
+    [TFLCommonUtils createCustomError:error
+                             withCode:TFLSupportErrorCodeInvalidArgumentError
+                          description:@"TFLImageClassifierOptions argument cannot be nil."];
+    return nil;
+  }
+
   TfLiteImageClassifierOptions cOptions = TfLiteImageClassifierOptionsCreate();
   if (!
       [options.classificationOptions copyToCOptions:&(cOptions.classification_options) error:error])
