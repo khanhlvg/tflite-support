@@ -63,7 +63,7 @@ static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
   XCTAssertNotNil(self.modelPath);
 }
 
-- (void)testObjectDetectionOnMLImageWithUIImage {
+- (void)testSuccessfullObjectDetectionOnMLImageWithUIImage {
 
   TFLObjectDetectorOptions *objectDetectorOptions =
       [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
@@ -151,8 +151,9 @@ static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
 
   TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];
 
+  const NSInteger expectedDetectionsCount = 4;
 
-  VerifyDetectionResult(detectionResult, objectDetectorOptions.classificationOptions.maxResults);
+  VerifyDetectionResult(detectionResult, expectedDetectionsCount);
 
   const NSInteger expectedCategoriesCount = 1;
   VerifyDetection(detectionResult.detections[0],
@@ -201,7 +202,7 @@ static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
   );
 }
 
-- (void)testErrorForSimultaneousLabelAllowListAndDenyList {
+- (void)testErrorForSimultaneousClassNameBlackListAndWhiteList {
 
   TFLObjectDetectorOptions *objectDetectorOptions =
       [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
@@ -249,87 +250,6 @@ static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
               expectedErrorDomain,          // expectedDomain
               expectedErrorCode,            // expectedCode
               expectedLocalizedDescription  // expectedLocalizedDescription
-  );
-}
-
-- (void)testObjectDetectionWithLabelDenyList {
-
-  TFLObjectDetectorOptions *objectDetectorOptions =
-      [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
- 
-  objectDetectorOptions.classificationOptions.labelDenyList =
-      [NSArray arrayWithObjects:@"cat", nil];
-
-  TFLObjectDetector *objectDetector =
-      [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
-  XCTAssertNotNil(objectDetector);
-
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
-                                                 fileName:@"cats_and_dogs"
-                                                   ofType:@"jpg"];
-  XCTAssertNotNil(gmlImage);
-
-  TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];
-
-  const NSInteger expectedDetectionsCount = 4;
-
-  VerifyDetectionResult(detectionResult, expectedDetectionsCount);
-
-  const NSInteger expectedCategoriesCount = 1;
-  
-  // Without the label deny list, the first 3 results are belong to category "cat".
-  // With cat part of the deny list, 4th result (dog) becomes the class with highest
-  // probabiliity
-  VerifyDetection(detectionResult.detections[0],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(387, 197, 281, 409)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[0].categories[0],
-                 17,       // expectedIndex
-                 0.488281,  // expectedScore
-                 @"dog",  // expectedLabel
-                 nil        // expectedDisplaName
-  );
-}
-
-- (void)testObjectDetectionWithLabelAllowList {
-
-  TFLObjectDetectorOptions *objectDetectorOptions =
-      [[TFLObjectDetectorOptions alloc] initWithModelPath:self.modelPath];
- 
-  objectDetectorOptions.classificationOptions.labelAllowList =
-      [NSArray arrayWithObjects:@"dog", nil];
-
-  TFLObjectDetector *objectDetector =
-      [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
-  XCTAssertNotNil(objectDetector);
-
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
-                                                 fileName:@"cats_and_dogs"
-                                                   ofType:@"jpg"];
-  XCTAssertNotNil(gmlImage);
-
-  TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];
-
-  const NSInteger expectedDetectionsCount = 3;
-
-  VerifyDetectionResult(detectionResult, expectedDetectionsCount);
-
-  const NSInteger expectedCategoriesCount = 1;
-  
-  // Without only dog in the label allow list, the first 3 results are omitted siince 
-  // they belong to category "cat".
-  // The 4th result (dog) in case of inference with no label allowlist becomes the class with highest
-  // probabiliity 
-  VerifyDetection(detectionResult.detections[0],
-                  expectedCategoriesCount,        // expectedCategoriesCount
-                  CGRectMake(387, 197, 281, 409)  // expectedBoundingBox
-  );
-  VerifyCategory(detectionResult.detections[0].categories[0],
-                 17,       // expectedIndex
-                 0.488281,  // expectedScore
-                 @"dog",  // expectedLabel
-                 nil        // expectedDisplaName
   );
 }
 
