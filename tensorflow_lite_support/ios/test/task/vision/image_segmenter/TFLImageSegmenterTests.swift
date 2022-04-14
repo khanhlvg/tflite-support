@@ -38,6 +38,14 @@ class ImageSegmenterTests: XCTestCase {
 
   let deepLabV3SegmentationHeight = 257
 
+  func verifyError(
+    _ error: Error,
+    expectedLocalizedDescription: String
+  ) {
+    XCTAssert(
+      error.localizedDescription.contains(expectedLocalizedDescription))
+  }
+
   func verifyDeeplabV3PartialSegmentationResult(_ coloredLabels: [ColoredLabel]) {
 
     self.verifyColoredLabel(

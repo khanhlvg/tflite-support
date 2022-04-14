@@ -18,11 +18,22 @@
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLImageSegmenter.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
+#define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
+  XCTAssertNotNil(error);                                                               \
+  XCTAssertEqual(error.domain, expectedDomain);                                         \
+  XCTAssertEqual(error.code, expectedCode);                                             \
+  XCTAssertNotEqual(                                                                    \
+      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location, \
+      NSNotFound)
+
 #define VerifyColoredLabel(coloredLabel, expectedR, expectedG, expectedB, expectedLabel) \
   XCTAssertEqual(coloredLabel.r, expectedR);                                             \
   XCTAssertEqual(coloredLabel.g, expectedG);                                             \
   XCTAssertEqual(coloredLabel.b, expectedB);                                             \
   XCTAssertEqualObjects(coloredLabel.label, expectedLabel)
+
+
+static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
 
 // The maximum fraction of pixels in the candidate mask that can have a
 // different class than the golden mask for the test to pass.
@@ -256,6 +267,29 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
   XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
+}
+
+- (void)testErrorForNullGMLImage {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  NSError *error = nil;
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:nil
+                                                                     error:&error];
+  XCTAssertNil(segmentationResult);
+
+  const NSInteger expectedErrorCode = 2;
+  NSString *const expectedLocalizedDescription =
+      @"GMLImage argument cannot be nil.";
+  VerifyError(error,
+              expectedErrorDomain,          // expectedDomain
+              expectedErrorCode,            // expectedCode
+              expectedLocalizedDescription  // expectedLocalizedDescription
+  );
 }
 
 @end
