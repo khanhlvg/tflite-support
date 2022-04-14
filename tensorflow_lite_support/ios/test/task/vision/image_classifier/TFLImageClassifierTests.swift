@@ -143,10 +143,7 @@ class ImageClassifierTests: XCTestCase {
         "INVALID_ARGUMENT: `class_name_whitelist` and `class_name_blacklist` are mutually exclusive options."
       self.verifyError(error,
                        expectedLocalizedDescription: expectedLocalizedDescription)
-    }
-
-    print("Hello")
-    
+    }    
   }
     
   func testModelOptionsWithMaxResults() throws {
@@ -213,7 +210,6 @@ class ImageClassifierTests: XCTestCase {
         XCTAssertNil(imageClassifier)
     }
     catch {
-      print(error.localizedDescription)
       let expectedLocalizedDescription =
         "INVALID_ARGUMENT: Invalid `max_results` option: value must be != 0"
       self.verifyError(error,
