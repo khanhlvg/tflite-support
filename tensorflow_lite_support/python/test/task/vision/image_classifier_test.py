@@ -208,7 +208,7 @@ class ImageClassifierTest(parameterized.TestCase, tf.test.TestCase):
     categories = image_result.classifications[0].classes
 
     self.assertLessEqual(
-      len(categories), _MAX_RESULTS, "Too many results returned.")
+        len(categories), _MAX_RESULTS, "Too many results returned.")
 
   def test_score_threshold_option(self):
     # Creates classifier.
