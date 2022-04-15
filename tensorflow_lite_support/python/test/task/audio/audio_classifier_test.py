@@ -35,19 +35,19 @@ _AudioClassifierOptions = audio_classifier.AudioClassifierOptions
 _FIXED_INPUT_SIZE_MODEL_FILE = 'yamnet_audio_classifier_with_metadata.tflite'
 _SPEECH_AUDIO_FILE = 'speech.wav'
 _FIXED_INPUT_SIZE_MODEL_CLASSIFICATIONS = {
-  'scores': [{
-    'index': 0,
-    'score': 0.917969,
-    'class_name': 'Speech'
-  }, {
-    'index': 500,
-    'score': 0.058594,
-    'class_name': 'Inside, small room'
-  }, {
-    'index': 494,
-    'score': 0.013672,
-    'class_name': 'Silence'
-  }]
+    'scores': [{
+        'index': 0,
+        'score': 0.917969,
+        'class_name': 'Speech'
+    }, {
+        'index': 500,
+        'score': 0.058594,
+        'class_name': 'Inside, small room'
+    }, {
+        'index': 494,
+        'score': 0.013672,
+        'class_name': 'Silence'
+    }]
 }
 
 _MULTIHEAD_MODEL_FILE = 'two_heads.tflite'
