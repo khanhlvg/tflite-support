@@ -211,7 +211,7 @@ class ObjectDetectorTest(parameterized.TestCase, tf.test.TestCase):
     detections = image_result.detections
 
     self.assertLessEqual(
-      len(detections), _MAX_RESULTS, "Too many results returned.")
+        len(detections), _MAX_RESULTS, "Too many results returned.")
 
   def test_allow_list_option(self):
     # Creates detector.
