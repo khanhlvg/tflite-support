@@ -14,13 +14,9 @@
 """Tests for object detector."""
 
 import enum
-import json
+import tensorflow as tf
 
 from absl.testing import parameterized
-# TODO(b/220067158): Change to import tensorflow and leverage tf.test once
-# fixed the dependency issue.
-from google.protobuf import json_format
-import unittest
 from tensorflow_lite_support.python.task.core.proto import base_options_pb2
 from tensorflow_lite_support.python.task.processor.proto import bounding_box_pb2
 from tensorflow_lite_support.python.task.processor.proto import class_pb2
@@ -28,7 +24,6 @@ from tensorflow_lite_support.python.task.processor.proto import detection_option
 from tensorflow_lite_support.python.task.processor.proto import detections_pb2
 from tensorflow_lite_support.python.task.vision import object_detector
 from tensorflow_lite_support.python.task.vision.core import tensor_image
-from tensorflow_lite_support.python.test import base_test
 from tensorflow_lite_support.python.test import test_util
 
 _BaseOptions = base_options_pb2.BaseOptions
@@ -83,7 +78,6 @@ _ALLOW_LIST = ['cat', 'dog']
 _DENY_LIST = ['cat']
 _SCORE_THRESHOLD = 0.3
 _MAX_RESULTS = 3
-_ACCEPTABLE_ERROR_RANGE = 0.000001
 
 
 class ModelFileType(enum.Enum):
@@ -111,12 +105,10 @@ def _build_test_data(expected_detections):
     detection.classes.append(class_pb2.Category(**category))
     expected_result.detections.append(detection)
 
-  expected_result_dict = json.loads(json_format.MessageToJson(expected_result))
-
-  return expected_result_dict
+  return expected_result
 
 
-class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
+class ObjectDetectorTest(parameterized.TestCase, tf.test.TestCase):
 
   def setUp(self):
     super().setUp()
@@ -167,7 +159,7 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
       base_options = _BaseOptions(file_content=model_content)
     else:
       # Should never happen
-      raise ValueError('model_file_type is invalid.')
+      raise ValueError("model_file_type is invalid.")
 
     detector = _create_detector_from_options(
         base_options, max_results=max_results)
@@ -177,14 +169,14 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
-    image_result_dict = json.loads(json_format.MessageToJson(image_result))
 
     # Builds test data.
-    expected_result_dict = _build_test_data(expected_detections)
+    expected_result = _build_test_data(expected_detections)
 
     # Comparing results.
-    self.assertDeepAlmostEqual(
-        image_result_dict, expected_result_dict, delta=_ACCEPTABLE_ERROR_RANGE)
+    detection_result = detections_pb2.DetectionResult()
+    detection_result.ParseFromString(image_result.SerializeToString())
+    self.assertProtoEquals(detection_result, expected_result)
 
   def test_score_threshold_option(self):
     # Creates detector.
@@ -197,16 +189,13 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
-    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+    detections = image_result.detections
 
-    categories = image_result_dict['detections']
-
-    for category in categories:
-      score = category['classes'][0]['score']
+    for detection in detections:
+      score = detection.classes[0].score
       self.assertGreaterEqual(
           score, _SCORE_THRESHOLD,
-          'Classification with score lower than threshold found. {0}'.format(
-              category))
+          f"Detection with score lower than threshold found. {detection}")
 
   def test_max_results_option(self):
     # Creates detector.
@@ -219,11 +208,10 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
-    image_result_dict = json.loads(json_format.MessageToJson(image_result))
-    detections = image_result_dict['detections']
+    detections = image_result.detections
 
     self.assertLessEqual(
-        len(detections), _MAX_RESULTS, 'Too many results returned.')
+      len(detections), _MAX_RESULTS, "Too many results returned.")
 
   def test_allow_list_option(self):
     # Creates detector.
@@ -236,15 +224,13 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
-    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+    detections = image_result.detections
 
-    categories = image_result_dict['detections']
-
-    for category in categories:
-      label = category['classes'][0]['className']
+    for detection in detections:
+      label = detection.classes[0].class_name
       self.assertIn(
           label, _ALLOW_LIST,
-          'Label "{0}" found but not in label allow list'.format(label))
+          f"Label {label} found but not in label allow list")
 
   def test_deny_list_option(self):
     # Creates detector.
@@ -257,21 +243,19 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
     # Performs object detection on the input.
     image_result = detector.detect(image)
-    image_result_dict = json.loads(json_format.MessageToJson(image_result))
+    detections = image_result.detections
 
-    categories = image_result_dict['detections']
-
-    for category in categories:
-      label = category['classes'][0]['className']
+    for detection in detections:
+      label = detection.classes[0].class_name
       self.assertNotIn(label, _DENY_LIST,
-                       'Label "{0}" found but in deny list.'.format(label))
+                       f"Label {label} found but in deny list.")
 
   def test_combined_allowlist_and_denylist(self):
     # Fails with combined allowlist and denylist
     with self.assertRaisesRegex(
         ValueError,
-        r'`class_name_whitelist` and `class_name_blacklist` are mutually '
-        r'exclusive options.'):
+        r"`class_name_whitelist` and `class_name_blacklist` are mutually "
+        r"exclusive options."):
       base_options = _BaseOptions(file_name=self.model_path)
       detection_options = detection_options_pb2.DetectionOptions(
           class_name_allowlist=['foo'], class_name_denylist=['bar'])
@@ -281,4 +265,4 @@ class ObjectDetectorTest(parameterized.TestCase, base_test.BaseTestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  tf.test.main()
