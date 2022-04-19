@@ -75,13 +75,11 @@
     cClassificationOptions->label_allowlist.length = (int)self.labelAllowList.count;
   }
 
-  if (self.displayNamesLocale) {
     if (self.displayNamesLocale.UTF8String) {
-      cClassificationOptions->display_names_local = strdup(self.displayNamesLocale.UTF8String);
-      if (!cClassificationOptions->display_names_local) {
-        exit(-1);  // Memory Allocation Failed.
-      }
-    } else {
+      // strdup is not needed as C layer handles copying (C++ options are protobufs).
+      // Hence setting char* values in protobuf leads to copying.
+      cClassificationOptions->display_names_local = self.displayNamesLocale.UTF8String; 
+    }
       [TFLCommonUtils createCustomError:error
                                withCode:TFLSupportErrorCodeInvalidArgumentError
                             description:@"Could not convert (NSString *) to (char *)."];
