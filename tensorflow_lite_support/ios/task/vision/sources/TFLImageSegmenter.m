@@ -38,6 +38,7 @@
   self = [self init];
   if (self) {
     self.baseOptions.modelFile.filePath = modelPath;
+    self.outputType = TFLCategoryMaskOutputType;
   }
   return self;
 }
@@ -67,6 +68,12 @@
 
   [options.baseOptions copyToCOptions:&(cOptions.base_options)];
 
+  cOptions.output_type = (TfLiteImageSegmenterOutputType)options.outputType;
+
+  if (options.displayNamesLocale.UTF8String) {
+      cOptions.display_names_locale = options.displayNamesLocale.UTF8String;
+  }
+  
   TfLiteSupportError *createImageSegmenterError = nil;
   TfLiteImageSegmenter *imageSegmenter =
       TfLiteImageSegmenterFromOptions(&cOptions, &createImageSegmenterError);
