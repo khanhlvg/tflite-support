@@ -55,9 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
   [super setUp];
 
   // Setting this property causes the tests to break after a test case fails.
-  self.continueAfterFailure = NO;
+  // self.continueAfterFailure = NO;
   self.modelPath = [[NSBundle bundleForClass:self.class] pathForResource:@"mobilenet_v2_1.0_224"
-                                                                    ofType:@"tflite"];
+                                                                  ofType:@"tflite"];
   XCTAssertNotNil(self.modelPath);
 }
 
@@ -313,12 +313,121 @@ NS_ASSUME_NONNULL_BEGIN
   XCTAssertNil(classificationResult);
 
   const NSInteger expectedErrorCode = 2;
-  NSString *const expectedLocalizedDescription =
-      @"GMLImage argument cannot be nil.";
+  NSString *const expectedLocalizedDescription = @"GMLImage argument cannot be nil.";
   VerifyError(error,
               expectedErrorDomain,          // expectedDomain
               expectedErrorCode,            // expectedCode
               expectedLocalizedDescription  // expectedLocalizedDescription
+  );
+}
+
+- (void)testInferenceWithPixelBuffer {
+  TFLImageClassifierOptions *imageClassifierOptions =
+      [[TFLImageClassifierOptions alloc] initWithModelPath:self.modelPath];
+
+  int maxResults = 3;
+  imageClassifierOptions.classificationOptions.maxResults = maxResults;
+
+  TFLImageClassifier *imageClassifier =
+      [TFLImageClassifier imageClassifierWithOptions:imageClassifierOptions error:nil];
+  XCTAssertNotNil(imageClassifier);
+
+  GMLImage *gmlImage = [GMLImage imageBufferFromBundleWithClass:self.class
+                                                       fileName:@"burger"
+                                                         ofType:@"jpg"
+                                                     sourceType:GMLImageSourceTypePixelBuffer
+                                                pixelFormatType:kCVPixelFormatType_32BGRA];
+  XCTAssertNotNil(gmlImage);
+
+  TFLClassificationResult *classificationResult = [imageClassifier classifyWithGMLImage:gmlImage
+                                                                                  error:nil];
+
+  CVPixelBufferRelease(gmlImage.pixelBuffer);
+
+  const NSInteger expectedClassificationsCount = 1;
+  VerifyClassificationResult(classificationResult,
+                             expectedClassificationsCount  // expectedClassificationsCount
+  );
+
+  const NSInteger expectedHeadIndex = 0;
+  VerifyClassifications(classificationResult.classifications[0],
+                        expectedHeadIndex,  // expectedHeadIndex
+                        maxResults          // expectedCategoryCount
+  );
+
+  // TODO: match the label and score as image_classifier_test.cc
+  VerifyCategory(classificationResult.classifications[0].categories[0],
+                 934,              // expectedIndex
+                 0.748976,         // expectedScore
+                 @"cheeseburger",  // expectedLabel
+                 nil               // expectedDisplaName
+  );
+  VerifyCategory(classificationResult.classifications[0].categories[1],
+                 925,           // expectedIndex
+                 0.024646,      // expectedScore
+                 @"guacamole",  // expectedLabel
+                 nil            // expectedDisplaName
+  );
+  VerifyCategory(classificationResult.classifications[0].categories[2],
+                 932,       // expectedIndex
+                 0.022505,  // expectedScoree
+                 @"bagel",  // expectedLabel
+                 nil        // expectedDisplaName
+  );
+}
+
+- (void)testInferenceWithSampleBuffer {
+  TFLImageClassifierOptions *imageClassifierOptions =
+      [[TFLImageClassifierOptions alloc] initWithModelPath:self.modelPath];
+
+  int maxResults = 3;
+  imageClassifierOptions.classificationOptions.maxResults = maxResults;
+
+  TFLImageClassifier *imageClassifier =
+      [TFLImageClassifier imageClassifierWithOptions:imageClassifierOptions error:nil];
+  XCTAssertNotNil(imageClassifier);
+
+  GMLImage *gmlImage = [GMLImage imageBufferFromBundleWithClass:self.class
+                                                       fileName:@"burger"
+                                                         ofType:@"jpg"
+                                                     sourceType:GMLImageSourceTypeSampleBuffer
+                                                pixelFormatType:kCVPixelFormatType_32BGRA];
+  XCTAssertNotNil(gmlImage);
+
+  TFLClassificationResult *classificationResult = [imageClassifier classifyWithGMLImage:gmlImage
+                                                                                  error:nil];
+
+  CVPixelBufferRelease(gmlImage.pixelBuffer);
+
+  const NSInteger expectedClassificationsCount = 1;
+  VerifyClassificationResult(classificationResult,
+                             expectedClassificationsCount  // expectedClassificationsCount
+  );
+
+  const NSInteger expectedHeadIndex = 0;
+  VerifyClassifications(classificationResult.classifications[0],
+                        expectedHeadIndex,  // expectedHeadIndex
+                        maxResults          // expectedCategoryCount
+  );
+
+  // TODO: match the label and score as image_classifier_test.cc
+  VerifyCategory(classificationResult.classifications[0].categories[0],
+                 934,              // expectedIndex
+                 0.748976,         // expectedScore
+                 @"cheeseburger",  // expectedLabel
+                 nil               // expectedDisplaName
+  );
+  VerifyCategory(classificationResult.classifications[0].categories[1],
+                 925,           // expectedIndex
+                 0.024646,      // expectedScore
+                 @"guacamole",  // expectedLabel
+                 nil            // expectedDisplaName
+  );
+  VerifyCategory(classificationResult.classifications[0].categories[2],
+                 932,       // expectedIndex
+                 0.022505,  // expectedScoree
+                 @"bagel",  // expectedLabel
+                 nil        // expectedDisplaName
   );
 }
 
