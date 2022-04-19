@@ -139,10 +139,6 @@
       convertError = vImageConvert_BGRA8888toRGB888(&srcBuffer, &destBuffer, kvImageNoFlags);
       break;
     }
-    case kCVPixelFormatType_32ARGB: {
-      convertError = vImageConvert_ARGB8888toRGB888(&srcBuffer, &destBuffer, kvImageNoFlags);
-      break;
-    }
     default:
       [TFLCommonUtils createCustomError:error
                                withCode:TFLSupportErrorCodeInvalidArgumentError
@@ -194,7 +190,7 @@
   }
 
   NSInteger bitsPerComponent = 8;
-  uint32_t bitMapInfo;  // Corresponding to 32RGBA
+  uint32_t bitMapInfo;  
 
   switch (pixelBufferFormatType) {
     case kCVPixelFormatType_32BGRA: {
@@ -343,6 +339,10 @@
   // See https://developer.apple.com/documentation/coregraphics/1455939-cgbitmapcontextcreate
   // But for segmentation test image, this was not the case.
   // Hence setting it to the value of channelCount*width.
+  // kCGImageAlphaNoneSkipLast specifies that Alpha will always be next to B.
+  // kCGBitmapByteOrder32Big specifies that R will be stored before B.
+  // In combination they signify a pixelFormat of kCVPixelFormatType32RGBA.
+  CGBitmapInfo bitMapinfoForRGBAOrder = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
   CGContextRef context =
       CGBitmapContextCreate(nil, size.width, size.height, bitsPerComponent, bytesPerRow, colorSpace,
                             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big);
@@ -352,8 +352,10 @@
     uint8_t *srcData = CGBitmapContextGetData(context);
 
     if (srcData) {
+      // We have drawn the image as an RGBA image with 8 bitsPerComponent and hence can safely input a 
+      // pixel format of type kCVPixelFormatType_32RGBA for conversion by vImage.
       buffer_to_return = [TFLCVPixelBufferUtils
-      createRGBImageDatafromImageData:pixelBufferBaseAddress
+      createRGBImageDatafromImageData:srcData
                              withSize:size
                                stride:bytesPerRow
                     pixelBufferFormat:kCVPixelFormatType_32RGBA
@@ -365,31 +367,6 @@
 
   CGColorSpaceRelease(colorSpace);
 
-  return buffer_to_return;
-}
-
-+ (nullable UInt8 *)populateRGBBufferFromSourceRGBABuffer:(UInt8 *)buffer
-                                                    width:(size_t)width
-                                                   height:(size_t)height {
-  if (!buffer) return NULL;
-
-  int sourceChannelCount = 4;
-  int destChannelCount = 3;
-
-  UInt8 *buffer_to_return =
-      [TFLCommonUtils mallocWithSize:sizeof(UInt8) * height * destChannelCount * width error:nil];
-  if (!buffer_to_return) {
-    return NULL;
-  }
-  for (int col = 0; col < width; col++) {
-    for (int row = 0; row < height; row++) {
-      long offset = sourceChannelCount * (row * width + col);
-      long rgbOffset = destChannelCount * (row * width + col);
-      buffer_to_return[rgbOffset] = buffer[offset];
-      buffer_to_return[rgbOffset + 1] = buffer[offset + 1];
-      buffer_to_return[rgbOffset + 2] = buffer[offset + 2];
-    }
-  }
   return buffer_to_return;
 }
 
