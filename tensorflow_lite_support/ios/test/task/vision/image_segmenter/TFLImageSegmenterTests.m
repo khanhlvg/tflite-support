@@ -18,11 +18,22 @@
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLImageSegmenter.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
+#define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
+  XCTAssertNotNil(error);                                                               \
+  XCTAssertEqual(error.domain, expectedDomain);                                         \
+  XCTAssertEqual(error.code, expectedCode);                                             \
+  XCTAssertNotEqual(                                                                    \
+      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location, \
+      NSNotFound)
+
 #define VerifyColoredLabel(coloredLabel, expectedR, expectedG, expectedB, expectedLabel) \
   XCTAssertEqual(coloredLabel.r, expectedR);                                             \
   XCTAssertEqual(coloredLabel.g, expectedG);                                             \
   XCTAssertEqual(coloredLabel.b, expectedB);                                             \
   XCTAssertEqualObjects(coloredLabel.label, expectedLabel)
+
+
+static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
 
 // The maximum fraction of pixels in the candidate mask that can have a
 // different class than the golden mask for the test to pass.
@@ -256,6 +267,127 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
 
   XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
+}
+
+- (void)verifyMatchToCategoryMaskForConfidenceMask:(NSArray<TFLConfidenceMask *> *)confidenceMasks {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+                                                 fileName:@"segmentation_input_rotation0"
+                                                   ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:gmlImage
+                                                                            error:nil];
+
+  XCTAssertNotNil(segmentationResult);
+  
+  TFLSegmentation *segmentation = segmentationResult.segmentations[0];
+
+  NSInteger numPixels = segmentation.categoryMask.height * segmentation.categoryMask.width;
+  NSInteger calculatedCategoryMask[numPixels];
+  NSInteger inconsistentPixels = 0;
+  for (int i = 0; i < numPixels ; i++) {
+    float maxValue = FLT_MIN;
+    calculatedCategoryMask[i] = NSIntegerMin;
+    for (int j = 0; j < segmentation.coloredLabels.count; j++) {
+          if (maxValue < confidenceMasks[j].mask[i]) {
+              maxValue = confidenceMasks[j].mask[i];
+              calculatedCategoryMask[i] = j;
+          }
+    }
+    if (calculatedCategoryMask[i] != segmentation.categoryMask.mask[i]) {
+      inconsistentPixels += 1;
+    }
+  }
+
+  XCTAssertEqual(inconsistentPixels, 0);
+}
+
+- (void)testSuccessfullImageSegmentationWithConfidenceMask {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+  imageSegmenterOptions.outputType = TFLOutputTypeConfidenceMasks;
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+                                                 fileName:@"segmentation_input_rotation0"
+                                                   ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:gmlImage
+                                                                            error:nil];
+
+  XCTAssertNotNil(segmentationResult);
+  XCTAssertEqual(segmentationResult.segmentations.count, 1);
+
+  XCTAssertNotNil(segmentationResult.segmentations[0].coloredLabels);
+  [self compareWithDeepLabV3PartialColoredLabels:segmentationResult.segmentations[0].coloredLabels];
+
+  XCTAssertNotNil(segmentationResult.segmentations[0].confidenceMasks);
+  // XCTAssertTrue(segmentationResult.segmentations[0].categoryMask.mask != nil);
+
+  GMLImage *goldenImage = [GMLImage imageFromBundleWithClass:self.class
+                                                    fileName:@"segmentation_golden_rotation0"
+                                                      ofType:@"png"];
+
+  XCTAssertNotNil(goldenImage);
+  CVPixelBufferRef pixelBuffer = [goldenImage grayScalePixelBuffer];
+
+  CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+  UInt8 *pixelBufferBaseAddress = (UInt8 *)CVPixelBufferGetBaseAddress(pixelBuffer);
+
+  // XCTAssertEqual(deepLabV3SegmentationWidth,
+  //                segmentationResult.segmentations[0].confidenceMasks[0].width);
+  // XCTAssertEqual(deepLabV3SegmentationHeight,
+  //                segmentationResult.segmentations[0].categoryMask.height);
+  
+  [self verifyMatchToCategoryMaskForConfidenceMask:segmentationResult.segmentations[0].confidenceMasks];
+  // NSInteger numPixels = deepLabV3SegmentationWidth * deepLabV3SegmentationHeight;
+
+
+  // float inconsistentPixels = 0;
+
+  // for (int i = 0; i < numPixels; i++)
+  //   if (segmentationResult.segmentations[0].categoryMask.mask[i] * kGoldenMaskMagnificationFactor !=
+  //       pixelBufferBaseAddress[i])
+  //     inconsistentPixels += 1;
+
+  // CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+  // XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
+}
+
+- (void)testErrorForNullGMLImage {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  NSError *error = nil;
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:nil
+                                                                     error:&error];
+  XCTAssertNil(segmentationResult);
+
+  const NSInteger expectedErrorCode = 2;
+  NSString *const expectedLocalizedDescription =
+      @"GMLImage argument cannot be nil.";
+  VerifyError(error,
+              expectedErrorDomain,          // expectedDomain
+              expectedErrorCode,            // expectedCode
+              expectedLocalizedDescription  // expectedLocalizedDescription
+  );
 }
 
 @end
