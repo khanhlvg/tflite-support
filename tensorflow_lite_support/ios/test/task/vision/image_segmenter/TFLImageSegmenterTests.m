@@ -269,6 +269,107 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
 }
 
+- (void)verifyMatchToCategoryMaskForConfidenceMask:(NSArray<TFLConfidenceMask *> *)confidenceMasks {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+                                                 fileName:@"segmentation_input_rotation0"
+                                                   ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:gmlImage
+                                                                            error:nil];
+
+  XCTAssertNotNil(segmentationResult);
+  
+  TFLSegmentation *segmentation = segmentationResult.segmentations[0];
+
+  NSInteger numPixels = segmentation.categoryMask.height * segmentation.categoryMask.width;
+  for (int i = 0; i < numPixels ; i++) {
+    // NSMutableArray *confidenceValuesForPixel = [[NSMutableArray alloc] init];
+    float maxValue = 0;
+    NSInteger maxIndex;
+
+    for (int j = 0; j < segmentation.coloredLabels.count; j++) {
+            // NSLog(@"Enter");
+            // NSLog(@"%d", confidenceMasks.count);
+            // NSLog(@"%d", confidenceMasks[0].width);
+
+          if (maxValue < confidenceMasks[j].mask[i]) {
+              maxIndex = j;
+          }
+          // if (j == 0
+          //   NSLog(@"Yes");
+          // }
+        // XCTAssertEqual(segmentation.categoryMask.mask[i], maxIndex);
+    }
+  }
+
+}
+
+- (void)testSuccessfullImageSegmentationWithConfidenceMask {
+  TFLImageSegmenterOptions *imageSegmenterOptions =
+      [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
+  imageSegmenterOptions.outputType = TFLConfidenceMasksOutputType;
+
+  TFLImageSegmenter *imageSegmenter =
+      [TFLImageSegmenter imageSegmenterWithOptions:imageSegmenterOptions error:nil];
+  XCTAssertNotNil(imageSegmenter);
+
+  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
+                                                 fileName:@"segmentation_input_rotation0"
+                                                   ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSegmentationResult *segmentationResult = [imageSegmenter segmentWithGMLImage:gmlImage
+                                                                            error:nil];
+
+  XCTAssertNotNil(segmentationResult);
+  XCTAssertEqual(segmentationResult.segmentations.count, 1);
+
+  XCTAssertNotNil(segmentationResult.segmentations[0].coloredLabels);
+  [self compareWithDeepLabV3PartialColoredLabels:segmentationResult.segmentations[0].coloredLabels];
+
+  XCTAssertNotNil(segmentationResult.segmentations[0].confidenceMasks);
+  // XCTAssertTrue(segmentationResult.segmentations[0].categoryMask.mask != nil);
+
+  GMLImage *goldenImage = [GMLImage imageFromBundleWithClass:self.class
+                                                    fileName:@"segmentation_golden_rotation0"
+                                                      ofType:@"png"];
+
+  XCTAssertNotNil(goldenImage);
+  CVPixelBufferRef pixelBuffer = [goldenImage grayScalePixelBuffer];
+
+  CVPixelBufferLockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+  UInt8 *pixelBufferBaseAddress = (UInt8 *)CVPixelBufferGetBaseAddress(pixelBuffer);
+
+  // XCTAssertEqual(deepLabV3SegmentationWidth,
+  //                segmentationResult.segmentations[0].confidenceMasks[0].width);
+  // XCTAssertEqual(deepLabV3SegmentationHeight,
+  //                segmentationResult.segmentations[0].categoryMask.height);
+  
+  [self verifyMatchToCategoryMaskForConfidenceMask:segmentationResult.segmentations[0].confidenceMasks];
+  // NSInteger numPixels = deepLabV3SegmentationWidth * deepLabV3SegmentationHeight;
+
+
+  // float inconsistentPixels = 0;
+
+  // for (int i = 0; i < numPixels; i++)
+  //   if (segmentationResult.segmentations[0].categoryMask.mask[i] * kGoldenMaskMagnificationFactor !=
+  //       pixelBufferBaseAddress[i])
+  //     inconsistentPixels += 1;
+
+  // CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
+
+  // XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
+}
+
 - (void)testErrorForNullGMLImage {
   TFLImageSegmenterOptions *imageSegmenterOptions =
       [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
