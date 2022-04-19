@@ -352,9 +352,12 @@
     uint8_t *srcData = CGBitmapContextGetData(context);
 
     if (srcData) {
-      buffer_to_return = [UIImage populateRGBBufferFromSourceRGBABuffer:srcData
-                                                                  width:size.width
-                                                                 height:size.height];
+      buffer_to_return = [TFLCVPixelBufferUtils
+      createRGBImageDatafromImageData:pixelBufferBaseAddress
+                             withSize:size
+                               stride:bytesPerRow
+                    pixelBufferFormat:kCVPixelFormatType_32RGBA
+                                error:error];
     }
 
     CGContextRelease(context);
