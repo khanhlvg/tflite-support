@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (CVPixelBufferRef)grayScalePixelBuffer;
 
 /**
- * Loads an image from a file in an app bundle into a GMLImage object.
+ * Loads a UIImage image from a file in an app bundle into a GMLImage object.
  *
  * @param classObject The specified class associated with the bundle containing
  * the file to be loaded.
@@ -66,6 +66,23 @@ NS_ASSUME_NONNULL_BEGIN
                                          ofType:(NSString *)type
     NS_SWIFT_NAME(imageFromBundle(class:filename:type:));
 
+/**
+ * Loads a CVPixelBuffer or CMSampleBuffer from a file in an app bundle into a GMLImage object.
+ *
+ * @param classObject The specified class associated with the bundle containing
+ * the file to be loaded.
+ * @param name Name of the image file.
+ * @param type Extenstion of the image file.
+ *
+ * @return The GMLImage object contains the loaded image. This method returns
+ * nil if it cannot load the image.
+ */
++ (nullable GMLImage *)imageBufferFromBundleWithClass:(Class)classObject
+                                             fileName:(NSString *)name
+                                               ofType:(NSString *)type
+                                           sourceType:(GMLImageSourceType)sourceType
+                                      pixelFormatType:(OSType)pixelFormatType
+  NS_SWIFT_NAME(imageBufferFromBundle(class:filename:type:sourceType : pixelFormatType));
 @end
 
 NS_ASSUME_NONNULL_END
