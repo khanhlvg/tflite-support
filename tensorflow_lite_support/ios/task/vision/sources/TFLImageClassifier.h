@@ -83,8 +83,7 @@ NS_SWIFT_NAME(ImageClassifier)
  * TFLClass objects for each classification head.
  * This method currently supports inference on only following type of images:
  * 1. RGB and RGBA images for GMLImageSourceTypeImage.
- * 2. kCVPixelFormatType_32RGBA, kCVPixelFormatType_32BGRA,
- *    kCVPixelFormatType_24RGB for GMLImageSourceTypePixelBuffer and
+ * 2. kCVPixelFormatType_32BGRA for GMLImageSourceTypePixelBuffer and
  *    GMLImageSourceTypeSampleBuffer. If you are using AVCaptureSession to setup
  *    camera and get the frames for inference, you must request for one of these
  *    supported formats from AVCaptureVideoDataOutput. For a sample code
