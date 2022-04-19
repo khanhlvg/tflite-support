@@ -67,7 +67,7 @@
   TfLiteImageSegmenterOptions cOptions = TfLiteImageSegmenterOptionsCreate();
 
   [options.baseOptions copyToCOptions:&(cOptions.base_options)];
-  cOptions.output_type = (TFLOutputType)options.outputType;
+  cOptions.output_type = (TfLiteImageSegmenterOutputType)options.outputType;
   
   if (options.displayNamesLocale) {
     if (options.displayNamesLocale.UTF8String) {
