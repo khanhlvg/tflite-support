@@ -265,4 +265,108 @@ class ImageSegmenterTests: XCTestCase {
     XCTAssertLessThan(inconsistentPixels / Float(numPixels), kGoldenMaskTolerance)
   }
 
+  func verifyMatchToCategoryMaskForConfidenceMask(_ confidenceMasks:[ConfidenceMask]?) {
+    XCTAssertEqual(deepLabV3SegmentationWidth, confidenceMasks[0].width)
+    XCTAssertEqual(deepLabV3SegmentationHeight, confidenceMasks[0].height)
+
+    let modelPath = try XCTUnwrap(ImageSegmenterTests.modelPath)
+
+    let imageSegmenterOptions = ImageSegmenterOptions(modelPath: modelPath)
+
+    let imageSegmenter =
+      try ImageSegmenter.imageSegmenter(options: imageSegmenterOptions)
+
+    let gmlImage = try XCTUnwrap(
+      MLImage.imageFromBundle(
+        class: type(of: self),
+        filename: "segmentation_input_rotation0",
+        type: "jpg"))
+    let segmentationResult: SegmentationResult =
+      try XCTUnwrap(imageSegmenter.segment(gmlImage: gmlImage))
+
+    XCTAssertEqual(segmentationResult.segmentations.count, 1)
+    let categoryMask = try XCTUnwrap(segmentationResult.segmentations[0].categoryMask)
+    let coloredLabels = try XCTUnwrap(segmentationResult.segmentations[0].coloredLabels)
+
+    let numPixels = categoryMask.height * categoryMask.width;
+    
+    let calculatedCategoryMask: [Int] = []
+    let inconsistentPixels = 0;
+    for i in 0..<numPixels {
+      let maxValue = Float.leastNonzerMagnitude;
+      calculatedCategoryMask[i] = Int.min;
+
+      for (int j = 0; j < coloredLabels.count; j++) {
+          let mask = try XCTUnwrap(confidenceMasks[j].mask)
+          if (maxValue < mask[i]) {
+              maxValue = mask[i];
+              calculatedCategoryMask[i] = j;
+          }
+    }
+    if (calculatedCategoryMask[i] != segmentation.categoryMask.mask[i]) {
+      inconsistentPixels += 1;
+    }
+  }
+
+  XCTAssertEqual(inconsistentPixels, 0);
+
+  }
+
+  func testSuccessfullSegmentationWithConfidenceMasks() throws {
+
+    let modelPath = try XCTUnwrap(ImageSegmenterTests.modelPath)
+
+    let imageSegmenterOptions = ImageSegmenterOptions(modelPath: modelPath)
+    imageSegmenterOptions.outputType = OutputType.confidenceMasks
+
+     let imageSegmenter = try ImageSegmenter.imageSegmenter(options: imageSegmenterOptions)
+
+    let gmlImage = try XCTUnwrap(
+      MLImage.imageFromBundle(
+        class: type(of: self),
+        filename: "segmentation_input_rotation0",
+        type: "jpg"))
+    let segmentationResult: SegmentationResult =
+      try XCTUnwrap(imageSegmenter.segment(gmlImage: gmlImage))
+
+    XCTAssertEqual(segmentationResult.segmentations.count, 1)
+
+    let coloredLabels = try XCTUnwrap(segmentationResult.segmentations[0].coloredLabels)
+    verifyDeeplabV3PartialSegmentationResult(coloredLabels)
+
+    let confidenceMasks = try XCTUnwrap(segmentationResult.segmentations[0].confidenceMasks)
+
+    // XCTAssertEqual(deepLabV3SegmentationWidth, categoryMask.width)
+    // XCTAssertEqual(deepLabV3SegmentationHeight, categoryMask.height)
+
+    // let goldenMaskImage = try XCTUnwrap(
+    //   MLImage.imageFromBundle(
+    //     class: type(of: self),
+    //     filename: "segmentation_golden_rotation0",
+    //     type: "png"))
+
+    // let pixelBuffer = goldenMaskImage.grayScalePixelBuffer().takeRetainedValue()
+
+    // CVPixelBufferLockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+
+    // let pixelBufferBaseAddress = (try XCTUnwrap(CVPixelBufferGetBaseAddress(pixelBuffer)))
+    //   .assumingMemoryBound(to: UInt8.self)
+
+    // let numPixels = deepLabV3SegmentationWidth * deepLabV3SegmentationHeight
+
+    // let mask = try XCTUnwrap(categoryMask.mask)
+
+    // var inconsistentPixels: Float = 0.0
+
+    // for i in 0..<numPixels {
+    //   if mask[i] * kGoldenMaskMagnificationFactor != pixelBufferBaseAddress[i] {
+    //     inconsistentPixels += 1
+    //   }
+    // }
+
+    // CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags.readOnly)
+
+    // XCTAssertLessThan(inconsistentPixels / Float(numPixels), kGoldenMaskTolerance)
+  }
+
 }
