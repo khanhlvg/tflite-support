@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                ofType:(NSString *)type
                                            sourceType:(GMLImageSourceType)sourceType
                                       pixelFormatType:(OSType)pixelFormatType
-  NS_SWIFT_NAME(imageBufferFromBundle(class:filename:type:sourceType : pixelFormatType));
+  NS_SWIFT_NAME(imageBufferFromBundle(class:filename:type:sourceType:pixelFormatType:));
 @end
 
 NS_ASSUME_NONNULL_END

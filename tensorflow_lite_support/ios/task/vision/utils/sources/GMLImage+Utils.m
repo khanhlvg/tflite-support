@@ -325,7 +325,6 @@
 }
 
 + (UInt8 *_Nullable)pixelDataFromCGImage:(CGImageRef)cgImage error:(NSError **)error {
-  CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
   CGSize size = CGSizeMake(CGImageGetWidth(cgImage), CGImageGetHeight(cgImage));
 
   NSInteger bitsPerComponent = 8;
@@ -342,10 +341,10 @@
   // kCGImageAlphaNoneSkipLast specifies that Alpha will always be next to B.
   // kCGBitmapByteOrder32Big specifies that R will be stored before B.
   // In combination they signify a pixelFormat of kCVPixelFormatType32RGBA.
-  CGBitmapInfo bitMapinfoForRGBAOrder = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
+  CGBitmapInfo bitMapinfoFor32RGBA = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big;
   CGContextRef context =
       CGBitmapContextCreate(nil, size.width, size.height, bitsPerComponent, bytesPerRow, colorSpace,
-                            kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big);
+                            bitMapinfoFor32RGBA);
 
   if (context) {
     CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), cgImage);
