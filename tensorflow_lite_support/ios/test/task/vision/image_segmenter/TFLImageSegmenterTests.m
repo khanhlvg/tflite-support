@@ -32,6 +32,27 @@
   XCTAssertEqual(coloredLabel.b, expectedB);                                             \
   XCTAssertEqualObjects(coloredLabel.label, expectedLabel)
 
+#define VerifySegmentationResult(segmentationResult, expectedSegmentationsCount) \
+  XCTAssertEqual(segmentationResult.segmentations.count, expectedSegmentationsCount)       
+  
+#define VerifySegmentationForCategoryMask(segmentation, expectedColoredLabelsCount, expectedWidth, expectedHeight) \
+  XCTAssertEqual(segmentations.coloredLabels.count, expectedColoredLabelsCount); \
+  XCTAssertNil(segmentation.confidenceMasks);                                    \
+  XCTAssertEqual(segmentation.categoryMask.width, expectedWidth);    \
+  XCTAssertEqual(segmentation.categoryMask.height, expectedHeight)
+
+#define VerifySegmentationWithCategoryMask(segmentation, expectedColoredLabelsCount) \
+  XCTAssertEqual(segmentations.coloredLabels.count, expectedColoredLabelsCount); \
+  XCTAssertNotNil(segmentation.categoryMask);                                    \
+  XCTAssertNil(segmentation.confidenceMasks);                                    \
+  XCTAssertEqual(segmentation.categoryMask.width, deepLabV3SegmentationWidth);    \
+  XCTAssertEqual(segmentation.categoryMask.height, deepLabV3SegmentationHeight)
+                                  
+ #define VerifySegmentationWithConfidenceMasks(segmentation, expectedColoredLabelsCount) \
+  XCTAssertEqual(segmentations.coloredLabels.count, expectedColoredLabelsCount); \
+  XCTAssertNil(segmentation.categoryMask);                                    \
+  XCTAssertNotNil(segmentation.confidenceMasks)                                 
+
 
 static NSString *const expectedErrorDomain = @"org.tensorflow.lite.tasks";
 
@@ -269,6 +290,8 @@ NSInteger const deepLabV3SegmentationHeight = 257;
   XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
 }
 
+
+
 - (void)verifyMatchToCategoryMaskForConfidenceMask:(NSArray<TFLConfidenceMask *> *)confidenceMasks {
   TFLImageSegmenterOptions *imageSegmenterOptions =
       [[TFLImageSegmenterOptions alloc] initWithModelPath:self.modelPath];
@@ -346,25 +369,8 @@ NSInteger const deepLabV3SegmentationHeight = 257;
 
   UInt8 *pixelBufferBaseAddress = (UInt8 *)CVPixelBufferGetBaseAddress(pixelBuffer);
 
-  // XCTAssertEqual(deepLabV3SegmentationWidth,
-  //                segmentationResult.segmentations[0].confidenceMasks[0].width);
-  // XCTAssertEqual(deepLabV3SegmentationHeight,
-  //                segmentationResult.segmentations[0].categoryMask.height);
-  
   [self verifyMatchToCategoryMaskForConfidenceMask:segmentationResult.segmentations[0].confidenceMasks];
-  // NSInteger numPixels = deepLabV3SegmentationWidth * deepLabV3SegmentationHeight;
-
-
-  // float inconsistentPixels = 0;
-
-  // for (int i = 0; i < numPixels; i++)
-  //   if (segmentationResult.segmentations[0].categoryMask.mask[i] * kGoldenMaskMagnificationFactor !=
-  //       pixelBufferBaseAddress[i])
-  //     inconsistentPixels += 1;
-
-  // CVPixelBufferUnlockBaseAddress(pixelBuffer, kCVPixelBufferLock_ReadOnly);
-
-  // XCTAssertLessThan(inconsistentPixels / (float)numPixels, kGoldenMaskTolerance);
+  
 }
 
 - (void)testErrorForNullGMLImage {
