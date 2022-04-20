@@ -101,6 +101,13 @@ NS_SWIFT_NAME(ImageClassifier)
  * specified bounding box, returns an array of categorization results
  * where each member in the array is an array of TFLClass objects for
  * each classification head.
+ * This method currently supports inference on only following type of images:
+ * 1. RGB and RGBA images for GMLImageSourceTypeImage.
+ * 2. kCVPixelFormatType_32BGRA for GMLImageSourceTypePixelBuffer and
+ *    GMLImageSourceTypeSampleBuffer. If you are using AVCaptureSession to setup
+ *    camera and get the frames for inference, you must request for this format
+ *    from AVCaptureVideoDataOutput. Otherwise your classification 
+ *    results will be wrong.
  *
  * @param image input to the model.
  * @param roi CGRect specifying region of interest in image.
