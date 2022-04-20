@@ -30,7 +30,6 @@
                            frameBufferFormat:(enum TfLiteFrameBufferFormat)frameBufferFormat
                                       buffer:(uint8_t *)buffer
                                        error:(NSError **)error;
-+ (uint8_t *)convertPixelBufferToRGBData:(CVPixelBufferRef)pixelBuffer error:(NSError **)error;
 
 + (TfLiteFrameBuffer *)cFramebufferFromCVPixelBuffer:(CVPixelBufferRef)pixelBuffer
                                                error:(NSError **)error;
@@ -56,6 +55,11 @@
                            frameBufferFormat:(enum TfLiteFrameBufferFormat)frameBufferFormat
                                       buffer:(uint8_t *)buffer
                                        error:(NSError **)error {
+
+   if (!buffer) {
+    return NULL;
+  }
+
   TfLiteFrameBuffer *cFrameBuffer = [TFLCommonUtils mallocWithSize:sizeof(TfLiteFrameBuffer)
                                                              error:error];
 
@@ -74,13 +78,20 @@
   uint8_t *buffer = NULL;
   enum TfLiteFrameBufferFormat cPixelFormat = kRGB;
 
-  CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+
   OSType pixelBufferFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
 
   switch (pixelBufferFormat) {
     case kCVPixelFormatType_32BGRA: {
       cPixelFormat = kRGB;
-      buffer = [TFLCVPixelBufferUtils convertPixelBufferToRGBData:pixelBuffer error:error];
+      CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+      buffer = [TFLCVPixelBufferUtils
+      createRGBImageDatafromImageData:CVPixelBufferGetBaseAddress(pixelBuffer)
+                             withSize:CGSizeMake(CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer))
+                               stride:CVPixelBufferGetBytesPerRow(pixelBuffer)
+                    pixelBufferFormat:pixelBufferFormat
+                                error:error];
+      CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
       break;
     }
     default: {
@@ -91,11 +102,6 @@
     }
   }
 
-  CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-
-  if (!buffer) {
-    return NULL;
-  }
 
   return [self cFrameBufferWithWidth:(int)CVPixelBufferGetWidth(pixelBuffer)
                               height:(int)CVPixelBufferGetHeight(pixelBuffer)
@@ -149,20 +155,6 @@
   }
 
   return destPixelBufferAddress;
-}
-
-+ (uint8_t *)convertPixelBufferToRGBData:(CVPixelBufferRef)pixelBuffer error:(NSError **)error {
-  CGSize size = CGSizeMake(CVPixelBufferGetWidth(pixelBuffer), CVPixelBufferGetHeight(pixelBuffer));
-  size_t stride = CVPixelBufferGetBytesPerRow(pixelBuffer);
-
-  uint8_t *pixelBufferBaseAddress = (uint8_t *)CVPixelBufferGetBaseAddress(pixelBuffer);
-
-  return [TFLCVPixelBufferUtils
-      createRGBImageDatafromImageData:pixelBufferBaseAddress
-                             withSize:size
-                               stride:stride
-                    pixelBufferFormat:CVPixelBufferGetPixelFormatType(pixelBuffer)
-                                error:error];
 }
 
 + (CVPixelBufferRef)cvPixelBufferWithFormatType:(OSType)pixelBufferFormatType
@@ -372,10 +364,6 @@
 - (TfLiteFrameBuffer *)frameBufferFromCGImage:(CGImageRef)cgImage error:(NSError **)error {
   UInt8 *buffer = [UIImage pixelDataFromCGImage:cgImage error:error];
 
-  if (buffer == NULL) {
-    return NULL;
-  }
-
   return [TFLCVPixelBufferUtils cFrameBufferWithWidth:(int)CGImageGetWidth(cgImage)
                                                height:(int)CGImageGetHeight(cgImage)
                                     frameBufferFormat:kRGB
@@ -409,10 +397,6 @@
     [TFLCommonUtils createCustomError:error
                              withCode:TFLSupportErrorCodeInvalidArgumentError
                           description:@"CIImage should have CGImage or CVPixelBuffer info."];
-  }
-
-  if (buffer == NULL) {
-    return NULL;
   }
 
   return [TFLCVPixelBufferUtils cFrameBufferWithWidth:width
