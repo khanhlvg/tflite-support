@@ -65,7 +65,6 @@
 
 + (nullable instancetype)objectDetectorWithOptions:(TFLObjectDetectorOptions *)options
                                              error:(NSError **)error {
-
   if (!options) {
     [TFLCommonUtils createCustomError:error
                              withCode:TFLSupportErrorCodeInvalidArgumentError
@@ -74,9 +73,13 @@
   }
 
   TfLiteObjectDetectorOptions cOptions = TfLiteObjectDetectorOptionsCreate();
-  if (!
-      [options.classificationOptions copyToCOptions:&(cOptions.classification_options) error:error])
+  if (![options.classificationOptions copyToCOptions:&(cOptions.classification_options)
+                                               error:error]) {
+    // Deallocating any allocated memory on failure.
+    [options.classificationOptions
+        deleteAllocatedMemoryOfClassificationOptions:&(cOptions.classification_options)];
     return nil;
+  }
 
   [options.baseOptions copyToCOptions:&(cOptions.base_options)];
 
@@ -85,16 +88,16 @@
       TfLiteObjectDetectorFromOptions(&cOptions, &cCreateObjectDetectorError);
 
   [options.classificationOptions
-      deleteCStringArraysOfClassificationOptions:&(cOptions.classification_options)];
+      deleteAllocatedMemoryOfClassificationOptions:&(cOptions.classification_options)];
 
   // Populate iOS error if TfliteSupportError is not null and afterwards delete  it.
-  if(![TFLCommonUtils checkCError:cCreateObjectDetectorError toError:error]) {
+  if (![TFLCommonUtils checkCError:cCreateObjectDetectorError toError:error]) {
     TfLiteSupportErrorDelete(cCreateObjectDetectorError);
   }
 
- // Return nil if C object detector evaluates to nil. If an error was generted by the C layer, it has
- // already been populated to an NSError and deleted before returning from the method.
-  if(!cObjectDetector) {
+  // Return nil if C object detector evaluates to nil. If an error was generted by the C layer, it
+  // has already been populated to an NSError and deleted before returning from the method.
+  if (!cObjectDetector) {
     return nil;
   }
 
@@ -103,7 +106,6 @@
 
 - (nullable TFLDetectionResult *)detectWithGMLImage:(GMLImage *)image
                                               error:(NSError *_Nullable *)error {
-
   if (!image) {
     [TFLCommonUtils createCustomError:error
                              withCode:TFLSupportErrorCodeInvalidArgumentError
@@ -131,10 +133,10 @@
   if (![TFLCommonUtils checkCError:cDetectError toError:error]) {
     TfLiteSupportErrorDelete(cDetectError);
   }
-  
+
   // Return nil if C result evaluates to nil. If an error was generted by the C layer, it has
   // already been populated to an NSError and deleted before returning from the method.
-  if(!cDetectionResult) {
+  if (!cDetectionResult) {
     return nil;
   }
 

@@ -117,6 +117,7 @@
                             description:@"Invalid source pixel buffer format. Expecting one of "
                                         @"kCVPixelFormatType_32RGBA, kCVPixelFormatType_32BGRA, "
                                         @"kCVPixelFormatType_32ARGB"];
+
       free(destPixelBufferAddress);
       return NULL;
     }
@@ -406,7 +407,6 @@
     width = (int)CVPixelBufferGetWidth(ciImage.pixelBuffer);
     height = (int)CVPixelBufferGetHeight(ciImage.pixelBuffer);
     NSInteger channelCount = 4;
-    size_t bytesPerRow = width * channelCount;
 
 
     buffer = [TFLCVPixelBufferUtils createRGBImageDatafromCVPixelBuffer:ciImage.pixelBuffer

@@ -77,11 +77,11 @@
 
   if (self.displayNamesLocale) {
     if (self.displayNamesLocale.UTF8String) {
-      // strdup is not needed as C layer handles copying (C++ options are protobufs).
-      // Hence setting char* values in protobuf leads to copying.
-      cClassificationOptions->display_names_local = self.displayNamesLocale.UTF8String; 
-    }
-    else {
+      cClassificationOptions->display_names_local = strdup(self.displayNamesLocale.UTF8String);
+      if (!cClassificationOptions->display_names_local) {
+        exit(-1);  // Memory Allocation Failed.
+      }
+    } else {
       [TFLCommonUtils createCustomError:error
                                withCode:TFLSupportErrorCodeInvalidArgumentError
                             description:@"Could not convert (NSString *) to (char *)."];
@@ -92,7 +92,7 @@
   return YES;
 }
 
-- (void)deleteCStringArraysOfClassificationOptions:
+- (void)deleteAllocatedMemoryOfClassificationOptions:
     (TfLiteClassificationOptions *)cClassificationOptions {
   if (self.labelAllowList) {
     [TFLClassificationOptions deleteCStringsArray:cClassificationOptions->label_allowlist.list
@@ -103,5 +103,8 @@
     [TFLClassificationOptions deleteCStringsArray:cClassificationOptions->label_denylist.list
                                             count:cClassificationOptions->label_denylist.length];
   }
+
+  free(cClassificationOptions->display_names_local);
 }
+
 @end

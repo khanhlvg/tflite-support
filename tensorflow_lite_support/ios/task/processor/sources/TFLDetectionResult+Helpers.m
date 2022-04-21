@@ -30,14 +30,14 @@
       TFLCategory *resultCategory = [TFLCategory categoryWithCCategory:&cCategory];
       [categories addObject:resultCategory];
     }
-    [detections addObject:[[TFLDetection alloc] 
-                            initWithBoundingBox:CGRectMake(cDetection.bounding_box.origin_x, 
-                                                           cDetection.bounding_box.origin_y,
-                                                           cDetection.bounding_box.width, 
-                                                           cDetection.bounding_box.height) 
-                                     categories:categories]];
+    TFLDetection *detection = [[TFLDetection alloc]
+        initWithBoundingBox:CGRectMake(
+                                cDetection.bounding_box.origin_x, cDetection.bounding_box.origin_y,
+                                cDetection.bounding_box.width, cDetection.bounding_box.height)
+                 categories:categories];
+    [detections addObject:detection];
   }
-  
+
   return [[TFLDetectionResult alloc] initWithDetections:detections];
 }
 @end

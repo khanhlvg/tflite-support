@@ -18,9 +18,8 @@
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLObjectDetector.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
-
 #define VerifyDetection(detection, expectedBoundingBox, expectedFirstScore, expectedFirstLabel) \
-  XCTAssertGreaterThan(detection.categories.count, 0);                                        \
+  XCTAssertGreaterThan(detection.categories.count, 0);                                          \
   NSLog(@"Detected %f", detection.categories[0].score);                                         \
   NSLog(@"Expected %f", expectedFirstScore);                                                    \
   XCTAssertEqual(detection.boundingBox.origin.x, expectedBoundingBox.origin.x);                 \
@@ -78,9 +77,8 @@
       [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
   XCTAssertNotNil(objectDetector);
 
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
-                                                 fileName:@"cats_and_dogs"
-                                                   ofType:@"jpg"];
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"cats_and_dogs" ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);
 
   TFLDetectionResult *detectionResults = [objectDetector detectWithGMLImage:gmlImage error:nil];
@@ -97,9 +95,8 @@
       [TFLObjectDetector objectDetectorWithOptions:objectDetectorOptions error:nil];
   XCTAssertNotNil(objectDetector);
 
-  GMLImage *gmlImage = [GMLImage imageFromBundleWithClass:self.class
-                                                 fileName:@"cats_and_dogs"
-                                                   ofType:@"jpg"];
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"cats_and_dogs" ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);
 
   TFLDetectionResult *detectionResult = [objectDetector detectWithGMLImage:gmlImage error:nil];

@@ -45,7 +45,6 @@ NS_SWIFT_NAME(Detection)
 - (instancetype)initWithBoundingBox:(CGRect)boundingBox
                          categories:(NSArray<TFLCategory *> *)categories;
 
-
 - (instancetype)init NS_UNAVAILABLE;
 
 + (instancetype)new NS_UNAVAILABLE;
