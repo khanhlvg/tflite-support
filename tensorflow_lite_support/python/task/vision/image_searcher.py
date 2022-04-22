@@ -60,7 +60,7 @@ class ImageSearcher(object):
       model_file_path: Path to the model.
       index_file_path: Path to the index.
     Returns:
-      `TextSearcher` object that's created from `options`.
+      `ImageSearcher` object that's created from `options`.
     Raises:
       ValueError: If failed to create `ImageSearcher` object from the provided
         file such as invalid file.
