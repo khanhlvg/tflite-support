@@ -75,3 +75,18 @@ pybind_extension(
         "@pybind11_protobuf//pybind11_protobuf:native_proto_caster",
     ],
 )
+
+pybind_extension(
+    name = "_pywrap_image_searcher",
+    srcs = [
+        "_pywrap_image_searcher.cc",
+    ],
+    module_name = "_pywrap_image_searcher",
+    deps = [
+        "//tensorflow_lite_support/cc/task/image:image_searcher",
+        "//tensorflow_lite_support/examples/task/vision/desktop/utils:image_utils",
+        "//tensorflow_lite_support/python/task/core/pybinds:task_utils",
+        "@pybind11",
+        "@pybind11_protobuf//pybind11_protobuf:native_proto_caster",
+    ],
+)
