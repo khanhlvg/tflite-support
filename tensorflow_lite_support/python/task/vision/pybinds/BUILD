@@ -83,7 +83,8 @@ pybind_extension(
     ],
     module_name = "_pywrap_image_searcher",
     deps = [
-        "//tensorflow_lite_support/cc/task/image:image_searcher",
+        "//tensorflow_lite_support/cc/task/processor/proto:bounding_box_cc_proto",
+        "//tensorflow_lite_support/cc/task/vision:image_searcher",
         "//tensorflow_lite_support/examples/task/vision/desktop/utils:image_utils",
         "//tensorflow_lite_support/python/task/core/pybinds:task_utils",
         "@pybind11",

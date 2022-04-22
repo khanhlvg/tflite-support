@@ -12,6 +12,7 @@ limitations under the License.
 
 #include "pybind11/pybind11.h"
 #include "pybind11_protobuf/native_proto_caster.h"  // from @pybind11_protobuf
+#include "tensorflow_lite_support/cc/task/processor/proto/bounding_box.pb.h"
 #include "tensorflow_lite_support/cc/task/vision/image_searcher.h"
 #include "tensorflow_lite_support/examples/task/vision/desktop/utils/image_utils.h"
 #include "tensorflow_lite_support/python/task/core/pybinds/task_utils.h"
@@ -68,13 +69,19 @@ PYBIND11_MODULE(_pywrap_image_searcher, m) {
            [](ImageSearcher& self, const ImageData& image_data,
               const processor::BoundingBox& bounding_box)
                 -> processor::SearchResult {
+             // Convert from processor::BoundingBox to vision::BoundingBox as
+             // the latter is used in the C++ layer.
+             BoundingBox vision_bounding_box;
+             vision_bounding_box.ParseFromString(
+                    bounding_box.SerializeAsString());
+
              auto frame_buffer = CreateFrameBufferFromImageData(image_data);
              auto search_result = self.Search(
-                 *core::get_value(frame_buffer), bounding_box);
+                 *core::get_value(frame_buffer), vision_bounding_box);
              return core::get_value(search_result);
            })
       .def("get_user_info",
-           [](TextSearcher& self) -> py::str {
+           [](ImageSearcher& self) -> py::str {
              return py::str(self.GetUserInfo()->data());
       });
 }
