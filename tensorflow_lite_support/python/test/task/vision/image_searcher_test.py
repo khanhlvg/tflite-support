@@ -52,7 +52,7 @@ class ModelFileType(enum.Enum):
   FILE_NAME = 2
 
 
-class TextSearcherTest(parameterized.TestCase, tf.test.TestCase):
+class ImageSearcherTest(parameterized.TestCase, tf.test.TestCase):
 
   def setUp(self):
     super().setUp()
@@ -136,7 +136,7 @@ class TextSearcherTest(parameterized.TestCase, tf.test.TestCase):
      _EXPECTED_MOBILENET_SEARCH_PARAMS),
   )
   def test_search_model(self, model_name, index_name, l2_normalize, quantize,
-                        model_file_type, expected_result_text_proto):
+                        model_file_type, expected_result_image_proto):
     # Create searcher.
     model_path = test_util.get_test_data_path(model_name)
     if model_file_type is ModelFileType.FILE_NAME:
@@ -164,7 +164,7 @@ class TextSearcherTest(parameterized.TestCase, tf.test.TestCase):
     image_search_result = searcher.search(image)
 
     # Comparing results.
-    self.assertProtoEquals(expected_result_text_proto, image_search_result)
+    self.assertProtoEquals(expected_result_image_proto, image_search_result)
 
     # Get user info and compare values.
     self.assertEqual(searcher.get_user_info(), 'userinfo')
@@ -184,7 +184,7 @@ class TextSearcherTest(parameterized.TestCase, tf.test.TestCase):
     image_search_result = searcher.search(image, bounding_box)
 
     # Expected results.
-    expected_result_text_proto = """
+    expected_result_image_proto = """
     nearest_neighbors { metadata: "burger" distance: 0.134547 }
     nearest_neighbors { metadata: "car" distance: 1.819211 }
     nearest_neighbors { metadata: "bird" distance: 1.96461 }
@@ -193,7 +193,7 @@ class TextSearcherTest(parameterized.TestCase, tf.test.TestCase):
     """
 
     # Comparing results (classification w/ bounding box).
-    self.assertProtoEquals(expected_result_text_proto, image_search_result)
+    self.assertProtoEquals(expected_result_image_proto, image_search_result)
 
 
 if __name__ == "__main__":

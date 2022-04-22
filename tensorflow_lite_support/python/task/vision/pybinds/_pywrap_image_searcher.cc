@@ -86,6 +86,6 @@ PYBIND11_MODULE(_pywrap_image_searcher, m) {
       });
 }
 
-}  // namespace text
+}  // namespace vision
 }  // namespace task
 }  // namespace tflite
