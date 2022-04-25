@@ -22,10 +22,9 @@ limitations under the License.
 extern "C" {
 #endif  // __cplusplus
 
-// 
+// Holds audio format metadata.
 struct TfLiteAudioFormat {
-  // The number of channels in the audio buffer. Channel data is expected to be
-  // stored in an interleaved format in the audio buffer.
+  // The number of channels in the audio buffer. 
   int channels;
   // The sample rate of the audio buffer.
   int sample_rate;
@@ -38,7 +37,8 @@ typedef struct TfLiteAudioBuffer {
 
   TfLiteAudioFormat format;
 
-  // Backing buffer that holds the audio samples which are to be processed. 
+  // Backing buffer that holds the audio samples which are to be processed. For muti channel data array is expected to be
+  // interleaved .
   const float* data;
 
  // Size of the audio buffer. This size can be used to loop through the audio_buffer.
