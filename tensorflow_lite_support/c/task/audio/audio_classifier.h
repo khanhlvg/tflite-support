@@ -187,6 +187,7 @@ TfLiteClassificationResult* TfLiteAudioClassifierClassify(
     const TfLiteAudioClassifier* classifier,
     const TfLiteAudioBuffer* frame_buffer, TfLiteSupportError** error);
 
+int TfLiteAudioClassifierGetRequiredInputBufferSize(TfLiteAudioClassifier* classifier, TfLiteSupportError** error);
 
 // Disposes off the audio classifier.
 void TfLiteAudioClassifierDelete(TfLiteAudioClassifier* classifier);

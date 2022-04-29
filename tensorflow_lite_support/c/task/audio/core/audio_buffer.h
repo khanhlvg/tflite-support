@@ -42,7 +42,7 @@ typedef struct TfLiteAudioBuffer {
   const float* data;
 
  // Size of the audio buffer. This size can be used to loop through the audio_buffer.
-  const int size;
+  const unsigned long size;
 } TfLiteAudioBuffer;
 
 #ifdef __cplusplus

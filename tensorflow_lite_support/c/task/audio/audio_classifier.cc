@@ -143,7 +143,11 @@ TfLiteClassificationResult* GetClassificationResultCStruct(
        ++head) {
     const ClassificationsCpp& classifications =
         classification_result_cpp.classifications(head);
-    c_classifications[head].head_index = head;
+    c_classifications[head].head_index = classifications.head_index();
+    
+    if (classifications.head_name()) {
+      c_classifications[head].head_name = strdup(classifications.head_name().c_str());
+    }
 
     auto c_categories = new TfLiteCategory[classifications.classes_size()];
     c_classifications->size = classifications.classes_size();
@@ -205,6 +209,16 @@ TfLiteClassificationResult* TfLiteAudioClassifierClassify(
 
   return GetClassificationResultCStruct(
       cpp_classification_result_status.value());
+}
+
+int TfLiteAudioClassifierGetRequiredInputBufferSize(TfLiteAudioClassifier* classifier, TfLiteSupportError** error) {
+  if (classifier == nullptr) {
+    tflite::support::CreateTfLiteSupportError(
+        kInvalidArgumentError, "Expected non null audio classifier.", error);
+    return -1;
+  }
+
+  return classifier->impl->GetRequiredInputBufferSize();
 }
 
 void TfLiteAudioClassifierDelete(TfLiteAudioClassifier* classifier) {
