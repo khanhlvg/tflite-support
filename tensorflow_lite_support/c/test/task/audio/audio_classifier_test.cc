@@ -84,14 +84,25 @@ StatusOr<TfLiteAudioBuffer> LoadAudioBufferFromFileNamed(
   return audio_buffer;
 }
 
-void VerifyClassificationResult(TfLiteClassificationResult &classification_result, int expected_classifications_size) {
+void Verify(TfLiteClassificationResult &classification_result, int expected_classifications_size) {
+  EXPECT_NE(classification_result, NULL);
   EXPECT_EQ(classification_result.size, expected_classifications_size);
   EXPECT_NE(classification_result.classifications, NULL);
 }
 
-void VerifyClassifications(TfLiteClassifications &classifications, int expected_categories_size, int expected_head_index) {
+void Verify(TfLiteClassifications &classifications, int expected_categories_size, int expected_head_index, char* expected_head_name) {
   EXPECT_EQ(classifications.size, expected_categories_size);
   EXPECT_NE(classifications.head_index, expected_head_index);
+  EXPECT_EQ(classifications.head_name, expected_head_name);
+  EXPECT_NE(classification_result.categories, NULL);
+}
+
+void Verify(TfLiteCategory &category, int expected_index, char* expected_label, char* expected_display_name, float expected_score) {
+  const float kPrecision = 1e-6;
+  EXPECT_EQ(category.index, expected_index);
+  EXPECT_EQ(category.label, expected_label);
+  EXPECT_EQ(category.display_name, expected_display_name);
+  EXPECT_NEAR(category.score, expected_score, kPrecision);
 }
 
 class AudioClassifierFromOptionsTest : public tflite_shims::testing::Test {};
@@ -255,6 +266,34 @@ TEST_F(AudioClassifierClassifyTest, SucceedsWithImageData) {
   EXPECT_NE(classification_result->classifications, nullptr);
   EXPECT_GE(classification_result->classifications->size, 1);
   EXPECT_NE(classification_result->classifications->categories, nullptr);
+  
+  Verify(classification_result, 1);
+  Verify(classification_result.classifications[0], 0, "scores");
+  Verify(classification_result.classifications[0].categories[0], 0, , "Speech", NULL, 0.917969);
+  Verify(classification_result.classifications[0].categories[1], 500, , "Inside, small room", NULL, 0.058594);
+  Verify(classification_result.classifications[0].categories[2], 494, , "Silence", NULL, 0.011719);
+
+
+
+//  classifications {
+//   classes {
+//     index: 0
+//     score: 0.917969
+//     class_name: "Speech"
+//   }
+//   classes {
+//     index: 500
+//     score: 0.058594
+//     class_name: "Inside, small room"
+//   }
+//   classes {
+//     index: 494
+//     score: 0.011719
+//     class_name: "Silence"
+//   }
+//   head_index: 0
+//   head_name: "scores"
+// }
 
   
   TfLiteClassificationResultDelete(classification_result);
