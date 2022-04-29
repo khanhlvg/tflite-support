@@ -145,7 +145,7 @@ TfLiteClassificationResult* GetClassificationResultCStruct(
         classification_result_cpp.classifications(head);
     c_classifications[head].head_index = classifications.head_index();
     
-    if (classifications.head_name()) {
+    if (classifications.has_head_name()) {
       c_classifications[head].head_name = strdup(classifications.head_name().c_str());
     }
 

@@ -18,17 +18,15 @@ limitations under the License.
 #include <string.h>
 
 #include "tensorflow/lite/core/shims/cc/shims_test_util.h"
-#include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/c/common.h"
-#include "tensorflow_lite_support/c/task/processor/classification_result.h"
 #include "tensorflow_lite_support/c/task/audio/core/audio_buffer.h"
+#include "tensorflow_lite_support/c/task/processor/classification_result.h"
 #include "tensorflow_lite_support/cc/port/gmock.h"
 #include "tensorflow_lite_support/cc/port/gtest.h"
 #include "tensorflow_lite_support/cc/port/status_matchers.h"
-#include "tensorflow_lite_support/cc/test/test_utils.h"
+#include "tensorflow_lite_support/cc/port/statusor.h"
 #include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
-
-#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+#include "tensorflow_lite_support/cc/test/test_utils.h"
 
 namespace tflite {
 namespace task {
@@ -48,16 +46,15 @@ constexpr char kYamNetAudioClassifierWithMetadata[] =
 
 StatusOr<TfLiteAudioBuffer> LoadAudioBufferFromFileNamed(
     const std::string wav_file, int buffer_size) {
-  std::string contents = ReadFile(JoinPath("./" /*test src dir*/,
-                                      kTestDataDirectory, wav_file));
+  std::string contents =
+      ReadFile(JoinPath("./" /*test src dir*/, kTestDataDirectory, wav_file));
 
   uint32_t decoded_sample_count;
   uint16_t decoded_channel_count;
   uint32_t decoded_sample_rate;
   std::vector<float> wav_data;
 
-  absl::Status read_audio_file_status =
- DecodeLin16WaveAsFloatVector(
+  absl::Status read_audio_file_status = DecodeLin16WaveAsFloatVector(
       contents, &wav_data, &decoded_sample_count, &decoded_channel_count,
       &decoded_sample_rate);
 
@@ -76,33 +73,54 @@ StatusOr<TfLiteAudioBuffer> LoadAudioBufferFromFileNamed(
 
   memcpy(c_wav_data, wav_data.data(), sizeof(float) * wav_data.size());
 
-  TfLiteAudioBuffer audio_buffer = {.format = {.channels = decoded_channel_count, 
-                     .sample_rate = static_cast<int>(decoded_sample_rate)}, 
-          .data = c_wav_data, 
-          .size = decoded_sample_count};
+  TfLiteAudioBuffer audio_buffer = {
+      .format = {.channels = decoded_channel_count,
+                 .sample_rate = static_cast<int>(decoded_sample_rate)},
+      .data = c_wav_data,
+      .size = decoded_sample_count};
 
   return audio_buffer;
 }
 
-void Verify(TfLiteClassificationResult &classification_result, int expected_classifications_size) {
-  EXPECT_NE(classification_result, NULL);
-  EXPECT_EQ(classification_result.size, expected_classifications_size);
-  EXPECT_NE(classification_result.classifications, NULL);
+void Verify(TfLiteClassificationResult* classification_result,
+            int expected_classifications_size) {
+  EXPECT_NE(classification_result, nullptr);
+  EXPECT_EQ(classification_result->size, expected_classifications_size);
+  EXPECT_NE(classification_result->classifications, nullptr);
 }
 
-void Verify(TfLiteClassifications &classifications, int expected_categories_size, int expected_head_index, char* expected_head_name) {
+void Verify(TfLiteClassifications& classifications,
+            int expected_categories_size, int expected_head_index,
+            char* expected_head_name) {
   EXPECT_EQ(classifications.size, expected_categories_size);
-  EXPECT_NE(classifications.head_index, expected_head_index);
-  EXPECT_EQ(classifications.head_name, expected_head_name);
-  EXPECT_NE(classification_result.categories, NULL);
+  EXPECT_EQ(classifications.head_index, expected_head_index);
+  ASSERT_NE(classifications.head_name, nullptr);
+  if (expected_head_name) {
+    EXPECT_EQ(strcmp(classifications.head_name, expected_head_name), 0);
+  }
+  EXPECT_NE(classifications.categories, nullptr);
 }
 
-void Verify(TfLiteCategory &category, int expected_index, char* expected_label, char* expected_display_name, float expected_score) {
+void Verify(TfLiteCategory& category, int expected_index, char* expected_label,
+            float expected_score) {
   const float kPrecision = 1e-6;
   EXPECT_EQ(category.index, expected_index);
-  EXPECT_EQ(category.label, expected_label);
-  EXPECT_EQ(category.display_name, expected_display_name);
+  EXPECT_NE(category.label, nullptr);
+
+  if (category.label && expected_label) {
+    EXPECT_EQ(strcmp(category.label, expected_label), 0);
+  }
+
+  EXPECT_EQ(category.display_name, nullptr);
   EXPECT_NEAR(category.score, expected_score, kPrecision);
+}
+
+void Verify(TfLiteSupportError* error, TfLiteSupportErrorCode error_code,
+            char* message) {
+  ASSERT_NE(error, nullptr);
+  EXPECT_EQ(error->code, kInvalidArgumentError);
+  EXPECT_NE(error->message, nullptr);
+  EXPECT_THAT(error->message, HasSubstr(message));
 }
 
 class AudioClassifierFromOptionsTest : public tflite_shims::testing::Test {};
@@ -116,9 +134,8 @@ TEST_F(AudioClassifierFromOptionsTest, FailsWithNullOptionsAndError) {
   if (audio_classifier) TfLiteAudioClassifierDelete(audio_classifier);
 
   ASSERT_NE(error, nullptr);
-  EXPECT_EQ(error->code, kInvalidArgumentError);
-  EXPECT_NE(error->message, nullptr);
-  EXPECT_THAT(error->message, HasSubstr("Expected non null options"));
+
+  Verify(error, kInvalidArgumentError, "Expected non null options");
 
   TfLiteSupportErrorDelete(error);
 }
@@ -141,18 +158,16 @@ TEST_F(AudioClassifierFromOptionsTest, FailsWithMissingModelPathAndError) {
   EXPECT_EQ(audio_classifier, nullptr);
   if (audio_classifier) TfLiteAudioClassifierDelete(audio_classifier);
 
-  ASSERT_NE(error, nullptr);
-  EXPECT_EQ(error->code, kInvalidArgumentError);
-  EXPECT_NE(error->message, nullptr);
-  EXPECT_THAT(error->message, HasSubstr("INVALID_ARGUMENT: Missing mandatory `model_file` field in `base_options`"));
+  Verify(error, kInvalidArgumentError,
+         "INVALID_ARGUMENT: Missing mandatory `model_file` field in "
+         "`base_options`");
 
   TfLiteSupportErrorDelete(error);
 }
 
 TEST_F(AudioClassifierFromOptionsTest, SucceedsWithModelPath) {
-  std::string model_path =
-      JoinPath("./" /*test src dir*/, kTestDataDirectory,
-               kYamNetAudioClassifierWithMetadata);
+  std::string model_path = JoinPath("./" /*test src dir*/, kTestDataDirectory,
+                                    kYamNetAudioClassifierWithMetadata);
   TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
   options.base_options.model_file.file_path = model_path.data();
   TfLiteAudioClassifier* audio_classifier =
@@ -163,9 +178,8 @@ TEST_F(AudioClassifierFromOptionsTest, SucceedsWithModelPath) {
 }
 
 TEST_F(AudioClassifierFromOptionsTest, SucceedsWithNumberOfThreadsAndError) {
-  std::string model_path =
-      JoinPath("./" /*test src dir*/, kTestDataDirectory,
-               kYamNetAudioClassifierWithMetadata);
+  std::string model_path = JoinPath("./" /*test src dir*/, kTestDataDirectory,
+                                    kYamNetAudioClassifierWithMetadata);
   TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
   options.base_options.model_file.file_path = model_path.data();
   options.base_options.compute_settings.cpu_settings.num_threads = 3;
@@ -183,9 +197,8 @@ TEST_F(AudioClassifierFromOptionsTest, SucceedsWithNumberOfThreadsAndError) {
 
 TEST_F(AudioClassifierFromOptionsTest,
        FailsWithClassNameDenyListAndClassNameAllowListAndError) {
-  std::string model_path =
-      JoinPath("./" /*test src dir*/, kTestDataDirectory,
-               kYamNetAudioClassifierWithMetadata);
+  std::string model_path = JoinPath("./" /*test src dir*/, kTestDataDirectory,
+                                    kYamNetAudioClassifierWithMetadata);
 
   TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
   options.base_options.model_file.file_path = model_path.data();
@@ -205,17 +218,13 @@ TEST_F(AudioClassifierFromOptionsTest,
   EXPECT_EQ(audio_classifier, nullptr);
   if (audio_classifier) TfLiteAudioClassifierDelete(audio_classifier);
 
-  ASSERT_NE(error, nullptr);
-  EXPECT_EQ(error->code, kInvalidArgumentError);
-  EXPECT_NE(error->message, nullptr);
-  EXPECT_THAT(error->message, HasSubstr("mutually exclusive options"));
+  Verify(error, kInvalidArgumentError, "mutually exclusive options");
 
   TfLiteSupportErrorDelete(error);
 }
 
 TEST(AudioClassifierNullClassifierClassifyTest,
      FailsWithNullAudioClassifierAndError) {
-
   TfLiteSupportError* error = nullptr;
   TfLiteClassificationResult* classification_result =
       TfLiteAudioClassifierClassify(nullptr, nullptr, &error);
@@ -224,10 +233,7 @@ TEST(AudioClassifierNullClassifierClassifyTest,
   if (classification_result)
     TfLiteClassificationResultDelete(classification_result);
 
-  ASSERT_NE(error, nullptr);
-  EXPECT_EQ(error->code, kInvalidArgumentError);
-  EXPECT_NE(error->message, nullptr);
-  EXPECT_THAT(error->message, HasSubstr("Expected non null audio classifier"));
+  Verify(error, kInvalidArgumentError, "Expected non null audio classifier");
 
   TfLiteSupportErrorDelete(error);
 }
@@ -235,9 +241,8 @@ TEST(AudioClassifierNullClassifierClassifyTest,
 class AudioClassifierClassifyTest : public tflite_shims::testing::Test {
  protected:
   void SetUp() override {
-    std::string model_path =
-        JoinPath("./" /*test src dir*/, kTestDataDirectory,
-                 kYamNetAudioClassifierWithMetadata);
+    std::string model_path = JoinPath("./" /*test src dir*/, kTestDataDirectory,
+                                      kYamNetAudioClassifierWithMetadata);
 
     TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
     options.base_options.model_file.file_path = model_path.data();
@@ -249,188 +254,47 @@ class AudioClassifierClassifyTest : public tflite_shims::testing::Test {
   TfLiteAudioClassifier* audio_classifier;
 };
 
-TEST_F(AudioClassifierClassifyTest, SucceedsWithImageData) {
-  int input_buffer_size = TfLiteAudioClassifierGetRequiredInputBufferSize(audio_classifier, nullptr);
+TEST_F(AudioClassifierClassifyTest, SucceedsWithAudioFile) {
+  int input_buffer_size = TfLiteAudioClassifierGetRequiredInputBufferSize(
+      audio_classifier, nullptr);
   ASSERT_NE(input_buffer_size, -1);
 
-  SUPPORT_ASSERT_OK_AND_ASSIGN(TfLiteAudioBuffer audio_buffer, LoadAudioBufferFromFileNamed("speech.wav", input_buffer_size));
+  SUPPORT_ASSERT_OK_AND_ASSIGN(
+      TfLiteAudioBuffer audio_buffer,
+      LoadAudioBufferFromFileNamed("speech.wav", input_buffer_size));
 
-  TfLiteSupportError *classifyError = NULL;
+  TfLiteSupportError* classifyError = NULL;
   TfLiteClassificationResult* classification_result =
-      TfLiteAudioClassifierClassify(audio_classifier, &audio_buffer, &classifyError);
+      TfLiteAudioClassifierClassify(audio_classifier, &audio_buffer,
+                                    &classifyError);
 
-  free((void *)(audio_buffer.data));
+  free((void*)(audio_buffer.data));
 
-  ASSERT_NE(classification_result, nullptr);
-  EXPECT_GE(classification_result->size, 1);
-  EXPECT_NE(classification_result->classifications, nullptr);
-  EXPECT_GE(classification_result->classifications->size, 1);
-  EXPECT_NE(classification_result->classifications->categories, nullptr);
-  
   Verify(classification_result, 1);
-  Verify(classification_result.classifications[0], 0, "scores");
-  Verify(classification_result.classifications[0].categories[0], 0, , "Speech", NULL, 0.917969);
-  Verify(classification_result.classifications[0].categories[1], 500, , "Inside, small room", NULL, 0.058594);
-  Verify(classification_result.classifications[0].categories[2], 494, , "Silence", NULL, 0.011719);
+  Verify(classification_result->classifications[0], 521, 0, "scores");
+  Verify(classification_result->classifications[0].categories[0], 0, "Speech",
+         0.917969);
+  Verify(classification_result->classifications[0].categories[1], 500,
+         "Inside, small room", 0.08203125);
+  Verify(classification_result->classifications[0].categories[2], 494,
+         "Silence", 0.015625);
 
-
-
-//  classifications {
-//   classes {
-//     index: 0
-//     score: 0.917969
-//     class_name: "Speech"
-//   }
-//   classes {
-//     index: 500
-//     score: 0.058594
-//     class_name: "Inside, small room"
-//   }
-//   classes {
-//     index: 494
-//     score: 0.011719
-//     class_name: "Silence"
-//   }
-//   head_index: 0
-//   head_name: "scores"
-// }
-
-  
   TfLiteClassificationResultDelete(classification_result);
 }
 
-// TEST_F(AudioClassifierClassifyTest, FailsWithNullFrameBufferAndError) {
-//   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadWavFile("burger-224.png"));
+TEST_F(AudioClassifierClassifyTest, FailsWithNullAudioBufferAndError) {
+  TfLiteSupportError* error = nullptr;
+  TfLiteClassificationResult* classification_result =
+      TfLiteAudioClassifierClassify(audio_classifier, nullptr, &error);
 
-//   TfLiteSupportError* error = nullptr;
-//   TfLiteClassificationResult* classification_result =
-//       TfLiteAudioClassifierClassify(audio_classifier, nullptr, &error);
+  EXPECT_EQ(classification_result, nullptr);
+  if (classification_result)
+    TfLiteClassificationResultDelete(classification_result);
 
-//   ImageDataFree(&image_data);
+  Verify(error, kInvalidArgumentError, "Expected non null audio buffer");
 
-//   EXPECT_EQ(classification_result, nullptr);
-//   if (classification_result)
-//     TfLiteClassificationResultDelete(classification_result);
-
-//   ASSERT_NE(error, nullptr);
-//   EXPECT_EQ(error->code, kInvalidArgumentError);
-//   EXPECT_NE(error->message, nullptr);
-//   EXPECT_THAT(error->message, HasSubstr("Expected non null frame buffer"));
-
-//   TfLiteSupportErrorDelete(error);
-// }
-
-// TEST_F(AudioClassifierClassifyTest, FailsWithNullImageDataAndError) {
-//   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadWavFile("burger-224.png"));
-
-//   TfLiteFrameBuffer frame_buffer = {.format = kRGB, .orientation = kTopLeft};
-
-//   TfLiteSupportError* error = nullptr;
-//   TfLiteClassificationResult* classification_result =
-//       TfLiteAudioClassifierClassify(audio_classifier, &frame_buffer, &error);
-
-//   ImageDataFree(&image_data);
-
-//   EXPECT_EQ(classification_result, nullptr);
-//   if (classification_result)
-//     TfLiteClassificationResultDelete(classification_result);
-
-//   ASSERT_NE(error, nullptr);
-//   EXPECT_EQ(error->code, kInvalidArgumentError);
-//   EXPECT_NE(error->message, nullptr);
-//   EXPECT_THAT(error->message, HasSubstr("Invalid stride information"));
-
-//   TfLiteSupportErrorDelete(error);
-// }
-
-// TEST(AudioClassifierWithUserDefinedOptionsClassifyTest,
-//      SucceedsWithClassNameDenyList) {
-//   char* denylisted_label_name = (char*)"cheeseburger";
-//   std::string model_path =
-//       JoinPath("./" /*test src dir*/, kTestDataDirectory,
-//                kYamNetAudioClassifierWithMetadata);
-
-//   TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
-//   options.base_options.model_file.file_path = model_path.data();
-
-//   char* label_denylist[12] = {denylisted_label_name};
-//   options.classification_options.label_denylist.list = label_denylist;
-//   options.classification_options.label_denylist.length = 1;
-
-//   TfLiteAudioClassifier* audio_classifier =
-//       TfLiteAudioClassifierFromOptions(&options, nullptr);
-//   ASSERT_NE(audio_classifier, nullptr);
-
-//   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadWavFile("burger-224.png"));
-
-//   TfLiteFrameBuffer frame_buffer = {
-//       .format = kRGB,
-//       .orientation = kTopLeft,
-//       .dimension = {.width = image_data.width, .height = image_data.height},
-//       .buffer = image_data.pixel_data};
-
-//   TfLiteClassificationResult* classification_result =
-//       TfLiteAudioClassifierClassify(audio_classifier, &frame_buffer, nullptr);
-
-//   ImageDataFree(&image_data);
-//   if (audio_classifier) TfLiteAudioClassifierDelete(audio_classifier);
-
-//   ASSERT_NE(classification_result, nullptr);
-//   EXPECT_GE(classification_result->size, 1);
-//   EXPECT_NE(classification_result->classifications, nullptr);
-//   EXPECT_GE(classification_result->classifications->size, 1);
-//   EXPECT_NE(classification_result->classifications->categories, nullptr);
-//   EXPECT_NE(strcmp(classification_result->classifications->categories[0].label,
-//                    denylisted_label_name),
-//             0);
-
-//   TfLiteClassificationResultDelete(classification_result);
-// }
-
-// TEST(AudioClassifierWithUserDefinedOptionsClassifyTest,
-//      SucceedsWithClassNameAllowList) {
-//   char* allowlisted_label_name = (char*)"cheeseburger";
-//   std::string model_path =
-//       JoinPath("./" /*test src dir*/, kTestDataDirectory,
-//                kYamNetAudioClassifierWithMetadata)
-//           .data();
-
-//   TfLiteAudioClassifierOptions options = TfLiteAudioClassifierOptionsCreate();
-//   options.base_options.model_file.file_path = model_path.data();
-
-//   char* label_allowlist[12] = {allowlisted_label_name};
-//   options.classification_options.label_allowlist.list = label_allowlist;
-//   options.classification_options.label_allowlist.length = 1;
-
-//   TfLiteAudioClassifier* audio_classifier =
-//       TfLiteAudioClassifierFromOptions(&options, nullptr);
-//   ASSERT_NE(audio_classifier, nullptr);
-
-//   SUPPORT_ASSERT_OK_AND_ASSIGN(ImageData image_data, LoadWavFile("burger-224.png"));
-
-//   TfLiteFrameBuffer frame_buffer = {
-//       .format = kRGB,
-//       .orientation = kTopLeft,
-//       .dimension = {.width = image_data.width, .height = image_data.height},
-//       .buffer = image_data.pixel_data};
-
-//   TfLiteClassificationResult* classification_result =
-//       TfLiteAudioClassifierClassify(audio_classifier, &frame_buffer, nullptr);
-
-//   ImageDataFree(&image_data);
-//   if (audio_classifier) TfLiteAudioClassifierDelete(audio_classifier);
-
-//   ASSERT_NE(classification_result, nullptr);
-//   EXPECT_GE(classification_result->size, 1);
-//   EXPECT_NE(classification_result->classifications, nullptr);
-//   EXPECT_GE(classification_result->classifications->size, 1);
-//   EXPECT_NE(classification_result->classifications->categories, nullptr);
-//   EXPECT_EQ(strcmp(classification_result->classifications->categories[0].label,
-//                    allowlisted_label_name),
-//             0);
-
-//   TfLiteClassificationResultDelete(classification_result);
-// }
+  TfLiteSupportErrorDelete(error);
+}
 
 }  // namespace
 }  // namespace audio
