@@ -225,6 +225,17 @@ void TfLiteAudioClassifierDelete(TfLiteAudioClassifier* classifier) {
   delete classifier;
 }
 
+TfLiteAudioFormat* TfLiteAudioClassifierGetRequiredAudioFormat(TfLiteAudioClassifier* classifier, TfLiteSupportError** error) {
+   StatusOr<TfLiteAudioFormat*> c_audio_format = CreateCAudioFormat(classifier->impl->GetRequiredAudioFormat());
+   
+   if (!c_audio_format.ok()) {
+     return nullptr;
+   }
+
+   return c_audio_format.value();
+}
+
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

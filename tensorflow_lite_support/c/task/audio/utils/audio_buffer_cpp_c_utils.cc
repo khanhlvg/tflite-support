@@ -41,6 +41,15 @@ StatusOr<std::unique_ptr<AudioBufferCpp>> CreateCppAudioBuffer(
       {audio_buffer->format.channels, static_cast<int>(audio_buffer->format.sample_rate)});
 }
 
+StatusOr<TfLiteAudioFormat*>
+CreateCAudioFormat(StatusOr<AudioBufferCpp::AudioFormat> cpp_audio_format) {
+    if (!cpp_audio_format.ok()) {
+        return cpp_audio_format.status();
+    }
+    
+    return new TfLiteAudioFormat{cpp_audio_format->channels, cpp_audio_format->sample_rate};
+}
+
 }  // namespace audio
 }  // namespace task
 }  // namespace tflite

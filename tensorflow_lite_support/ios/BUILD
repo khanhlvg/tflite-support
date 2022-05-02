@@ -18,6 +18,7 @@ package(
 strip_c_api_include_path_prefix(
     name = "strip_c_api_include_path",
     hdr_labels = [
+        "//tensorflow_lite_support/c/task/audio:audio_classifier.h",
         "//tensorflow_lite_support/c/task/text:bert_nl_classifier.h",
         "//tensorflow_lite_support/c/task/text:nl_classifier.h",
         "//tensorflow_lite_support/c/task/text:nl_classifier_common.h",
@@ -26,7 +27,7 @@ strip_c_api_include_path_prefix(
         "//tensorflow_lite_support/c/task/vision:object_detector.h",
         "//tensorflow_lite_support/c/task/vision:image_segmenter.h",
         "//tensorflow_lite_support/c/task/processor:bounding_box.h",
-        "//tensorflow_lite_support/c/task/vision/core:frame_buffer.h",
+        "//tensorflow_lite_support/c/task/audio/core:audio_buffer.h",
         "//tensorflow_lite_support/c/task/processor:classification_result.h",
         "//tensorflow_lite_support/c/task/processor:detection_result.h",
         "//tensorflow_lite_support/c/task/processor:segmentation_result.h",
@@ -89,6 +90,32 @@ tflite_ios_framework(
         "//tensorflow_lite_support/c/task/vision:image_classifier",
         "//tensorflow_lite_support/c/task/vision:image_segmenter",
         "//tensorflow_lite_support/c/task/vision:object_detector",
+    ],
+)
+
+# Xcode 12 does not support ios fat libraries. Frameworks built for multiple
+# architectures should be compiled into a .xcframework inside. Bazel currently
+# does not support building .xcframework. You have to build the framework
+# for the architecture you decide to test on.
+# Use the below command to build for arm64 which lets you test the library on
+# iOS devices.
+# bazel build -c opt --config=ios_arm64 //tensorflow_lite_support/ios:TensorFlowLiteTaskAudioC_framework
+tflite_ios_framework(
+    name = "TensorFlowLiteTaskAudioC_framework",
+    hdrs = [
+        ":base_options.h",
+        ":category.h",
+        ":classification_options.h",
+        ":classification_result.h",
+        ":common.h",
+        ":audio_buffer.h",
+        ":audio_classifier.h",
+    ],
+    allowlist_symbols_file = ":allowlist_TensorFlowLiteTaskAudio.txt",
+    bundle_name = "TensorFlowLiteTaskAudioC",
+    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    deps = [
+        "//tensorflow_lite_support/c/task/audio:audio_classifier",
     ],
 )
 
