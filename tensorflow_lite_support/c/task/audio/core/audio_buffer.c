@@ -17,12 +17,17 @@ limitations under the License.
 #include <stdlib.h>
 
 void TfLiteAudioBufferDelete(
-    TfLiteAudioBuffer* audio_buffer) {
-  free(audio_buffer->data);
+    const TfLiteAudioBuffer* audio_buffer) {
+  TfLiteAudioBufferDeleteData(*audio_buffer);
   free(audio_buffer);
 }
 
+void TfLiteAudioBufferDataDelete(const TfLiteAudioBuffer audio_buffer) {
+    free(audio_buffer.data);
+}
+
+
 void TfLiteAudioFormatDelete(
-    TfLiteAudioFormat* audio_format) {
+    const TfLiteAudioFormat* audio_format) {
   free(audio_format);
 }

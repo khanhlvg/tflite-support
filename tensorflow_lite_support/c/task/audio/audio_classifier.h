@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ limitations under the License.
 #include <stdint.h>
 
 #include "tensorflow_lite_support/c/common.h"
+
 #include "tensorflow_lite_support/c/task/core/base_options.h"
 #include "tensorflow_lite_support/c/task/processor/classification_options.h"
 #include "tensorflow_lite_support/c/task/audio/core/audio_buffer.h"
@@ -185,7 +186,7 @@ TfLiteAudioClassifier* TfLiteAudioClassifierFromOptions(
 //
 TfLiteClassificationResult* TfLiteAudioClassifierClassify(
     const TfLiteAudioClassifier* classifier,
-    const TfLiteAudioBuffer* frame_buffer, TfLiteSupportError** error);
+    const TfLiteAudioBuffer* audio_buffer, TfLiteSupportError** error);
 
 int TfLiteAudioClassifierGetRequiredInputBufferSize(TfLiteAudioClassifier* classifier, TfLiteSupportError** error);
 

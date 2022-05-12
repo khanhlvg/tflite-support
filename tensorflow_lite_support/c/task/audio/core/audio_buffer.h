@@ -15,7 +15,6 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_SUPPORT_C_TASK_AUDIO_AUDIO_BUFFER_H_
 #define TENSORFLOW_LITE_SUPPORT_C_TASK_AUDIO_AUDIO_BUFFER_H_
 
-
 // Defines C structs for holding the audio buffer.
 
 #ifdef __cplusplus
@@ -45,8 +44,11 @@ typedef struct TfLiteAudioBuffer {
   const unsigned long size;
 } TfLiteAudioBuffer;
 
-void TfLiteAudioBufferDelete(TfLiteAudioBuffer *buffer);
-void TfLiteAudioFormatDelete(TfLiteAudioFormat *format);
+void TfLiteAudioBufferDelete(const TfLiteAudioBuffer *buffer);
+
+void TfLiteAudioBufferDataDelete(const TfLiteAudioBuffer audio_buffer);
+
+void TfLiteAudioFormatDelete(const TfLiteAudioFormat *format);
 
 #ifdef __cplusplus
 }  // extern "C"

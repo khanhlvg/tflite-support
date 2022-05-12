@@ -13,5 +13,4 @@ cc_library(
     hdrs = [
         "audio_buffer.h",
     ],
-   
 )

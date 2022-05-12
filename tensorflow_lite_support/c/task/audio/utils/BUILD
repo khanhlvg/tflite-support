@@ -15,8 +15,9 @@ cc_library(
     ],
     deps = [
         "//tensorflow_lite_support/c/task/audio/core:audio_buffer",
-        "//tensorflow_lite_support/cc/task/audio/core:audio_buffer",
         "//tensorflow_lite_support/cc:common",
+        "//tensorflow_lite_support/cc/task/audio/core:audio_buffer",
         "@com_google_absl//absl/strings:str_format",
     ],
 )
+

@@ -28,6 +28,8 @@ limitations under the License.
 #include "tensorflow_lite_support/cc/task/audio/utils/wav_io.h"
 #include "tensorflow_lite_support/cc/test/test_utils.h"
 
+#define GTEST_COUT std::cerr << "[          ] [ INFO ]"
+
 namespace tflite {
 namespace task {
 namespace audio {
@@ -267,8 +269,8 @@ TEST_F(AudioClassifierClassifyTest, SucceedsWithAudioFile) {
   TfLiteClassificationResult* classification_result =
       TfLiteAudioClassifierClassify(audio_classifier, &audio_buffer,
                                     &classifyError);
-
-  free((void*)(audio_buffer.data));
+  
+  TfLiteAudioBufferDataDelete(audio_buffer);
 
   Verify(classification_result, 1);
   Verify(classification_result->classifications[0], 521, 0, "scores");
