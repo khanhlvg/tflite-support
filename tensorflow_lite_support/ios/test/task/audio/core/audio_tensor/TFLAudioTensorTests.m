@@ -16,9 +16,9 @@
 #import <XCTest/XCTest.h>
 
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-#import "tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils/sources/AVAudioPCMBuffer+Utils.h"
+#import "tensorflow_lite_support/ios/task/audio/core/utils/sources/AVAudioPCMBuffer+Utils.h"
 
-#import "tensorflow_lite_support/ios/task/audio/core/audio_record/sources/TFLAudioRecord.h"
+#import "tensorflow_lite_support/ios/task/audio/core/audio_tensor/sources/TFLAudioTensor.h"
 
 #define VerifyError(error, expectedErrorDomain, expectedErrorCode, expectedLocalizedDescription) \
   XCTAssertEqual(error.domain, expectedErrorDomain);                                             \
@@ -27,8 +27,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TFLAudioRecordTests : XCTestCase
-@property(nonatomic) AVAudioFormat *audioEngineFormat;
+@interface TFLAudioTensorTests : XCTestCase
 @end
 
 // This category of TFLAudioRecord is private to the current test file.
@@ -41,34 +40,40 @@ NS_ASSUME_NONNULL_BEGIN
          usingAudioConverter:(AVAudioConverter *)audioConverter;
 @end
 
-@implementation TFLAudioRecordTests
+@implementation TFLAudioTensorTests
 
 - (void)setUp {
   [super setUp];
-  self.audioEngineFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatFloat32
-                                                            sampleRate:48000
-                                                              channels:1
-                                                           interleaved:NO];
+  // self.audioEngineFormat = [[AVAudioFormat alloc] initWithCommonFormat:AVAudioPCMFormatFloat32
+  //                                                           sampleRate:48000
+  //                                                             channels:1
+  //                                                          interleaved:NO];
 }
 
-- (AVAudioPCMBuffer *)audioEngineFromFileWithName:(NSString *)name extension:(NSString *)extension {
-  // Loading AVAudioPCMBuffer with an array is not currentlyy suupported for iOS versions < 15.0.
-  // Instead audio samples from a wav file are loaded and converted into the same format
-  // of AVAudioEngine's input node to mock thhe input from the AVAudio Engine.
-  NSURL *fileURL = [[NSBundle bundleForClass:self.class] URLForResource:name
-                                                          withExtension:extension];
+// - (AVAudioPCMBuffer *)audioEngineFromFileWithName:(NSString *)name extension:(NSString *)extension {
+//   // Loading AVAudioPCMBuffer with an array is not currentlyy suupported for iOS versions < 15.0.
+//   // Instead audio samples from a wav file are loaded and converted into the same format
+//   // of AVAudioEngine's input node to mock thhe input from the AVAudio Engine.
+//   NSURL *fileURL = [[NSBundle bundleForClass:self.class] URLForResource:name
+//                                                           withExtension:extension];
 
-  return [AVAudioPCMBuffer loadPCMBufferFromFileWithURL:fileURL processingFormat:self.audioEngineFormat error:nil];
+//   return [AVAudioPCMBuffer loadPCMBufferFromFileWithURL:fileURL processingFormat:self.audioEngineFormat error:nil];
 
-  // AVAudioConverter *audioEngineConverter =
-  //     [[AVAudioConverter alloc] initFromFormat:inputBuffer.format toFormat:self.audioEngineFormat];
-  // AVAudioPCMBuffer *audioEngineBuffer =
-  //     [inputBuffer bufferUsingAudioConverter:audioEngineConverter];
+//   // AVAudioConverter *audioEngineConverter =
+//   //     [[AVAudioConverter alloc] initFromFormat:inputBuffer.format toFormat:self.audioEngineFormat];
+//   // AVAudioPCMBuffer *audioEngineBuffer =
+//   //     [inputBuffer bufferUsingAudioConverter:audioEngineConverter];
 
-  // return audioEngineBuffer;
-}
+//   // return audioEngineBuffer;
+// }
 
-- (void)testInitAudioRecordFailsWithInvalidChannelCount {
+- (void)testCreateFromWavFileSucceeds {
+  
+  NSURL *filePath = [[NSBundle bundleForClass:self.class] pathForResource:@"speech"
+                                                          ofType:@"wav"];
+
+  [TFLAudioTensor createFromWavFileWithPath:filePath error:nil];
+
   TFLAudioFormat *audioFormat = [[TFLAudioFormat alloc] initWithChannelCount:3 sampleRate:8000];
 
   NSError *error = nil;

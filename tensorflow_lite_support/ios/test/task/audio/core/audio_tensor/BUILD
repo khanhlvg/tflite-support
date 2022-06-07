@@ -8,16 +8,16 @@ package(
 )
 
 objc_library(
-    name = "TFLAudioTensorObjcTestLibrary",
+    name = "TFLAudioRecordObjcTestLibrary",
     testonly = 1,
-    srcs = ["TFLAudioTensorTests.m"],
+    srcs = ["TFLAudioRecordTests.m"],
     data = [
         "//tensorflow_lite_support/cc/test/testdata/task/audio:test_audio_clips",
     ],
     tags = TFL_DEFAULT_TAGS,
     deps = [
         "//tensorflow_lite_support/ios:TFLCommon",
-        "//tensorflow_lite_support/ios/task/audio/core/audio_tensor:TFLAudioTensor",
+        "//tensorflow_lite_support/ios/task/audio/core/audio_record:TFLAudioRecord",
         "//tensorflow_lite_support/ios/task/audio/core/utils:AVAudioPCMBufferUtils",
         "//third_party/apple_frameworks:AVFoundation",
         "//third_party/apple_frameworks:XCTest",
@@ -25,11 +25,11 @@ objc_library(
 )
 
 ios_unit_test(
-    name = "TFLAudioTensorObjcTest",
+    name = "TFLAudioRecordObjcTest",
     minimum_os_version = TFL_MINIMUM_OS_VERSION,
     runner = tflite_ios_lab_runner("IOS_LATEST"),
     tags = TFL_DEFAULT_TAGS + TFL_DISABLED_SANITIZER_TAGS,
     deps = [
-        ":TFLAudioTensorObjcTestLibrary",
+        ":TFLAudioRecordObjcTestLibrary",
     ],
 )
