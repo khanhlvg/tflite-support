@@ -39,7 +39,9 @@ strip_api_include_path_prefix(
         "//tensorflow_lite_support/c/task/processor:category.h",
         "//tensorflow_lite_support/c/task/core:base_options.h",
         "//tensorflow_lite_support/c:common.h",
-        "//tensorflow_lite_support/ios/task/vision:sources/TFLImageEmbedder.h",
+        "//tensorflow_lite_support/ios/task/text/nlclassifier:Sources/TFLBertNLClassifier.h",
+        "//tensorflow_lite_support/ios/task/text/nlclassifier:Sources/TFLNLClassifier.h",
+        "//tensorflow_lite_support/ios/task/text/qa:Sources/TFLBertQuestionAnswerer.h",
         "//tensorflow_lite_support/ios/task/vision:sources/TFLImageClassifier.h",
         "//tensorflow_lite_support/ios/task/vision:sources/TFLObjectDetector.h",
         "//tensorflow_lite_support/ios/task/vision:sources/TFLImageSegmenter.h",
@@ -128,11 +130,27 @@ ios_static_framework(
         ":GMLImage.h",
     ],
     bundle_name = "TensorFlowLiteTaskVision",
-    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    minimum_os_version = "10.0",
     deps = [
         "//tensorflow_lite_support/ios/task/vision:TFLImageClassifier",
         "//tensorflow_lite_support/ios/task/vision:TFLObjectDetector",
         "//tensorflow_lite_support/ios/task/vision:TFLImageSegmenter",
+    ],
+)
+
+ios_static_framework(
+    name = "TensorFlowLiteTaskText_framework",
+    hdrs = [
+        ":TFLBertNLClassifier.h",
+        ":TFLNLClassifier.h",
+        ":TFLBertQuestionAnswerer.h",
+    ],
+    bundle_name = "TensorFlowLiteTaskText",
+    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    deps = [
+        "//tensorflow_lite_support/ios/task/text/nlclassifier:TFLBertNLClassifier",
+        "//tensorflow_lite_support/ios/task/text/nlclassifier:TFLNLClassifier",
+        "//tensorflow_lite_support/ios/task/text/qa:TFLBertQuestionAnswerer",
     ],
 )
 

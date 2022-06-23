@@ -18,6 +18,7 @@ objc_library(
     tags = TFL_DEFAULT_TAGS,
     deps = [
         "//tensorflow_lite_support/ios/task/audio:TFLAudioClassifier",
+        "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:TFLAudioRecordUtils",
         "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:AVAudioPCMBufferUtils",
     ],
 )
@@ -29,5 +30,31 @@ ios_unit_test(
     tags = TFL_DEFAULT_TAGS + TFL_DISABLED_SANITIZER_TAGS,
     deps = [
         ":TFLAudioClassifierObjcTestLibrary",
+    ],
+)
+
+swift_library(
+    name = "TFLAudioClassifierSwiftTestLibrary",
+    testonly = 1,
+    srcs = ["TFLAudioClassifierTests.swift"],
+    data = [
+        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_audio_clips",
+        "//tensorflow_lite_support/cc/test/testdata/task/audio:test_models",
+    ],
+    tags = TFL_DEFAULT_TAGS,
+    deps = [
+        "//tensorflow_lite_support/ios/task/audio:TFLAudioClassifier",
+        "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:TFLAudioRecordUtils",
+        "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:AVAudioPCMBufferUtils",
+    ],
+)
+
+ios_unit_test(
+    name = "TFLAudioClassifierSwiftTest",
+    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    runner = tflite_ios_lab_runner("IOS_LATEST"),
+    tags = TFL_DEFAULT_TAGS + TFL_DISABLED_SANITIZER_TAGS,
+    deps = [
+        ":TFLAudioClassifierSwiftTestLibrary",
     ],
 )
