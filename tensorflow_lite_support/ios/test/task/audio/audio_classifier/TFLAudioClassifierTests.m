@@ -17,7 +17,6 @@
 #import "tensorflow_lite_support/ios/task/audio/sources/TFLAudioClassifier.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 #import "tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils/sources/AVAudioPCMBuffer+Utils.h"
-#import "tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils/sources/TFLAudioRecord+Utils.h"
 
 #define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
   XCTAssertNotNil(error);                                                               \
@@ -49,6 +48,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, nullable) NSString *modelPath;
 @property(nonatomic) AVAudioFormat *audioEngineFormat;
 @end
+
+// This category of TFLAudioRecord is private to the test files. This is needed in order to
+// expose the method to load the audio record buffer without calling: -[TFLAudioRecord
+// startRecordingWithError:]. This is needed to avoid exposing this method which isn't useful to the
+// consumers of the framework.
+@interface TFLAudioRecord (Tests)
+- (void)mockLoadBufferWithFileName:(NSString *)fileName extension:(NSString *)extension;
+@end
+
 
 @implementation TFLAudioClassifierTests
 

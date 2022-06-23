@@ -74,7 +74,8 @@ NS_SWIFT_NAME(AudioClassifier)
  * in initializing the audio classifier.
  */
 + (nullable instancetype)audioClassifierWithOptions:(TFLAudioClassifierOptions *)options
-                                              error:(NSError **)error;
+                                              error:(NSError **)error
+    NS_SWIFT_NAME(classifier(options:));
 
 + (instancetype)new NS_UNAVAILABLE;
 

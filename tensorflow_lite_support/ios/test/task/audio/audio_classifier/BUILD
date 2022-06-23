@@ -1,6 +1,7 @@
 load("@org_tensorflow//tensorflow/lite/ios:ios.bzl", "TFL_DEFAULT_TAGS", "TFL_DISABLED_SANITIZER_TAGS", "TFL_MINIMUM_OS_VERSION")
 load("@build_bazel_rules_apple//apple:ios.bzl", "ios_unit_test")
 load("@org_tensorflow//tensorflow/lite:special_rules.bzl", "tflite_ios_lab_runner")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
 
 package(
     default_visibility = ["//visibility:private"],
@@ -44,7 +45,6 @@ swift_library(
     tags = TFL_DEFAULT_TAGS,
     deps = [
         "//tensorflow_lite_support/ios/task/audio:TFLAudioClassifier",
-        "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:TFLAudioRecordUtils",
         "//tensorflow_lite_support/ios/test/task/audio/core/audio_record/utils:AVAudioPCMBufferUtils",
     ],
 )
