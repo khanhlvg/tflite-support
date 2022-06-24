@@ -1,0 +1,21 @@
+Pod::Spec.new do |s|
+  s.name             = 'TensorFlowLiteTaskAudio'
+  s.version          = '0.0.1'
+  s.authors          = 'Google Inc.'
+  s.license          = { :type => 'Apache',:file => "LICENSE"}
+  s.homepage         = 'https://github.com/tensorflow/tflite-support'
+  s.source           = { :http => 'https://dl.dropboxusercontent.com/s/kr3ngm6ji9ei8r5/TensorFlowLiteTaskVisionObjCPP-0.1.3-dev.tar.gz?dl=0' }
+  s.summary          = 'TensorFlow Lite Task Library - Vision'
+  s.description      = 'The Computer Vision APIs of the TFLite Task Library'
+
+  s.ios.deployment_target = '10.0'
+
+  s.module_name = 'TensorFlowLiteTaskAudio'
+  s.static_framework = true
+  s.pod_target_xcconfig = {
+     'VALID_ARCHS' => 'x86_64, arm64, armv7',
+  }
+  s.library = 'c++'
+  s.frameworks = 'AVFoundation'
+  s.vendored_frameworks = 'Frameworks/TensorFlowLiteTaskAudio.framework'
+end
