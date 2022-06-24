@@ -5,9 +5,15 @@ load(
     "TFL_MINIMUM_OS_VERSION",
     "tflite_ios_framework",
 )
+
 load(
     "//tensorflow_lite_support/ios:ios.bzl",
-    "strip_c_api_include_path_prefix",
+    "strip_api_include_path_prefix",
+)
+
+load(
+    "@build_bazel_rules_apple//apple:ios.bzl",
+    "ios_static_framework",
 )
 
 package(
@@ -15,8 +21,8 @@ package(
     licenses = ["notice"],  # Apache 2.0
 )
 
-strip_c_api_include_path_prefix(
-    name = "strip_c_api_include_path",
+strip_api_include_path_prefix(
+    name = "strip_api_include_path",
     hdr_labels = [
         "//tensorflow_lite_support/c/task/text:bert_nl_classifier.h",
         "//tensorflow_lite_support/c/task/text:nl_classifier.h",
@@ -34,8 +40,41 @@ strip_c_api_include_path_prefix(
         "//tensorflow_lite_support/c/task/processor:category.h",
         "//tensorflow_lite_support/c/task/core:base_options.h",
         "//tensorflow_lite_support/c:common.h",
+        "//tensorflow_lite_support/ios:sources/TFLCommon.h",
+        "//tensorflow_lite_support/ios/task/core:sources/TFLBaseOptions.h",
+        "//tensorflow_lite_support/ios/task/processor:sources/TFLClassificationOptions.h",
+        "//tensorflow_lite_support/ios/task/processor:sources/TFLCategory.h",
+        "//tensorflow_lite_support/ios/task/processor:sources/TFLClassificationResult.h",
+        "//tensorflow_lite_support/ios/task/audio/core:sources/TFLAudioFormat.h",
+        "//tensorflow_lite_support/ios/task/audio/core:sources/TFLFloatBuffer.h",
+        "//tensorflow_lite_support/ios/task/audio/core:sources/TFLRingBuffer.h",
+        "//tensorflow_lite_support/ios/task/audio/core/audio_record:sources/TFLAudioRecord.h",
+        "//tensorflow_lite_support/ios/task/audio/core/audio_tensor:sources/TFLAudioTensor.h",
+        "//tensorflow_lite_support/ios/task/audio:sources/TFLAudioClassifier.h",
     ],
 )
+
+# strip_c_api_include_path_prefix(
+#     name = "strip_c_api_include_path",
+#     hdr_labels = [
+#         "//tensorflow_lite_support/c/task/text:bert_nl_classifier.h",
+#         "//tensorflow_lite_support/c/task/text:nl_classifier.h",
+#         "//tensorflow_lite_support/c/task/text:nl_classifier_common.h",
+#         "//tensorflow_lite_support/c/task/text:bert_question_answerer.h",
+#         "//tensorflow_lite_support/c/task/vision:image_classifier.h",
+#         "//tensorflow_lite_support/c/task/vision:object_detector.h",
+#         "//tensorflow_lite_support/c/task/vision:image_segmenter.h",
+#         "//tensorflow_lite_support/c/task/processor:bounding_box.h",
+#         "//tensorflow_lite_support/c/task/vision/core:frame_buffer.h",
+#         "//tensorflow_lite_support/c/task/processor:classification_result.h",
+#         "//tensorflow_lite_support/c/task/processor:detection_result.h",
+#         "//tensorflow_lite_support/c/task/processor:segmentation_result.h",
+#         "//tensorflow_lite_support/c/task/processor:classification_options.h",
+#         "//tensorflow_lite_support/c/task/processor:category.h",
+#         "//tensorflow_lite_support/c/task/core:base_options.h",
+#         "//tensorflow_lite_support/c:common.h",
+#     ],
+# )
 
 # This target builds a monolithic static framework for the TFLite Text API,
 # which includes the TFLite runtime in it.
@@ -89,6 +128,27 @@ tflite_ios_framework(
         "//tensorflow_lite_support/c/task/vision:image_classifier",
         "//tensorflow_lite_support/c/task/vision:image_segmenter",
         "//tensorflow_lite_support/c/task/vision:object_detector",
+    ],
+)
+
+ios_static_framework(
+    name = "TensorFlowLiteTaskAudio_framework",
+    hdrs = [
+        ":TFLAudioClassifier.h",
+        ":TFLAudioTensor.h",
+        ":TFLAudioRecord.h",
+        ":TFLAudioFormat.h",
+        ":TFLFloatBuffer.h",
+        ":TFLCommon.h",
+        ":TFLBaseOptions.h",
+        ":TFLClassificationOptions.h",
+        ":TFLCategory.h",
+        ":TFLClassificationResult.h",
+    ],
+    bundle_name = "TensorFlowLiteTaskAudio",
+    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    deps = [
+        "//tensorflow_lite_support/ios/task/audio:TFLAudioClassifier",
     ],
 )
 
