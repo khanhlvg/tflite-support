@@ -29,10 +29,12 @@ strip_api_include_path_prefix(
         "//tensorflow_lite_support/c/task/text:nl_classifier_common.h",
         "//tensorflow_lite_support/c/task/text:bert_question_answerer.h",
         "//tensorflow_lite_support/c/task/vision:image_classifier.h",
+        "//tensorflow_lite_support/c/task/audio:audio_classifier.h",
         "//tensorflow_lite_support/c/task/vision:object_detector.h",
         "//tensorflow_lite_support/c/task/vision:image_segmenter.h",
         "//tensorflow_lite_support/c/task/processor:bounding_box.h",
         "//tensorflow_lite_support/c/task/vision/core:frame_buffer.h",
+        "//tensorflow_lite_support/c/task/audio/core:audio_buffer.h",
         "//tensorflow_lite_support/c/task/processor:classification_result.h",
         "//tensorflow_lite_support/c/task/processor:detection_result.h",
         "//tensorflow_lite_support/c/task/processor:segmentation_result.h",
@@ -128,6 +130,25 @@ tflite_ios_framework(
         "//tensorflow_lite_support/c/task/vision:image_classifier",
         "//tensorflow_lite_support/c/task/vision:image_segmenter",
         "//tensorflow_lite_support/c/task/vision:object_detector",
+    ],
+)
+
+tflite_ios_framework(
+    name = "TensorFlowLiteTaskAudioC_framework",
+    hdrs = [
+        ":base_options.h",
+        ":category.h",
+        ":classification_options.h",
+        ":classification_result.h",
+        ":common.h",
+        ":audio_classifier.h",
+        ":audio_buffer.h"
+    ],
+    allowlist_symbols_file = ":allowlist_TensorFlowLiteTaskVision.txt",
+    bundle_name = "TensorFlowLiteTaskAudioC",
+    minimum_os_version = TFL_MINIMUM_OS_VERSION,
+    deps = [
+        "//tensorflow_lite_support/c/task/audio:audio_classifier",
     ],
 )
 
