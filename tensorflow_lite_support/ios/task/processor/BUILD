@@ -64,6 +64,40 @@ objc_library(
 )
 
 objc_library(
+    name = "TFLSearchOptions",
+    srcs = [
+        "sources/TFLSearchOptions.m",
+    ],
+    hdrs = [
+        "sources/TFLSearchOptions.h",
+    ],
+    module_name = "TFLSearchOptions",
+    deps = ["//tensorflow_lite_support/ios/task/core:TFLExternalFile"],
+)
+
+objc_library(
+    name = "TFLEmbeddingOptions",
+    srcs = [
+        "sources/TFLEmbeddingOptions.m",
+    ],
+    hdrs = [
+        "sources/TFLEmbeddingOptions.h",
+    ],
+    module_name = "TFLEmbeddingOptions",
+)
+
+objc_library(
+    name = "TFLSearchResult",
+    srcs = [
+        "sources/TFLSearchResult.m",
+    ],
+    hdrs = [
+        "sources/TFLSearchResult.h",
+    ],
+    module_name = "TFLSearchResult",
+)
+
+objc_library(
     name = "TFLClassificationOptionsHelpers",
     srcs = [
         "sources/TFLClassificationOptions+Helpers.m",

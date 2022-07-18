@@ -10,6 +10,7 @@
  limitations under the License.
  ==============================================================================*/
 #import <Foundation/Foundation.h>
+#import "tensorflow_lite_support/ios/task/core/sources/TFLExternalfile.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,18 +37,6 @@ NS_SWIFT_NAME(ComputeSettings)
 
 /** Holds cpu settings. */
 @property(nonatomic, copy) TFLCpuSettings *cpuSettings;
-
-@end
-
-/**
- * Holds settings for one possible acceleration configuration.
- */
-NS_SWIFT_NAME(ExternalFile)
-@interface TFLExternalFile : NSObject <NSCopying>
-
-/** Path to the file in bundle. */
-@property(nonatomic, copy) NSString *filePath;
-/// Add provision for other sources in future.
 
 @end
 
