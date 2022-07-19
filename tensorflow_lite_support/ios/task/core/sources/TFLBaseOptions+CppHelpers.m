@@ -19,11 +19,10 @@ namespace {
 }
 @implementation TFLBaseOptions (CppHelpers)
 
-- (tflite::task::core::BaseOptions)cppBaseOptions {
-  BaseOptionsCpp cppBaseOptions = 
-  
+- (void)copyTocppOptions:(tflite::task::core::BaseOptions *)cppOptions {
+    
   if (self.modelFile.filePath) {
-    cppBaseOptions.mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
+    cppOptions.mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
   }
 
 }

@@ -18,7 +18,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface TFLBaseOptions (CppHelpers)
-- (tflite::task::core::BaseOptions)cppBaseOptions;
+- (void)copyTocppOptions:(tflite::task::core::BaseOptions *)cppOptions;
 @end
 
 NS_ASSUME_NONNULL_END
