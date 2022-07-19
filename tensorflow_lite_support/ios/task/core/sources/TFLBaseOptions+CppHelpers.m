@@ -14,17 +14,13 @@
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+CppHelpers.h"
 
-namespace {
-  BaseOptionsCpp = ::tflite::task::core::BaseOptions; 
-}
 @implementation TFLBaseOptions (CppHelpers)
 
-- (void)copyTocppOptions:(tflite::task::core::BaseOptions *)cppOptions {
-    
+- (void)copyTocppOptions:(tflite::task::core::BaseOptions *)cppOptions {   
   if (self.modelFile.filePath) {
-    cppOptions.mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
+    cppOptions->mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
   }
-
+  cppOptions->compute_settings.cpu_settings.num_threads = (int)self.computeSettings.cpuSettings.numThreads;
 }
 
 @end
