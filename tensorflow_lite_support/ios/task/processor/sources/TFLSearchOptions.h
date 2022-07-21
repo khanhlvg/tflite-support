@@ -13,7 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import <Foundation/Foundation.h>
-#import "tensorflow_lite_support/ios/task/core/sources/TFLExternalfile.h"
+#import "tensorflow_lite_support/ios/task/core/sources/TFLExternalFile.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(SearchOptions)
 @interface TFLSearchOptions : NSObject <NSCopying>
 
-@property(nonatomic, copy) TFLExternalFile *modelFile;
+@property(nonatomic, copy) TFLExternalFile *indexFile;
 
 /** Maximum number of nearest neighbor results to return. */
 @property(nonatomic) NSInteger maxResults;

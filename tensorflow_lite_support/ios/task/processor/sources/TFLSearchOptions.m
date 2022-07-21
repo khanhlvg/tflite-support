@@ -15,7 +15,7 @@
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions.h"
 
 @implementation TFLSearchOptions
-@synthesize externalFile;
+@synthesize indexFile;
 @synthesize maxResults;
 
 - (instancetype)init {
@@ -29,7 +29,7 @@
 - (id)copyWithZone:(NSZone *)zone {
   TFLSearchOptions *searchOptions = [[TFLSearchOptions alloc] init];
 
-  searchOptions.externalFile = self.externalFile;
+  searchOptions.indexFile = self.indexFile;
   searchOptions.maxResults = self.maxResults;
 
   return searchOptions;

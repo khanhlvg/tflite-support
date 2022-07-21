@@ -44,7 +44,7 @@ objc_library(
 objc_library(
     name = "TFLBaseOptionsCppHelpers",
     srcs = [
-        "sources/TFLBaseOptions+CppHelpers.m",
+        "sources/TFLBaseOptions+CppHelpers.mm",
     ],
     hdrs = [
         "sources/TFLBaseOptions+CppHelpers.h",
@@ -54,4 +54,5 @@ objc_library(
         "//tensorflow_lite_support/cc/task/core/proto:base_options_proto_inc",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
     ],
+    copts = ["-ObjC++","-std=c++14"]
 )

@@ -15,7 +15,10 @@
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLImageSearcher.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
-// #import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+Helpers.h"
+#import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+CppHelpers.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLEmbeddingOptions+Helpers.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions+Helpers.h"
+
 // #import "tensorflow_lite_support/ios/task/processor/sources/TFLClassificationOptions+Helpers.h"
 // #import "tensorflow_lite_support/ios/task/processor/sources/TFLClassificationResult+Helpers.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
@@ -26,11 +29,12 @@ namespace {
 using ImageSearcherCpp = ::tflite::task::vision::ImageSearcher;
 using ImageSearcherOptionsCpp =
     ::tflite::task::vision::ImageSearcherOptions;
+using ::tflite::support::StatusOr;
 }
 
 @interface TFLImageSearcher () {
 /** ImageClassifier backed by C API */
-std::unique_ptr<ImageSearcherCpp> cppImageSearcher;
+std::unique_ptr<ImageSearcherCpp> _cppImageSearcher;
 }
 @end
 
@@ -57,6 +61,15 @@ std::unique_ptr<ImageSearcherCpp> cppImageSearcher;
   return self;
 }
 
+- (ImageSearcherOptionsCpp)cppOptions {
+    ImageSearcherOptionsCpp cppOptions = {};
+    [self.baseOptions copyTocppOptions:cppOptions.mutable_base_options()];
+    [self.embeddingOptions copyToCppOptions:cppOptions.mutable_embedding_options()];
+    [self.searchOptions copyToCppOptions:cppOptions.mutable_search_options()];
+
+    return cppOptions;
+}
+
 @end
 
 @implementation TFLImageSearcher
@@ -64,65 +77,73 @@ std::unique_ptr<ImageSearcherCpp> cppImageSearcher;
 //   TfLiteImageClassifierDelete(_imageClassifier);
 // }
 
-- (ImageSearcherOptionsCpp) imageSearcherCppOptionsWihOptions(TFLImageSearcherOptions *)options {
+// - (ImageSearcherOptionsCpp) imageSearcherCppOptionsWihOptions(TFLImageSearcherOptions *)options {
 
-  // if (options == nullptr) {
-  //   return CreateStatusWithPayload(
-  //       absl::StatusCode::kInvalidArgument,
-  //       absl::StrFormat("Expected non null options."),
-  //       TfLiteSupportStatus::kInvalidArgumentError);
-  // }
+//   // if (options == nullptr) {
+//   //   return CreateStatusWithPayload(
+//   //       absl::StatusCode::kInvalidArgument,
+//   //       absl::StrFormat("Expected non null options."),
+//   //       TfLiteSupportStatus::kInvalidArgumentError);
+//   // }
 
-  ImageSearcherOptionsCpp cppOptions = {};
+//   ImageSearcherOptionsCpp cppOptions = {};
 
-  // More file sources can be added in else ifs
-  if (options.baseOptions.modelFile.filePath) {
-    cppOptions.mutable_base_options()->mutable_model_file()->set_file_name(
-        options.baseOptions.modelFile.filePath);
-  }
 
-  // c_options->base_options.compute_settings.num_threads is expected to be
-  // set to value > 0 or -1. Otherwise invoking
-  // ImageClassifierCpp::CreateFromOptions() results in a not ok status.
-  cppOptions.mutable_base_options()
-      ->mutable_compute_settings()
-      ->mutable_tflite_settings()
-      ->mutable_cpu_settings()
-      ->set_num_threads(
-          options->baseOptions.computeSettings.cpuSettings.numThreads);
+//   // More file sources can be added in else ifs
+//   if (options.baseOptions.modelFile.filePath) {
+//     cppOptions.mutable_base_options()->mutable_model_file()->set_file_name(
+//         options.baseOptions.modelFile.filePath);
+//   }
 
-  // for (int i = 0; i < c_options->classification_options.label_denylist.length;
-  //      i++)
-  //   cpp_options.add_class_name_blacklist(
-  //       c_options->classification_options.label_denylist.list[i]);
+//   // c_options->base_options.compute_settings.num_threads is expected to be
+//   // set to value > 0 or -1. Otherwise invoking
+//   // ImageClassifierCpp::CreateFromOptions() results in a not ok status.
+//   cppOptions.mutable_base_options()
+//       ->mutable_compute_settings()
+//       ->mutable_tflite_settings()
+//       ->mutable_cpu_settings()
+//       ->set_num_threads(
+//           options->baseOptions.computeSettings.cpuSettings.numThreads);
 
-  // for (int i = 0; i < c_options->classification_options.label_allowlist.length;
-  //      i++)
-  //   cpp_options.add_class_name_whitelist(
-  //       c_options->classification_options.label_allowlist.list[i]);
+//   // for (int i = 0; i < c_options->classification_options.label_denylist.length;
+//   //      i++)
+//   //   cpp_options.add_class_name_blacklist(
+//   //       c_options->classification_options.label_denylist.list[i]);
 
-  // // Check needed since setting a nullptr for this field results in a segfault
-  // // on invocation of ImageClassifierCpp::CreateFromOptions().
-  // if (c_options->classification_options.display_names_local) {
-  //   cpp_options.set_display_names_locale(
-  //       c_options->classification_options.display_names_local);
-  // }
+//   // for (int i = 0; i < c_options->classification_options.label_allowlist.length;
+//   //      i++)
+//   //   cpp_options.add_class_name_whitelist(
+//   //       c_options->classification_options.label_allowlist.list[i]);
 
-  // c_options->classification_options.max_results is expected to be set to -1
-  // or any value > 0. Otherwise invoking
-  // ImageClassifierCpp::CreateFromOptions() results in a not ok status.
-  cpp_options.set_max_results(c_options->classification_options.max_results);
+//   // // Check needed since setting a nullptr for this field results in a segfault
+//   // // on invocation of ImageClassifierCpp::CreateFromOptions().
+//   // if (c_options->classification_options.display_names_local) {
+//   //   cpp_options.set_display_names_locale(
+//   //       c_options->classification_options.display_names_local);
+//   // }
 
-  cpp_options.set_score_threshold(
-      c_options->classification_options.score_threshold);
+//   // c_options->classification_options.max_results is expected to be set to -1
+//   // or any value > 0. Otherwise invoking
+//   // ImageClassifierCpp::CreateFromOptions() results in a not ok status.
+//   cpp_options.set_max_results(c_options->classification_options.max_results);
 
-  return cpp_options;
-}
+//   cpp_options.set_score_threshold(
+//       c_options->classification_options.score_threshold);
 
-- (instancetype)initWithImageClassifier:(TfLiteImageClassifier *)imageClassifier {
+//   return cpp_options;
+// }
+
+- (nullable instancetype)initWithCppImageSearcherOptions:(ImageSearcherOptionsCpp)cppOptions {
   self = [super init];
   if (self) {
-    _imageClassifier = imageClassifier;
+     StatusOr<std::unique_ptr<ImageSearcherCpp>> cppImageSearcher =
+      ImageSearcherCpp::CreateFromOptions(cppOptions);
+    if (cppImageSearcher.ok()) {
+      _cppImageSearcher = std::move(cppImageSearcher.value());
+     }
+     else {
+       return nil;
+     }
   }
   return self;
 }
@@ -132,50 +153,23 @@ std::unique_ptr<ImageSearcherCpp> cppImageSearcher;
   if (!options) {
     [TFLCommonUtils createCustomError:error
                              withCode:TFLSupportErrorCodeInvalidArgumentError
-                          description:@"TFLImageClassifierOptions argument cannot be nil."];
+                          description:@"TFLImageSearcherOptions argument cannot be nil."];
     return nil;
   }
+  
+  ImageSearcherOptionsCpp cppOptions = [options cppOptions];
 
-  TfLiteImageClassifierOptions cOptions = TfLiteImageClassifierOptionsCreate();
-
-  if (![options.classificationOptions copyToCOptions:&(cOptions.classification_options)
-                                               error:error]) {
-    [options.classificationOptions
-        deleteAllocatedMemoryOfClassificationOptions:&(cOptions.classification_options)];
-    return nil;
-  }
-
-  [options.baseOptions copyToCOptions:&(cOptions.base_options)];
-
-  TfLiteSupportError *cCreateClassifierError = NULL;
-  TfLiteImageClassifier *cImageClassifier =
-      TfLiteImageClassifierFromOptions(&cOptions, &cCreateClassifierError);
-
-  [options.classificationOptions
-      deleteAllocatedMemoryOfClassificationOptions:&(cOptions.classification_options)];
-
-  // Populate iOS error if TfliteSupportError is not null and afterwards delete it.
-  if (![TFLCommonUtils checkCError:cCreateClassifierError toError:error]) {
-    TfLiteSupportErrorDelete(cCreateClassifierError);
-  }
-
-  // Return nil if classifier evaluates to nil. If an error was generted by the C layer, it has
-  // already been populated to an NSError and deleted before returning from the method.
-  if (!cImageClassifier) {
-    return nil;
-  }
-
-  return [[TFLImageClassifier alloc] initWithImageClassifier:cImageClassifier];
+  return [[TFLImageSearcher alloc] initWithCppImageSearcherOptions:cppOptions];
 }
 
-- (nullable TFLClassificationResult *)classifyWithGMLImage:(GMLImage *)image
+- (nullable TFLSearchResult *)searchInGMLImage:(GMLImage *)image
                                                      error:(NSError **)error {
-  return [self classifyWithGMLImage:image
+  return [self searchInGMLImage:image
                    regionOfInterest:CGRectMake(0, 0, image.width, image.height)
                               error:error];
 }
 
-- (nullable TFLClassificationResult *)classifyWithGMLImage:(GMLImage *)image
+- (nullable TFLSearchResult *)searchInGMLImage:(GMLImage *)image
                                           regionOfInterest:(CGRect)roi
                                                      error:(NSError **)error {
   if (!image) {
@@ -185,20 +179,39 @@ std::unique_ptr<ImageSearcherCpp> cppImageSearcher;
     return nil;
   }
 
-  TfLiteFrameBuffer *cFrameBuffer = [image cFrameBufferWithError:error];
+  std::unique_ptr<FrameBufferCpp> cppFrameBuffer = [image cppFrameBufferWithError:error];
 
-  if (!cFrameBuffer) {
+  if (!cppFrameBuffer) {
     return nil;
   }
 
-  TfLiteBoundingBox boundingBox = {.origin_x = roi.origin.x,
-                                   .origin_y = roi.origin.y,
-                                   .width = roi.size.width,
-                                   .height = roi.size.height};
+  // TfLiteBoundingBox boundingBox = {.origin_x = roi.origin.x,
+  //                                  .origin_y = roi.origin.y,
+  //                                  .width = roi.size.width,
+  //                                  .height = roi.size.height};
 
-  TfLiteSupportError *classifyError = NULL;
-  TfLiteClassificationResult *cClassificationResult = TfLiteImageClassifierClassifyWithRoi(
-      _imageClassifier, cFrameBuffer, &boundingBox, &classifyError);
+  BoundingBoxCpp cc_roi;
+  if (roi == nullptr) {
+    cc_roi.set_width(frame_buffer->dimension.width);
+    cc_roi.set_height(frame_buffer->dimension.height);
+  } else {
+    cc_roi.set_origin_x(roi->origin_x);
+    cc_roi.set_origin_y(roi->origin_y);
+    cc_roi.set_width(roi->width);
+    cc_roi.set_height(roi->height);
+  }                             
+  
+  StatusOr<SearchResultCpp> cpp_search_result_status =
+      _cppImageSearcher->Search(cppFrameBuffer, cc_roi);
+
+  if (!cpp_classification_result_status.ok()) {
+    tflite::support::CreateTfLiteSupportErrorWithStatus(
+        cpp_classification_result_status.status(), error);
+    return nullptr;
+
+  // TfLiteSupportError *classifyError = NULL;
+  // TfLiteClassificationResult *cClassificationResult = TfLiteImageClassifierClassifyWithRoi(
+  //     _imageClassifier, cFrameBuffer, &boundingBox, &classifyError);
 
   free(cFrameBuffer->buffer);
   cFrameBuffer->buffer = NULL;

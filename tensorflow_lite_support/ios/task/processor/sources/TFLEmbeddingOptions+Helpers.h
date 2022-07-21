@@ -12,15 +12,16 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+CppHelpers.h"
+#include "tensorflow_lite_support/cc/task/processor/proto/embedding_options_proto_inc.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLEmbeddingOptions.h"
 
-@implementation TFLBaseOptions (CppHelpers)
+NS_ASSUME_NONNULL_BEGIN
 
-- (void)copyTocppOptions:(tflite::task::core::BaseOptions *)cppOptions {   
-  if (self.modelFile.filePath) {
-    cppOptions->mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
-  }
-  cppOptions->compute_settings.cpu_settings.num_threads = (int)self.computeSettings.cpuSettings.numThreads;
-}
+@interface TFLEmbeddingOptions (Helpers)
+- (void)copyToCppOptions:(tflite::task::processor::EmbeddingOptions *)cppEmbeddingOptions;
 
+// - (void)deleteAllocatedMemoryOfClassificationOptions:
+//     (TfLiteClassificationOptions *)cClassificationOptions;
 @end
+
+NS_ASSUME_NONNULL_END

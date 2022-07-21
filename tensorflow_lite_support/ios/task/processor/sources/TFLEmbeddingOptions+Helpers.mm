@@ -12,15 +12,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+Helpers.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLEmbeddingOptions+Helpers.h"
 
-@implementation TFLBaseOptions (Helpers)
+@implementation TFLEmbeddingOptions (Helpers)
 
-- (void)copyToCOptions:(TfLiteBaseOptions *)cBaseOptions {
-  if (self.modelFile.filePath) {
-    cBaseOptions->mutable_base_options()->mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
-  }
-  cBaseOptions->compute_settings.cpu_settings.num_threads = (int)self.computeSettings.cpuSettings.numThreads;
+- (void)copyToCppOptions:(tflite::task::processor::EmbeddingOptions *)cppEmbeddingOptions {
+  cppEmbeddingOptions->set_l2_normalize(self.l2Normalize);
+  cppEmbeddingOptions->set_quantize(self.quantize);
 }
 
 @end

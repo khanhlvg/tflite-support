@@ -12,15 +12,15 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions+Helpers.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions+Helpers.h"
 
-@implementation TFLBaseOptions (Helpers)
+@implementation TFLSearchOptions (Helpers)
 
-- (void)copyToCOptions:(TfLiteBaseOptions *)cBaseOptions {
-  if (self.modelFile.filePath) {
-    cBaseOptions->mutable_base_options()->mutable_model_file()->set_file_name(self.modelFile.filePath.UTF8String);
+- (void)copyToCppOptions:(tflite::task::processor::SearchOptions *)cppSearchOptions {
+  if (self.indexFile.filePath) {
+    cppSearchOptions->mutable_index_file()->set_file_name(self.indexFile.filePath.UTF8String);
   }
-  cBaseOptions->compute_settings.cpu_settings.num_threads = (int)self.computeSettings.cpuSettings.numThreads;
+  cppSearchOptions->set_max_results(self.maxResults);
 }
 
 @end

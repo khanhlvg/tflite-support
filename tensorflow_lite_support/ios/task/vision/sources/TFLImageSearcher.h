@@ -103,7 +103,7 @@ NS_SWIFT_NAME(ImageSearcher)
  * there is an error encountered during classification. Please see `TFLClassificationResult` for
  * more details.
  */
-- (nullable TFLClassificationResult *)searchGMLImage:(GMLImage *)image
+- (nullable TFLSearchResults *)searchInGMLImage:(GMLImage *)image
                                                      error:(NSError **)error
     NS_SWIFT_NAME(search(mlImage:));
 
