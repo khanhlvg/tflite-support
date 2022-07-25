@@ -15,7 +15,7 @@ objc_library(
     module_name = "TFLImageClassifier",
     deps = [
         "//tensorflow_lite_support/c/task/vision:image_classifier",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils/c:TFLCommonCUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
@@ -39,7 +39,7 @@ objc_library(
     module_name = "TFLObjectDetector",
     deps = [
         "//tensorflow_lite_support/c/task/vision:object_detector",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils/c:TFLCommonCUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
@@ -63,7 +63,7 @@ objc_library(
     module_name = "TFLImageSegmenter",
     deps = [
         "//tensorflow_lite_support/c/task/vision:image_segmenter",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils/c:TFLCommonCUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLSegmentationResult",
@@ -85,7 +85,7 @@ objc_library(
     module_name = "TFLImageSearcher",
     deps = [
         "//tensorflow_lite_support/cc/task/vision:image_searcher",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils/cpp:TFLCommonCppUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsCppHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLSearchOptions",
         "//tensorflow_lite_support/ios/task/processor:TFLEmbeddingOptionsHelpers",

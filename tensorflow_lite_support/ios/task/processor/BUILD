@@ -60,7 +60,7 @@ objc_library(
         "sources/TFLSegmentationResult.h",
     ],
     module_name = "TFLSegmentationResult",
-    deps = ["//tensorflow_lite_support/ios:TFLCommonUtils"],
+    deps = ["//tensorflow_lite_support/ios/utils:TFLCommonCUtils"],
 )
 
 objc_library(
@@ -108,8 +108,7 @@ objc_library(
     module_name = "TFLClassificationOptionsHelpers",
     deps = [
         "//tensorflow_lite_support/c/task/processor:classification_options",
-        "//tensorflow_lite_support/ios:TFLCommon",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
     ],
 )

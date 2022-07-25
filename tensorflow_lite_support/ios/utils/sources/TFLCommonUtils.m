@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-
-/** Error domain of TensorFlow Lite Support related errors. */
-static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
 
 @implementation TFLCommonUtils
 
 + (void)createCustomError:(NSError **)error
-                 withCode:(NSInteger)code
+                 withCode:(NSUInteger)code
               description:(NSString *)description {
   [TFLCommonUtils createCustomError:error
                          withDomain:TFLSupportTaskErrorDomain
@@ -31,23 +28,13 @@ static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
 
 + (void)createCustomError:(NSError **)error
                withDomain:(NSString *)domain
-                     code:(NSInteger)code
+                     code:(NSUInteger)code
               description:(NSString *)description {
   if (error) {
     *error = [NSError errorWithDomain:domain
                                  code:code
                              userInfo:@{NSLocalizedDescriptionKey : description}];
   }
-}
-
-+ (BOOL)checkCError:(TfLiteSupportError *)supportError toError:(NSError **)error {
-  if (!supportError) {
-    return YES;
-  }
-  NSString *description = [NSString stringWithCString:supportError->message
-                                             encoding:NSUTF8StringEncoding];
-  [TFLCommonUtils createCustomError:error withCode:supportError->code description:description];
-  return NO;
 }
 
 + (void *)mallocWithSize:(size_t)memSize error:(NSError **)error {

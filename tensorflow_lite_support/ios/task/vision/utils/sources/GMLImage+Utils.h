@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface GMLImage (Utils)
 
-@propert(nonatomic, readonly) CGSize bitmapSize;
+@property(nonatomic, readonly) CGSize bitmapSize;
 
 /**
  * Creates and returns a TfLiteFrameBuffer from a GMLImage. TfLiteFrameBuffer

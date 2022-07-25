@@ -13,7 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 #import <Accelerate/Accelerate.h>
@@ -123,8 +123,6 @@
 
   switch (pixelBufferFormat) {
     case kCVPixelFormatType_32BGRA: {
-      cPixelFormat = kRGB;
-
       buffer = [TFLCVPixelBufferUtils createRGBImageDatafromCVPixelBuffer:pixelBuffer error:error];
       break;
     }
@@ -301,7 +299,7 @@
       break;
     }
     case GMLImageSourceTypeImage: {
-      buffer = [self.image frameBufferWithError:error];
+      buffer = [self.image bufferWithError:error];
       break;
     }
     default:

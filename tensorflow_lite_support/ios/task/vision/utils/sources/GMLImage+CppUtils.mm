@@ -12,31 +12,28 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
-#import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+CppUtils.h"
+#import "tensorflow_lite_support/ios/utils/cpp/sources/TFLCommonCppUtils.h"
+#import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 #include "tensorflow_lite_support/cc/task/vision/utils/frame_buffer_common_utils.h"
+#include "absl/strings/str_format.h"  // from @com_google_absl
 
 #import <CoreGraphics/CoreGraphics.h>
 
 namespace {
 using FrameBufferCpp = ::tflite::task::vision::FrameBuffer;
 using ::tflite::support::StatusOr;
-using ::tflite::support::TfLiteSupportStatus;
 }  // namespace
 
 @implementation GMLImage (CppUtils)
 
-- (StatusOr<std::unique_ptr<FrameBufferCpp>>)cppFrameBufferWithError:(NSError *_Nullable *)error {
+- (std::unique_ptr<FrameBufferCpp>)cppFrameBufferWithError:(NSError *_Nullable *)error {
   uint8_t *buffer = [self bufferWithError:error];
 
   if (!buffer) {
     return NULL;
   }
-
-  TfLiteFrameBuffer *cFrameBuffer = NULL;
 
   CGSize bitmapSize = self.bitmapSize;
   FrameBufferCpp::Format frame_buffer_format = FrameBufferCpp::Format::kRGB;
@@ -46,11 +43,11 @@ using ::tflite::support::TfLiteSupportStatus;
       {(int)bitmapSize.width, (int)bitmapSize.height},
       frame_buffer_format, FrameBufferCpp::Orientation::kTopLeft);
 
-  if (frameBuffer.status() != ok) {
+  if (![TFLCommonCppUtils checkCppError:frameBuffer.status() toError:error]) {
     return NULL;
   }
 
-  return frameBuffer.value();
+  return std::move(frameBuffer.value());
 }
 
 @end
