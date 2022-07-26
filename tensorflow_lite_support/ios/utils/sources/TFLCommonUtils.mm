@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "tensorflow_lite_support/ios/utils/cpp/sources/TFLCommonCppUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 
 #include <string>
@@ -21,7 +21,56 @@
 #include "absl/strings/cord.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/common.h"
 
-@implementation TFLCommonCppUtils
+/** Error domain of TensorFlow Lite Support related errors. */
+static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
+
+@implementation TFLCommonUtils
+
++ (void)createCustomError:(NSError **)error
+                 withCode:(NSUInteger)code
+              description:(NSString *)description {
+  [TFLCommonUtils createCustomError:error
+                         withDomain:TFLSupportTaskErrorDomain
+                               code:code
+                        description:description];
+}
+
++ (void)createCustomError:(NSError **)error
+               withDomain:(NSString *)domain
+                     code:(NSUInteger)code
+              description:(NSString *)description {
+  if (error) {
+    *error = [NSError errorWithDomain:domain
+                                 code:code
+                             userInfo:@{NSLocalizedDescriptionKey : description}];
+  }
+}
+
++ (void *)mallocWithSize:(size_t)memSize error:(NSError **)error {
+  if (!memSize) {
+    [TFLCommonUtils createCustomError:error
+                             withCode:TFLSupportErrorCodeInvalidArgumentError
+                          description:@"memSize cannot be zero."];
+    return NULL;
+  }
+
+  void *allocedMemory = malloc(memSize);
+  if (!allocedMemory) {
+    exit(-1);
+  }
+
+  return allocedMemory;
+}
+
++ (BOOL)checkCError:(TfLiteSupportError *)supportError toError:(NSError **)error {
+  if (!supportError) {
+    return YES;
+  }
+  NSString *description = [NSString stringWithCString:supportError->message
+                                             encoding:NSUTF8StringEncoding];
+  [TFLCommonUtils createCustomError:error withCode:supportError->code description:description];
+  return NO;
+}
 
 + (BOOL)checkCppError:(const absl::Status&)status toError:(NSError *_Nullable *)error {
   if (!status.ok()) {
@@ -88,14 +137,11 @@
   // https://github.com/abseil/abseil-cpp/blob/master/absl/status/status.h#L514
   // for explanation. absl::Status::message() can also be used but not always
   // guaranteed to be non empty.
-  // CreateTfLiteSupportError(
-  //     static_cast<TfLiteSupportErrorCode>(error_code),
-  //     status.ToString(absl::StatusToStringMode::kWithNoExtraData).c_str(),
-  //     error);
   NSString *description = [NSString stringWithCString:status.ToString(absl::StatusToStringMode::kWithNoExtraData).c_str()
                                              encoding:NSUTF8StringEncoding];
   [TFLCommonUtils createCustomError:error withCode:error_code description:description];
   return NO;
 }
+
 
 @end

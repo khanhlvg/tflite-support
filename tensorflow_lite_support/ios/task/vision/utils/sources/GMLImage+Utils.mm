@@ -47,7 +47,7 @@
   size_t destinationBytesPerRow = width * destinationChannelCount;
 
   uint8_t *destPixelBufferAddress =
-      [TFLCommonUtils mallocWithSize:sizeof(uint8_t) * height * destinationBytesPerRow error:error];
+      (uint8_t *)[TFLCommonUtils mallocWithSize:sizeof(uint8_t) * height * destinationBytesPerRow error:error];
 
   if (!destPixelBufferAddress) {
     return NULL;
@@ -103,7 +103,7 @@
   CVPixelBufferLockBaseAddress(pixelBuffer, 0);
 
   uint8_t *rgbData = [TFLCVPixelBufferUtils
-      createRGBImageDatafromImageData:CVPixelBufferGetBaseAddress(pixelBuffer)
+      createRGBImageDatafromImageData:(uint8_t *)CVPixelBufferGetBaseAddress(pixelBuffer)
                             withWidth:CVPixelBufferGetWidth(pixelBuffer)
                                height:CVPixelBufferGetHeight(pixelBuffer)
                                stride:CVPixelBufferGetBytesPerRow(pixelBuffer)
@@ -225,7 +225,7 @@
 
   if (context) {
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), cgImage);
-    uint8_t *srcData = CGBitmapContextGetData(context);
+    uint8_t *srcData = (uint8_t *)CGBitmapContextGetData(context);
 
     if (srcData) {
       // We have drawn the image as an RGBA image with 8 bitsPerComponent and hence can safely input

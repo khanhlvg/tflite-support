@@ -6,7 +6,7 @@ package(
 objc_library(
     name = "GMLImageUtils",
     srcs = [
-        "sources/GMLImage+Utils.m",
+        "sources/GMLImage+Utils.mm",
     ],
     hdrs = [
         "sources/GMLImage+Utils.h",
@@ -50,7 +50,7 @@ objc_library(
     sdk_frameworks = ["Accelerate"],
     deps = [
         ":GMLImageUtils",
-        "//tensorflow_lite_support/ios/utils/cpp:TFLCommonCppUtils",
+        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
         "//tensorflow_lite_support/cc/task/vision/core:frame_buffer",
         "//tensorflow_lite_support/odml/ios/image:MLImage",
         "@com_google_absl//absl/strings:str_format",

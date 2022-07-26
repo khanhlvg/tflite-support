@@ -13,7 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+CppUtils.h"
-#import "tensorflow_lite_support/ios/utils/cpp/sources/TFLCommonCppUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 #include "tensorflow_lite_support/cc/task/vision/utils/frame_buffer_common_utils.h"
@@ -43,7 +43,7 @@ using ::tflite::support::StatusOr;
       {(int)bitmapSize.width, (int)bitmapSize.height},
       frame_buffer_format, FrameBufferCpp::Orientation::kTopLeft);
 
-  if (![TFLCommonCppUtils checkCppError:frameBuffer.status() toError:error]) {
+  if (![TFLCommonUtils checkCppError:frameBuffer.status() toError:error]) {
     return NULL;
   }
 

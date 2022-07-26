@@ -12,7 +12,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 #import <CoreGraphics/CoreGraphics.h>
