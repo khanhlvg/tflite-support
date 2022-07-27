@@ -147,6 +147,9 @@ objc_library(
 
 objc_library(
     name = "TFLCommonCppUtils",
+    srcs = [
+        "sources/TFLCommonUtils.mm",
+    ],
     hdrs = [
         "sources/TFLCommonCppUtils.h",
     ],
