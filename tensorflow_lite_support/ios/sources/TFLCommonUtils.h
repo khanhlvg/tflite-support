@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #import <Foundation/Foundation.h>
+#include "tensorflow_lite_support/c/common.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,7 +33,7 @@ static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
  * no error will be saved.
  */
 + (void)createCustomError:(NSError **)error
-                 withCode:(NSUInteger)code
+                 withCode:(NSInteger)code
               description:(NSString *)description;
 
 /**
@@ -46,8 +47,17 @@ static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
  */
 + (void)createCustomError:(NSError **)error
                withDomain:(NSString *)domain
-                     code:(NSUInteger)code
+                     code:(NSInteger)code
               description:(NSString *)description;
+
+/**
+ * Converts a C library error, TfLiteSupportError to an NSError.
+ *
+ * @param supportError C library error.
+ * @param error Pointer to the memory location where the created error should be saved. If `nil`,
+ * no error will be saved.
+ */
++ (BOOL)checkCError:(TfLiteSupportError *)supportError toError:(NSError **)error;
 
 /**
  * Allocates a block of memory with the specified size and returns a pointer to it. If memory

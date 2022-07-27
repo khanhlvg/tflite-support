@@ -13,17 +13,3 @@ objc_library(
     ],
     module_name = "TFLStringUtil",
 )
-
-objc_library(
-    name = "TFLCommonUtils",
-    srcs = [
-        "sources/TFLCommonUtils.m",
-    ],
-    hdrs = [
-        "sources/TFLCommonUtils.h",
-    ],
-    module_name = "TFLCommonUtils",
-    deps = [
-        "//tensorflow_lite_support/ios:TFLCommon",
-    ],
-)

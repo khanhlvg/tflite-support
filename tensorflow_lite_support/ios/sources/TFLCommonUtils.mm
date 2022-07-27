@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 
 #include <string>
@@ -20,9 +20,6 @@
 #include "absl/status/status.h"  // from @com_google_absl
 #include "absl/strings/cord.h"  // from @com_google_absl
 #include "tensorflow_lite_support/cc/common.h"
-
-/** Error domain of TensorFlow Lite Support related errors. */
-static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
 
 @implementation TFLCommonUtils
 

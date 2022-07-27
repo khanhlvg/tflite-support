@@ -157,6 +157,8 @@ objc_library(
     deps = [
         "//tensorflow_lite_support/cc:common",
         "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:cord",
         "//tensorflow_lite_support/ios:TFLCommonUtils",
     ],
 )
