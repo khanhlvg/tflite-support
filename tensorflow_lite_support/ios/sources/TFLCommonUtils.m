@@ -18,7 +18,7 @@
 @implementation TFLCommonUtils
 
 + (void)createCustomError:(NSError **)error
-                 withCode:(NSInteger)code
+                 withCode:(NSUInteger)code
               description:(NSString *)description {
   [TFLCommonUtils createCustomError:error
                          withDomain:TFLSupportTaskErrorDomain
@@ -28,7 +28,7 @@
 
 + (void)createCustomError:(NSError **)error
                withDomain:(NSString *)domain
-                     code:(NSInteger)code
+                     code:(NSUInteger)code
               description:(NSString *)description {
   if (error) {
     *error = [NSError errorWithDomain:domain

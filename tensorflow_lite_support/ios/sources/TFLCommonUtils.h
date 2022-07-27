@@ -33,7 +33,7 @@ static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
  * no error will be saved.
  */
 + (void)createCustomError:(NSError **)error
-                 withCode:(NSInteger)code
+                 withCode:(NSUInteger)code
               description:(NSString *)description;
 
 /**
@@ -47,7 +47,7 @@ static NSString *const TFLSupportTaskErrorDomain = @"org.tensorflow.lite.tasks";
  */
 + (void)createCustomError:(NSError **)error
                withDomain:(NSString *)domain
-                     code:(NSInteger)code
+                     code:(NSUInteger)code
               description:(NSString *)description;
 
 /**
