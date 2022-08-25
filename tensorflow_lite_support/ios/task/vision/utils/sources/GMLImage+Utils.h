@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /** Helper utility for performing operations on GMLImage specific to the
  * TF Lite Task Vision library
  */
-@interface GMLImage (Utils)
+@interface GMLImage (CoreUtils)
 
 @property(nonatomic, readonly) CGSize bitmapSize;
 
@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable uint8_t *)bufferWithError:(NSError *_Nullable *)error;
 
 - (CGSize)size;
+
+- (nullable TfLiteFrameBuffer *)cFrameBufferWithError:(NSError *_Nullable *)error;
 
 /**
  * Gets grayscale pixel buffer from GMLImage if source type is

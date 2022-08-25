@@ -6,7 +6,7 @@ package(
 objc_library(
     name = "GMLImageUtils",
     srcs = [
-        "sources/GMLImage+Utils.mm",
+        "sources/GMLImage+Utils.m",
     ],
     hdrs = [
         "sources/GMLImage+Utils.h",
@@ -17,25 +17,26 @@ objc_library(
     deps = [
         "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
         "//tensorflow_lite_support/odml/ios/image:MLImage",
+        "//tensorflow_lite_support/c/task/vision/core:frame_buffer",
     ],
 )
 
-objc_library(
-    name = "GMLImageCUtils",
-    srcs = [
-        "sources/GMLImage+CUtils.m",
-    ],
-    hdrs = [
-        "sources/GMLImage+CUtils.h",
-    ],
-    features = ["-layering_check"],
-    module_name = "GMLImageUtils",
-    deps = [
-        ":GMLImageUtils",
-        "//tensorflow_lite_support/c/task/vision/core:frame_buffer",
-        "//tensorflow_lite_support/odml/ios/image:MLImage",
-    ],
-)
+# objc_library(
+#     name = "GMLImageUtils",
+#     srcs = [
+#         "sources/GMLImage+Utils.m",
+#     ],
+#     hdrs = [
+#         "sources/GMLImage+Utils.h",
+#     ],
+#     features = ["-layering_check"],
+#     module_name = "GMLImageUtils",
+#     deps = [
+#         ":GMLImageUtils",
+#         "//tensorflow_lite_support/c/task/vision/core:frame_buffer",
+#         "//tensorflow_lite_support/odml/ios/image:MLImage",
+#     ],
+# )
 
 objc_library(
     name = "GMLImageCppUtils",

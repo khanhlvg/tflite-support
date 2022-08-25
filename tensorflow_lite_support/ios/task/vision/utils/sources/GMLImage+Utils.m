@@ -355,6 +355,32 @@
   return nil;
 }
 
+- (nullable TfLiteFrameBuffer *)cFrameBufferWithError:(NSError *_Nullable *)error {
+  TfLiteFrameBuffer *cFrameBuffer = NULL;
+
+  uint8_t *buffer = [self bufferWithError:error];
+
+  if (!buffer) {
+    return NULL;
+  }
+
+  CGSize bitmapSize = self.bitmapSize;
+  enum TfLiteFrameBufferFormat cFrameBufferFormat = kRGB;
+
+
+  TfLiteFrameBuffer *cFrameBuffer = [TFLCommonUtils mallocWithSize:sizeof(TfLiteFrameBuffer)
+                                                             error:error];
+
+  if (cFrameBuffer) {
+    cFrameBuffer->dimension.width = bitmapSize.width;
+    cFrameBuffer->dimension.height = bitmapSize.height;
+    cFrameBuffer->buffer = buffer;
+    cFrameBuffer->format = frameBufferFormat;
+  }
+
+  return cFrameBuffer;
+}
+
 + (GMLImage *)imageFromBundleWithClass:(Class)classObject
                               fileName:(NSString *)name
                                 ofType:(NSString *)type {
