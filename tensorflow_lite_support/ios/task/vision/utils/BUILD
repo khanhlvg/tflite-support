@@ -13,30 +13,18 @@ objc_library(
     ],
     features = ["-layering_check"],
     module_name = "GMLImageUtils",
-    sdk_frameworks = ["Accelerate"],
+    sdk_frameworks = [
+        "CoreGraphics",
+        "CoreVideo",
+        "Accelerate",
+        "CoreMedia",
+    ],
     deps = [
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
-        "//tensorflow_lite_support/odml/ios/image:MLImage",
         "//tensorflow_lite_support/c/task/vision/core:frame_buffer",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/odml/ios/image:MLImage",
     ],
 )
-
-# objc_library(
-#     name = "GMLImageUtils",
-#     srcs = [
-#         "sources/GMLImage+Utils.m",
-#     ],
-#     hdrs = [
-#         "sources/GMLImage+Utils.h",
-#     ],
-#     features = ["-layering_check"],
-#     module_name = "GMLImageUtils",
-#     deps = [
-#         ":GMLImageUtils",
-#         "//tensorflow_lite_support/c/task/vision/core:frame_buffer",
-#         "//tensorflow_lite_support/odml/ios/image:MLImage",
-#     ],
-# )
 
 objc_library(
     name = "GMLImageCppUtils",
@@ -48,14 +36,12 @@ objc_library(
     ],
     features = ["-layering_check"],
     module_name = "GMLImageCppUtils",
-    sdk_frameworks = ["Accelerate"],
     deps = [
         ":GMLImageUtils",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
         "//tensorflow_lite_support/cc/task/vision/core:frame_buffer",
+        "//tensorflow_lite_support/cc/task/vision/utils:frame_buffer_common_utils",
+        "//tensorflow_lite_support/ios:TFLCommonCppUtils",
         "//tensorflow_lite_support/odml/ios/image:MLImage",
         "@com_google_absl//absl/strings:str_format",
     ],
-    copts = ["-ObjC++","-std=c++14"]
 )
-

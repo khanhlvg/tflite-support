@@ -13,7 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 #import <Accelerate/Accelerate.h>
@@ -23,8 +23,7 @@
 
 @interface TFLCVPixelBufferUtils : NSObject
 
-+ (uint8_t *)bufferFromCVPixelBuffer:(CVPixelBufferRef)pixelBuffer
-                                               error:(NSError **)error;
++ (uint8_t *)bufferFromCVPixelBuffer:(CVPixelBufferRef)pixelBuffer error:(NSError **)error;
 
 @end
 
@@ -47,7 +46,7 @@
   size_t destinationBytesPerRow = width * destinationChannelCount;
 
   uint8_t *destPixelBufferAddress =
-      (uint8_t *)[TFLCommonUtils mallocWithSize:sizeof(uint8_t) * height * destinationBytesPerRow error:error];
+      [TFLCommonUtils mallocWithSize:sizeof(uint8_t) * height * destinationBytesPerRow error:error];
 
   if (!destPixelBufferAddress) {
     return NULL;
@@ -103,7 +102,7 @@
   CVPixelBufferLockBaseAddress(pixelBuffer, 0);
 
   uint8_t *rgbData = [TFLCVPixelBufferUtils
-      createRGBImageDatafromImageData:(uint8_t *)CVPixelBufferGetBaseAddress(pixelBuffer)
+      createRGBImageDatafromImageData:CVPixelBufferGetBaseAddress(pixelBuffer)
                             withWidth:CVPixelBufferGetWidth(pixelBuffer)
                                height:CVPixelBufferGetHeight(pixelBuffer)
                                stride:CVPixelBufferGetBytesPerRow(pixelBuffer)
@@ -116,7 +115,7 @@
 }
 
 + (nullable uint8_t *)bufferFromCVPixelBuffer:(CVPixelBufferRef)pixelBuffer
-                                               error:(NSError **)error {
+                                        error:(NSError **)error {
   uint8_t *buffer = NULL;
 
   OSType pixelBufferFormat = CVPixelBufferGetPixelFormatType(pixelBuffer);
@@ -159,8 +158,8 @@
 }
 
 - (CGSize)bitmapSize {
-  size_t width = 0;
-  size_t height = 0;
+  CGFloat width = 0;
+  CGFloat height = 0;
 
   if (self.CGImage) {
     width = CGImageGetWidth(self.CGImage);
@@ -170,8 +169,8 @@
     height = CVPixelBufferGetHeight(self.CIImage.pixelBuffer);
   } else if (self.CIImage.CGImage) {
     width = CGImageGetWidth(self.CIImage.CGImage);
-    height = CGImageGetWidth(self.CIImage.CGImage);
-  } 
+    height = CGImageGetHeight(self.CIImage.CGImage);
+  }
   return CGSizeMake(width, height);
 }
 
@@ -225,7 +224,7 @@
 
   if (context) {
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), cgImage);
-    uint8_t *srcData = (uint8_t *)CGBitmapContextGetData(context);
+    uint8_t *srcData = CGBitmapContextGetData(context);
 
     if (srcData) {
       // We have drawn the image as an RGBA image with 8 bitsPerComponent and hence can safely input
@@ -256,20 +255,12 @@
 - (uint8_t *)frameBufferFromCIImage:(CIImage *)ciImage error:(NSError **)error {
   uint8_t *buffer = NULL;
 
-  int width = 0;
-  int height = 0;
-
   if (ciImage.pixelBuffer) {
-    width = (int)CVPixelBufferGetWidth(ciImage.pixelBuffer);
-    height = (int)CVPixelBufferGetHeight(ciImage.pixelBuffer);
-
     buffer = [TFLCVPixelBufferUtils createRGBImageDatafromCVPixelBuffer:ciImage.pixelBuffer
                                                                   error:error];
 
   } else if (ciImage.CGImage) {
     buffer = [UIImage pixelDataFromCGImage:ciImage.CGImage error:error];
-    width = (int)CGImageGetWidth(ciImage.CGImage);
-    height = (int)CGImageGetWidth(ciImage.CGImage);
   } else {
     [TFLCommonUtils createCustomError:error
                              withCode:TFLSupportErrorCodeInvalidArgumentError
@@ -283,19 +274,17 @@
 
 @implementation GMLImage (Utils)
 
-- (nullable uint8_t *)bufferWithError:(NSError *_Nullable *)error {
+- (nullable uint8_t *)bufferWithError:(NSError **)error {
   uint8_t *buffer = NULL;
 
   switch (self.imageSourceType) {
     case GMLImageSourceTypeSampleBuffer: {
       CVPixelBufferRef sampleImagePixelBuffer = CMSampleBufferGetImageBuffer(self.sampleBuffer);
-      buffer = [TFLCVPixelBufferUtils bufferFromCVPixelBuffer:sampleImagePixelBuffer
-                                                                    error:error];
+      buffer = [TFLCVPixelBufferUtils bufferFromCVPixelBuffer:sampleImagePixelBuffer error:error];
       break;
     }
     case GMLImageSourceTypePixelBuffer: {
-      buffer = [TFLCVPixelBufferUtils bufferFromCVPixelBuffer:self.pixelBuffer
-                                                                    error:error];
+      buffer = [TFLCVPixelBufferUtils bufferFromCVPixelBuffer:self.pixelBuffer error:error];
       break;
     }
     case GMLImageSourceTypeImage: {
@@ -312,9 +301,8 @@
 }
 
 - (CGSize)bitmapSize {
-  
-  size_t width = 0;
-  size_t height = 0;
+  CGFloat width = 0;
+  CGFloat height = 0;
 
   switch (self.imageSourceType) {
     case GMLImageSourceTypeSampleBuffer: {
@@ -355,9 +343,7 @@
   return nil;
 }
 
-- (nullable TfLiteFrameBuffer *)cFrameBufferWithError:(NSError *_Nullable *)error {
-  TfLiteFrameBuffer *cFrameBuffer = NULL;
-
+- (nullable TfLiteFrameBuffer *)cFrameBufferWithError:(NSError **)error {
   uint8_t *buffer = [self bufferWithError:error];
 
   if (!buffer) {
@@ -367,7 +353,6 @@
   CGSize bitmapSize = self.bitmapSize;
   enum TfLiteFrameBufferFormat cFrameBufferFormat = kRGB;
 
-
   TfLiteFrameBuffer *cFrameBuffer = [TFLCommonUtils mallocWithSize:sizeof(TfLiteFrameBuffer)
                                                              error:error];
 
@@ -375,7 +360,7 @@
     cFrameBuffer->dimension.width = bitmapSize.width;
     cFrameBuffer->dimension.height = bitmapSize.height;
     cFrameBuffer->buffer = buffer;
-    cFrameBuffer->format = frameBufferFormat;
+    cFrameBuffer->format = cFrameBufferFormat;
   }
 
   return cFrameBuffer;

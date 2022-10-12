@@ -1,4 +1,4 @@
-/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@
 #import <Foundation/Foundation.h>
 
 #import "tensorflow_lite_support/ios/task/core/sources/TFLBaseOptions.h"
-#import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions.h"
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLEmbeddingOptions.h"
+#import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions.h"
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchResult.h"
 #import "tensorflow_lite_support/odml/ios/image/apis/GMLImage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Options to configure TFLImageClassifier.
+ * Options to configure TFLImageSearcher.
  */
 NS_SWIFT_NAME(ImageSearcherOptions)
 @interface TFLImageSearcherOptions : NSObject
 
 /**
  * Base options for configuring the ImageSearcher. This specifies the TFLite
- * model to use for embedding extraction, as well as hardware acceleration 
+ * model to use for embedding extraction, as well as hardware acceleration
  * options to use as inference time.
  */
 @property(nonatomic, copy) TFLBaseOptions *baseOptions;
@@ -50,15 +50,14 @@ NS_SWIFT_NAME(ImageSearcherOptions)
  * Initializes a new `TFLImageSearcherOptions` with the absolute path to the model file
  * stored locally on the device, set to the given the model path.
  *
- * @discussion The external model file, must be a single standalone TFLite file. It could be packed
- * with TFLite Model Metadata[1] and associated files if exist. Fail to provide the necessary
- * metadata and associated files might result in errors. Check the [documentation]
+ * @discussion The external model file must be a single standalone TFLite file. It could be packed
+ * with TFLite Model Metadata[1] and associated files if they exist. Failure to provide the
+ * necessary metadata and associated files might result in errors. Check the [documentation]
  * (https://www.tensorflow.org/lite/convert/metadata) for each task about the specific requirement.
  *
  * @param modelPath An absolute path to a TensorFlow Lite model file stored locally on the device.
  *
- * @return An instance of `TFLImageSearcherOptions` initialized to the given
- * model path.
+ * @return An instance of `TFLImageSearcherOptions` initialized to the given model path.
  */
 - (instancetype)initWithModelPath:(NSString *)modelPath;
 
@@ -81,31 +80,30 @@ NS_SWIFT_NAME(ImageSearcher)
  * in initializing the image searcher.
  */
 + (nullable instancetype)imageSearcherWithOptions:(TFLImageSearcherOptions *)options
-                                              error:(NSError **)error
+                                            error:(NSError **)error
     NS_SWIFT_NAME(searcher(options:));
 
 + (instancetype)new NS_UNAVAILABLE;
 
 /**
- * Performs embedding extraction on the given GMLImage, followed by nearest-neighbor search in the index.
+ * Performs embedding extraction on the given GMLImage, followed by nearest-neighbor search in the
+ * index.
  *
- * @discussion This method currently supports classification of only the following types of images:
+ * @discussion This method currently supports searching on only the following types of images:
  * 1. RGB and RGBA images for `GMLImageSourceTypeImage`.
  * 2. kCVPixelFormatType_32BGRA for `GMLImageSourceTypePixelBuffer` and
  *    `GMLImageSourceTypeSampleBuffer`. If you are using `AVCaptureSession` to setup
  *    camera and get the frames for inference, you must request for this format
- *    from AVCaptureVideoDataOutput. Otherwise your classification
- *    results will be wrong.
+ *    from AVCaptureVideoDataOutput. Otherwise your inference results will be wrong.
  *
- * @param image An image on which embedding extraction is to be performed, followed by nearest-neighbor search in the index, represented as a `GMLImage`.
+ * @param image An image on which embedding extraction is to be performed, followed by
+ * nearest-neighbor search in the index, represented as a `GMLImage`.
  *
- * @return A TFLClassificationResult with one set of results per image classifier head. `nil` if
- * there is an error encountered during classification. Please see `TFLClassificationResult` for
- * more details.
+ * @return A `TFLSearchResult`. `nil` if there is an error encountered during embedding extraction
+ * and nearest neighbor search. Please see `TFLSearchResult` for more details.
  */
-- (nullable TFLSearchResults *)searchInGMLImage:(GMLImage *)image
-                                                     error:(NSError **)error
-    NS_SWIFT_NAME(search(mlImage:));
+- (nullable TFLSearchResult *)searchWithGMLImage:(GMLImage *)image
+                                           error:(NSError **)error NS_SWIFT_NAME(search(mlImage:));
 
 - (instancetype)init NS_UNAVAILABLE;
 

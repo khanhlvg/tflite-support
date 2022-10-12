@@ -13,11 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 #import <Foundation/Foundation.h>
-
 #include "tensorflow_lite_support/c/common.h"
-#include "absl/status/status.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+/** Error domain of TensorFlow Lite Support related errors. */
+extern NSString *const TFLSupportTaskErrorDomain;
 
 /** Helper utility for the all tasks which encapsulates common functionality. */
 @interface TFLCommonUtils : NSObject
@@ -50,6 +51,15 @@ NS_ASSUME_NONNULL_BEGIN
               description:(NSString *)description;
 
 /**
+ * Converts a C library error, TfLiteSupportError to an NSError.
+ *
+ * @param supportError C library error.
+ * @param error Pointer to the memory location where the created error should be saved. If `nil`,
+ * no error will be saved.
+ */
++ (BOOL)checkCError:(TfLiteSupportError *)supportError toError:(NSError **)error;
+
+/**
  * Allocates a block of memory with the specified size and returns a pointer to it. If memory
  * cannot be allocated because of an invalid memSize, it saves an error. In other cases, it
  * terminates program execution.
@@ -63,25 +73,6 @@ NS_ASSUME_NONNULL_BEGIN
  * terminates program execution.
  */
 + (void *)mallocWithSize:(size_t)memSize error:(NSError **)error;
-
-/**
- * Converts a C library error, TfLiteSupportError to an NSError.
- *
- * @param supportError C library error.
- * @param error Pointer to the memory location where the created error should be saved. If `nil`,
- * no error will be saved.
- */
-+ (BOOL)checkCError:(TfLiteSupportError *)supportError toError:(NSError **)error;
-
-/**
- * Converts a C library error, TfLiteSupportError to an NSError.
- *
- * @param supportError C library error.
- * @param error Pointer to the memory location where the created error should be saved. If `nil`,
- * no error will be saved.
- */
-+ (BOOL)checkCppError:(const absl::Status&)status toError:(NSError **)error;
-
 @end
 
 NS_ASSUME_NONNULL_END
