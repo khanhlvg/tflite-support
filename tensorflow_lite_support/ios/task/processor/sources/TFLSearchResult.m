@@ -13,22 +13,20 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchResult.h"
-#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 
 @implementation TFLNearestNeighbor
 
-- (instancetype)initWithMetaData:(NSData *)metadata distance:(CGFloat)distance {
+- (instancetype)initWithMetadata:(NSString *)metadata distance:(CGFloat)distance {
   self = [super init];
   if (self) {
-    _metadata = metadata;
+    _metadata = [metadata copy];
     _distance = distance;
   }
   return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  return [[TFLNearestNeighbor alloc] initWithMetaData:self.metadata
-                                         distance:self.distance];
+  return [[TFLNearestNeighbor alloc] initWithMetadata:self.metadata distance:self.distance];
 }
 
 @end
@@ -38,7 +36,7 @@
 - (instancetype)initWithNearestNeighbors:(NSArray<TFLNearestNeighbor *> *)nearestNeighbors {
   self = [super init];
   if (self) {
-    _nearestNeighbors = nearestNeighbors;
+    _nearestNeighbors = [nearestNeighbors copy];
   }
   return self;
 }

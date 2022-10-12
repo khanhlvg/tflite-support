@@ -30,9 +30,8 @@ message ImageSearcherOptions {
   // options to use as inference time.
   optional tflite.task.core.BaseOptions base_options = 1;
 
- // Base options for configuring the ImageSearcher. This specifies the TFLite
-  // model to use for embedding extraction, as well as hardware acceleration
-  // options to use as inference time.
+  // Options controlling the behavior of the embedding model specified in the
+  // base options.
   optional tflite.task.processor.EmbeddingOptions embedding_options = 2;
 
   // Options specifying the index to search into and controlling the search

@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,12 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#import "tensorflow_lite_support/ios/utils/Sources/TFLStringUtil.h"
 
-std::string MakeString(NSString* str) { return std::string([str UTF8String]); }
+#ifndef THIRD_PARTY_TENSORFLOW_LITE_SUPPORT_CC_TASK_PROCESSOR_PROTO_SEARCH_RESULT_PROTO_INC_H_
+#define THIRD_PARTY_TENSORFLOW_LITE_SUPPORT_CC_TASK_PROCESSOR_PROTO_SEARCH_RESULT_PROTO_INC_H_
 
-NSString* MakeNSString(const std::string& str) {
-  return [[NSString alloc] initWithBytes:const_cast<void*>(static_cast<const void*>(str.data()))
-                                  length:str.length()
-                                encoding:NSUTF8StringEncoding];
-}
+#include "tensorflow_lite_support/cc/task/processor/proto/search_result.pb.h"
+#endif  // THIRD_PARTY_TENSORFLOW_LITE_SUPPORT_CC_TASK_PROCESSOR_PROTO_SEARCH_RESULT_PROTO_INC_H_

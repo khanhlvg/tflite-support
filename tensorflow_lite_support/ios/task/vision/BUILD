@@ -6,7 +6,7 @@ package(
 objc_library(
     name = "TFLImageClassifier",
     srcs = [
-        "sources/TFLImageClassifier.mm",
+        "sources/TFLImageClassifier.m",
     ],
     hdrs = [
         "sources/TFLImageClassifier.h",
@@ -15,7 +15,7 @@ objc_library(
     module_name = "TFLImageClassifier",
     deps = [
         "//tensorflow_lite_support/c/task/vision:image_classifier",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
@@ -39,7 +39,7 @@ objc_library(
     module_name = "TFLObjectDetector",
     deps = [
         "//tensorflow_lite_support/c/task/vision:object_detector",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
@@ -63,7 +63,7 @@ objc_library(
     module_name = "TFLImageSegmenter",
     deps = [
         "//tensorflow_lite_support/c/task/vision:image_segmenter",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsHelpers",
         "//tensorflow_lite_support/ios/task/processor:TFLSegmentationResult",
@@ -81,16 +81,19 @@ objc_library(
     hdrs = [
         "sources/TFLImageSearcher.h",
     ],
+    copts = [
+        "-ObjC++",
+        "-std=c++17",
+    ],
     features = ["-layering_check"],
     module_name = "TFLImageSearcher",
     deps = [
         "//tensorflow_lite_support/cc/task/vision:image_searcher",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptionsCppHelpers",
-        "//tensorflow_lite_support/ios/task/processor:TFLSearchOptions",
         "//tensorflow_lite_support/ios/task/processor:TFLEmbeddingOptionsHelpers",
-        "//tensorflow_lite_support/ios/task/processor:TFLSearchResult",
+        "//tensorflow_lite_support/ios/task/processor:TFLSearchOptionsHelpers",
+        "//tensorflow_lite_support/ios/task/processor:TFLSearchResultHelpers",
         "//tensorflow_lite_support/ios/task/vision/utils:GMLImageCppUtils",
     ],
-    copts = ["-ObjC++","-std=c++14"]
 )

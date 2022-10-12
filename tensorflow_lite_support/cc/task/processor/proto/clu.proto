@@ -15,9 +15,9 @@ limitations under the License.
 
 syntax = "proto2";
 
-package tflite.task.text;
+package tflite.task.processor;
 
-import "tensorflow_lite_support/cc/task/core/proto/class.proto";
+import "tensorflow_lite_support/cc/task/processor/proto/class.proto";
 
 // The input to CLU (Conversational Language Understanding).
 message CluRequest {
@@ -51,9 +51,9 @@ message CluRequest {
 // ```
 message CluResponse {
   // The list of predicted domains.
-  repeated tflite.task.core.Class domains = 1;
+  repeated Class domains = 1;
   // The list of predicted intents.
-  repeated tflite.task.core.Class intents = 2;
+  repeated Class intents = 2;
   // The list of predicted categorical slots.
   repeated CategoricalSlot categorical_slots = 3;
   // The list of predicted mentioned slots.
@@ -65,7 +65,7 @@ message CategoricalSlot {
   // The name of the slot.
   optional string slot = 1;
   // The predicted class.
-  optional tflite.task.core.Class prediction = 2;
+  optional Class prediction = 2;
 }
 
 // A single mention.

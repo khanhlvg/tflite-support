@@ -15,29 +15,23 @@ limitations under the License.
 
 syntax = "proto2";
 
-package tflite.task.text;
-
-import "tensorflow_lite_support/cc/task/core/proto/base_options.proto";
+package tflite.task.processor;
 
 // Options for setting up an BertCluAnnotator.
-// Next Id: 7
-message BertCluAnnotatorOptions {
-  // Base options for configuring BertCluAnnotator, such as specifying the
-  // TfLite model file with metadata, accelerator options, etc.
-  optional tflite.task.core.BaseOptions base_options = 1;
-
+// Next Id: 6
+message BertCluAnnotationOptions {
   // Max number of history turns to encode by the model.
-  optional int32 max_history_turns = 2 [default = 5];
+  optional int32 max_history_turns = 1 [default = 5];
 
   // The threshold of domain prediction.
-  optional float domain_threshold = 3 [default = 0.5];
+  optional float domain_threshold = 2 [default = 0.5];
 
   // The threshold of intent prediction.
-  optional float intent_threshold = 4 [default = 0.5];
+  optional float intent_threshold = 3 [default = 0.5];
 
   // The threshold of categorical slot prediction.
-  optional float categorical_slot_threshold = 5 [default = 0.5];
+  optional float categorical_slot_threshold = 4 [default = 0.5];
 
   // The threshold of mentioned slot prediction.
-  optional float mentioned_slot_threshold = 6 [default = 0.5];
+  optional float mentioned_slot_threshold = 5 [default = 0.5];
 }
