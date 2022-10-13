@@ -13,7 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 #import "tensorflow_lite_support/ios/sources/TFLCommon.h"
-#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLClassificationOptions+Helpers.h"
 
 @implementation TFLClassificationOptions (Helpers)
@@ -26,11 +26,11 @@
     return nil;
   }
 
-  char **cStrings = (char **)[TFLCommonUtils mallocWithSize:strings.count * sizeof(char *) error:error];
+  char **cStrings = [TFLCommonUtils mallocWithSize:strings.count * sizeof(char *) error:error];
   if (!cStrings) return NULL;
 
   for (NSInteger i = 0; i < strings.count; i++) {
-    cStrings[i] = (char *)[TFLCommonUtils
+    cStrings[i] = [TFLCommonUtils
         mallocWithSize:([strings[i] lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1) *
                        sizeof(char)
                  error:error];

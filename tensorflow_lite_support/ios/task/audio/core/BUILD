@@ -26,7 +26,7 @@ objc_library(
     deps = [
         ":TFLFloatBuffer",
         "//tensorflow_lite_support/ios:TFLCommon",
-        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
+        "//tensorflow_lite_support/ios:TFLCommonUtils",
     ],
 )
 

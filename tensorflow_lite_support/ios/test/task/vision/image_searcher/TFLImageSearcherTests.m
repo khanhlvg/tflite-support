@@ -14,16 +14,25 @@
  ==============================================================================*/
 #import <XCTest/XCTest.h>
 
+#import "tensorflow_lite_support/ios/sources/TFLCommon.h"
 #import "tensorflow_lite_support/ios/task/vision/sources/TFLImageSearcher.h"
 #import "tensorflow_lite_support/ios/task/vision/utils/sources/GMLImage+Utils.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString * const kSearcherModelName = @"mobilenet_v3_small_100_224_searcher";
-NSString * const kEmbedderModelName = @"mobilenet_v3_small_100_224_searcher";
-// NSString * const kMobileNetIndexName = @"searcher_index";
-NSString * const kMobileNetIndexName = @"kk";
+static NSString *const kExpectedTaskErrorDomain = @"org.tensorflow.lite.tasks";
 
+static NSString *const kSearcherModelName = @"mobilenet_v3_small_100_224_searcher";
+static NSString *const kEmbedderModelName = @"mobilenet_v3_small_100_224_embedder";
+static NSString *const kMobileNetIndexName = @"searcher_index";
+
+#define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
+  XCTAssertNotNil(error);                                                               \
+  XCTAssertEqualObjects(error.domain, expectedDomain);                                  \
+  XCTAssertEqual(error.code, expectedCode);                                             \
+  XCTAssertNotEqual(                                                                    \
+      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location, \
+      NSNotFound)
 
 #define VerifySearchResultCount(searchResult, expectedNearestNeighborsCount) \
   XCTAssertEqual(searchResult.nearestNeighbors.count, expectedNearestNeighborsCount);
@@ -33,34 +42,39 @@ NSString * const kMobileNetIndexName = @"kk";
   XCTAssertEqualWithAccuracy(nearestNeighbor.distance, expectedDistance, 1e-6);
 
 @interface TFLImageSearcherTests : XCTestCase
-@property(nonatomic, nullable) NSString *searcherModelPath;
-@property(nonatomic, nullable) NSString *embedderModelPath;
-@property(nonatomic, nullable) NSString *mobileNetIndexPath;
 @end
 
 @implementation TFLImageSearcherTests
 
 - (void)setUp {
   [super setUp];
-  self.searcherModelPath =
-      [[NSBundle bundleForClass:self.class] pathForResource:kSearcherModelName
-                                                     ofType:@"tflite"];
-  XCTAssertNotNil(self.searcherModelPath);
-
-   self.embedderModelPath =
-      [[NSBundle bundleForClass:self.class] pathForResource:kEmbedderModelName
-                                                     ofType:@"tflite"];
-  XCTAssertNotNil(self.embedderModelPath);
-
-  self.mobileNetIndexPath =
-      [[NSBundle bundleForClass:self.class] pathForResource:kMobileNetIndexName
-                                                     ofType:@"ldb"];
-  XCTAssertNotNil(self.mobileNetIndexPath);
 }
 
-- (TFLImageSearcher *)testSuccessfulCreationOfImageSearcherWithSearchContent:(NSString *)modelPath {
+- (NSString *)filePathWithName:(NSString *)fileName extension:(NSString *)extension {
+  NSString *filePath = [[NSBundle bundleForClass:self.class] pathForResource:fileName
+                                                                      ofType:extension];
+  XCTAssertNotNil(filePath);
+
+  return filePath;
+}
+
+- (TFLImageSearcherOptions *)imageSearcherOptionsWithModelName:(NSString *)modelName {
+  NSString *modelPath = [self filePathWithName:modelName extension:@"tflite"];
   TFLImageSearcherOptions *imageSearcherOptions =
-      [[TFLImageSearcherOptions alloc] initWithModelPath:self.searcherModelPath];
+      [[TFLImageSearcherOptions alloc] initWithModelPath:modelPath];
+
+  return imageSearcherOptions;
+}
+
+- (TFLImageSearcher *)defaultImageSearcherWithModelName:(NSString *)modelName
+                                       andIndexFileName:(nullable NSString *)indexFileName {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:modelName];
+
+  if (indexFileName) {
+    NSString *indexFilePath = [self filePathWithName:indexFileName extension:@"ldb"];
+    imageSearcherOptions.searchOptions.indexFile.filePath = indexFilePath;
+  }
 
   TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
                                                                          error:nil];
@@ -69,18 +83,7 @@ NSString * const kMobileNetIndexName = @"kk";
   return imageSearcher;
 }
 
-- (TFLImageSearcher *)testSuccessfulCreationOfImageSearcherWithEmbedderModelPath:(NSString *)modelPath andIndexPath:(NSString *)indexPath {
-  TFLImageSearcherOptions *imageSearcherOptions =
-      [[TFLImageSearcherOptions alloc] initWithModelPath:self.embedderModelPath];
-
-  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
-                                                                         error:nil];
-  XCTAssertNotNil(imageSearcher);
-
-  return imageSearcher;
-}
-
-- (void)verifySearchResultForInferenceWithSearchContent:(TFLSearchResult *)searchResult {
+- (void)verifySearchResult:(TFLSearchResult *)searchResult {
   VerifySearchResultCount(searchResult,
                           5  // expectedNearestNeighborsCount
   );
@@ -107,15 +110,187 @@ NSString * const kMobileNetIndexName = @"kk";
   );
 }
 
-- (void)testSuccessfullInferenceWithSearchContentOnMLImageWithUIImage {
-  TFLImageSearcher *imageSearcher =
-      [self testSuccessfulCreationOfImageSearcherWithSearchContent:self.modelPath];
+- (void)verifySearchResultForRegionOfInterest:(TFLSearchResult *)searchResult {
+  VerifySearchResultCount(searchResult,
+                          5  // expectedNearestNeighborsCount
+  );
+
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[0],
+                        @"burger",     // expectedMetadata
+                        179.349853516  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[1],
+                        @"car",        // expectedMetadata
+                        203.803939819  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[2],
+                        @"bird",       // expectedMetadata
+                        205.671005249  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[3],
+                        @"dog",        // expectedMetadata
+                        207.130584717  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[4],
+                        @"cat",        // expectedMetadata
+                        207.447616577  // expectedDistance
+  );
+}
+
+- (void)verifySearchResultsWithNormalization:(TFLSearchResult *)searchResult {
+  VerifySearchResultCount(searchResult,
+                          5  // expectedNearestNeighborsCount
+  );
+
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[0],
+                        @"burger",        // expectedMetadata
+                        0.00766587257385  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[1],
+                        @"car",       // expectedMetadata
+                        1.8352342844  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[2],
+                        @"bird",       // expectedMetadata
+                        1.91979730129  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[3],
+                        @"dog",        // expectedMetadata
+                        2.04152798653  // expectedDistance
+  );
+  VerifyNearestNeighbor(searchResult.nearestNeighbors[4],
+                        @"cat",        // expectedMetadata
+                        2.08032441139  // expectedDistance
+  );
+}
+
+- (void)testInferenceWithSearchModelOnMLImageWithUIImage {
+  TFLImageSearcher *imageSearcher = [self defaultImageSearcherWithModelName:kSearcherModelName
+                                                           andIndexFileName:nil];
   GMLImage *gmlImage =
       [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);
 
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
-  [self verifySearchResultForInferenceWithSearchContent:searchResult];
+  [self verifySearchResult:searchResult];
+}
+
+- (void)testInferenceWithEmbedderModelAndIndexFileOnMLImageWithUIImage {
+  TFLImageSearcher *imageSearcher = [self defaultImageSearcherWithModelName:kEmbedderModelName
+                                                           andIndexFileName:kMobileNetIndexName];
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
+  [self verifySearchResult:searchResult];
+}
+
+- (void)testSearchWithNormalizationSucceeds {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:kSearcherModelName];
+  imageSearcherOptions.embeddingOptions.l2Normalize = YES;
+
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:nil];
+
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
+  [self verifySearchResultsWithNormalization:searchResult];
+}
+
+- (void)testSearchWithMaxResultsSucceeds {
+  const NSInteger searchResultCount = 2;
+
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:kSearcherModelName];
+  imageSearcherOptions.searchOptions.maxResults = searchResultCount;
+
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:nil];
+
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
+  VerifySearchResultCount(searchResult,
+                          searchResultCount  // expectedNearestNeighborsCount
+  );
+}
+
+- (void)testSearchWithRegionOfInterestSucceeds {
+  TFLImageSearcher *imageSearcher = [self defaultImageSearcherWithModelName:kEmbedderModelName
+                                                           andIndexFileName:kMobileNetIndexName];
+  GMLImage *gmlImage =
+      [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
+  XCTAssertNotNil(gmlImage);
+
+  CGRect roi = CGRectMake(0,    // x
+                          0,    // y
+                          400,  // width
+                          325   // height
+  );
+  TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage
+                                                   regionOfInterest:roi
+                                                              error:nil];
+  [self verifySearchResultForRegionOfInterest:searchResult];
+}
+
+- (void)testCreateImageSearcherWithQuantizeOptionFails {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:kSearcherModelName];
+  imageSearcherOptions.embeddingOptions.quantize = YES;
+
+  NSError *error = nil;
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:&error];
+
+  XCTAssertNil(imageSearcher);
+  VerifyError(error,
+              kExpectedTaskErrorDomain,                 // expectedErrorDomain
+              TFLSupportErrorCodeInvalidArgumentError,  // expectedErrorCode
+              @"Setting EmbeddingOptions.quantize = true "
+              @"is not allowed in searchers."  // expectedErrorMessage
+  );
+}
+
+- (void)testCreateImageSearcherWithInvalidMaxResultsFails {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:kSearcherModelName];
+  imageSearcherOptions.searchOptions.maxResults = -1;
+
+  NSError *error = nil;
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:&error];
+
+  XCTAssertNil(imageSearcher);
+  VerifyError(error,
+              kExpectedTaskErrorDomain,                            // expectedErrorDomain
+              TFLSupportErrorCodeInvalidArgumentError,             // expectedErrorCode
+              @"SearchOptions.max_results must be > 0, found -1."  // expectedErrorMessage
+  );
+}
+
+- (void)testImageSearcherWithEmbedderModelAndInvalidIndexFileFails {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [self imageSearcherOptionsWithModelName:kEmbedderModelName];
+
+  NSError *error = nil;
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:&error];
+
+  XCTAssertNil(imageSearcher);
+  VerifyError(error,
+              kExpectedTaskErrorDomain,                                // expectedErrorDomain
+              TFLSupportErrorCodeMetadataAssociatedFileNotFoundError,  // expectedErrorCode
+              @"Unable to find index file: SearchOptions.index_file is not set and no "
+              @"AssociatedFile with type SCANN_INDEX_FILE could be found in the output tensor "
+              @"metadata."  // expectedErrorMessage
+  );
 }
 
 @end
