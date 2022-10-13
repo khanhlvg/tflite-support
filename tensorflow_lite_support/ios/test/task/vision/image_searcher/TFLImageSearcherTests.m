@@ -26,19 +26,20 @@ static NSString *const kSearcherModelName = @"mobilenet_v3_small_100_224_searche
 static NSString *const kEmbedderModelName = @"mobilenet_v3_small_100_224_embedder";
 static NSString *const kMobileNetIndexName = @"searcher_index";
 
-#define VerifyError(error, expectedDomain, expectedCode, expectedLocalizedDescription)  \
-  XCTAssertNotNil(error);                                                               \
-  XCTAssertEqualObjects(error.domain, expectedDomain);                                  \
-  XCTAssertEqual(error.code, expectedCode);                                             \
-  XCTAssertNotEqual(                                                                    \
-      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location, \
+#define ValidateError(error, expectedDomain, expectedCode, expectedLocalizedDescription) \
+  XCTAssertNotNil(error);                                                                \
+  XCTAssertEqualObjects(error.domain, expectedDomain);                                   \
+  XCTAssertEqual(error.code, expectedCode);                                              \
+  XCTAssertNotEqual(                                                                     \
+      [error.localizedDescription rangeOfString:expectedLocalizedDescription].location,  \
       NSNotFound)
 
-#define VerifySearchResultCount(searchResult, expectedNearestNeighborsCount) \
+#define ValidateSearchResultCount(searchResult, expectedNearestNeighborsCount) \
+  XCTAssertNotNil(searchResult);                                               \
   XCTAssertEqual(searchResult.nearestNeighbors.count, expectedNearestNeighborsCount);
 
-#define VerifyNearestNeighbor(nearestNeighbor, expectedMetadata, expectedDistance) \
-  XCTAssertEqualObjects(nearestNeighbor.metadata, expectedMetadata);               \
+#define ValidateNearestNeighbor(nearestNeighbor, expectedMetadata, expectedDistance) \
+  XCTAssertEqualObjects(nearestNeighbor.metadata, expectedMetadata);                 \
   XCTAssertEqualWithAccuracy(nearestNeighbor.distance, expectedDistance, 1e-6);
 
 @interface TFLImageSearcherTests : XCTestCase
@@ -83,84 +84,84 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   return imageSearcher;
 }
 
-- (void)verifySearchResult:(TFLSearchResult *)searchResult {
-  VerifySearchResultCount(searchResult,
-                          5  // expectedNearestNeighborsCount
+- (void)validateSearchResult:(TFLSearchResult *)searchResult {
+  ValidateSearchResultCount(searchResult,
+                            5  // expectedNearestNeighborsCount
   );
 
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[0],
-                        @"burger",  // expectedMetadata
-                        198.456329  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[0],
+                          @"burger",  // expectedMetadata
+                          198.456329  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[1],
-                        @"car",     // expectedMetadata
-                        226.022186  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[1],
+                          @"car",     // expectedMetadata
+                          226.022186  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[2],
-                        @"bird",    // expectedMetadata
-                        227.297668  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[2],
+                          @"bird",    // expectedMetadata
+                          227.297668  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[3],
-                        @"dog",     // expectedMetadata
-                        229.133789  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[3],
+                          @"dog",     // expectedMetadata
+                          229.133789  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[4],
-                        @"cat",     // expectedMetadata
-                        229.718948  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[4],
+                          @"cat",     // expectedMetadata
+                          229.718948  // expectedDistance
   );
 }
 
-- (void)verifySearchResultForRegionOfInterest:(TFLSearchResult *)searchResult {
-  VerifySearchResultCount(searchResult,
-                          5  // expectedNearestNeighborsCount
+- (void)validateSearchResultForRegionOfInterest:(TFLSearchResult *)searchResult {
+  ValidateSearchResultCount(searchResult,
+                            5  // expectedNearestNeighborsCount
   );
 
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[0],
-                        @"burger",     // expectedMetadata
-                        179.349853516  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[0],
+                          @"burger",     // expectedMetadata
+                          179.349853516  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[1],
-                        @"car",        // expectedMetadata
-                        203.803939819  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[1],
+                          @"car",        // expectedMetadata
+                          203.803939819  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[2],
-                        @"bird",       // expectedMetadata
-                        205.671005249  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[2],
+                          @"bird",       // expectedMetadata
+                          205.671005249  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[3],
-                        @"dog",        // expectedMetadata
-                        207.130584717  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[3],
+                          @"dog",        // expectedMetadata
+                          207.130584717  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[4],
-                        @"cat",        // expectedMetadata
-                        207.447616577  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[4],
+                          @"cat",        // expectedMetadata
+                          207.447616577  // expectedDistance
   );
 }
 
-- (void)verifySearchResultsWithNormalization:(TFLSearchResult *)searchResult {
-  VerifySearchResultCount(searchResult,
-                          5  // expectedNearestNeighborsCount
+- (void)validateSearchResultsWithNormalization:(TFLSearchResult *)searchResult {
+  ValidateSearchResultCount(searchResult,
+                            5  // expectedNearestNeighborsCount
   );
 
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[0],
-                        @"burger",        // expectedMetadata
-                        0.00766587257385  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[0],
+                          @"burger",        // expectedMetadata
+                          0.00766587257385  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[1],
-                        @"car",       // expectedMetadata
-                        1.8352342844  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[1],
+                          @"car",       // expectedMetadata
+                          1.8352342844  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[2],
-                        @"bird",       // expectedMetadata
-                        1.91979730129  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[2],
+                          @"bird",       // expectedMetadata
+                          1.91979730129  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[3],
-                        @"dog",        // expectedMetadata
-                        2.04152798653  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[3],
+                          @"dog",        // expectedMetadata
+                          2.04152798653  // expectedDistance
   );
-  VerifyNearestNeighbor(searchResult.nearestNeighbors[4],
-                        @"cat",        // expectedMetadata
-                        2.08032441139  // expectedDistance
+  ValidateNearestNeighbor(searchResult.nearestNeighbors[4],
+                          @"cat",        // expectedMetadata
+                          2.08032441139  // expectedDistance
   );
 }
 
@@ -172,7 +173,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   XCTAssertNotNil(gmlImage);
 
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
-  [self verifySearchResult:searchResult];
+  [self validateSearchResult:searchResult];
 }
 
 - (void)testInferenceWithEmbedderModelAndIndexFileOnMLImageWithUIImage {
@@ -183,7 +184,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   XCTAssertNotNil(gmlImage);
 
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
-  [self verifySearchResult:searchResult];
+  [self validateSearchResult:searchResult];
 }
 
 - (void)testSearchWithNormalizationSucceeds {
@@ -199,7 +200,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   XCTAssertNotNil(gmlImage);
 
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
-  [self verifySearchResultsWithNormalization:searchResult];
+  [self validateSearchResultsWithNormalization:searchResult];
 }
 
 - (void)testSearchWithMaxResultsSucceeds {
@@ -217,8 +218,8 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   XCTAssertNotNil(gmlImage);
 
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage error:nil];
-  VerifySearchResultCount(searchResult,
-                          searchResultCount  // expectedNearestNeighborsCount
+  ValidateSearchResultCount(searchResult,
+                            searchResultCount  // expectedNearestNeighborsCount
   );
 }
 
@@ -237,7 +238,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   TFLSearchResult *searchResult = [imageSearcher searchWithGMLImage:gmlImage
                                                    regionOfInterest:roi
                                                               error:nil];
-  [self verifySearchResultForRegionOfInterest:searchResult];
+  [self validateSearchResultForRegionOfInterest:searchResult];
 }
 
 - (void)testCreateImageSearcherWithQuantizeOptionFails {
@@ -250,11 +251,11 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
                                                                          error:&error];
 
   XCTAssertNil(imageSearcher);
-  VerifyError(error,
-              kExpectedTaskErrorDomain,                 // expectedErrorDomain
-              TFLSupportErrorCodeInvalidArgumentError,  // expectedErrorCode
-              @"Setting EmbeddingOptions.quantize = true "
-              @"is not allowed in searchers."  // expectedErrorMessage
+  ValidateError(error,
+                kExpectedTaskErrorDomain,                 // expectedErrorDomain
+                TFLSupportErrorCodeInvalidArgumentError,  // expectedErrorCode
+                @"Setting EmbeddingOptions.quantize = true "
+                @"is not allowed in searchers."  // expectedErrorMessage
   );
 }
 
@@ -268,10 +269,10 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
                                                                          error:&error];
 
   XCTAssertNil(imageSearcher);
-  VerifyError(error,
-              kExpectedTaskErrorDomain,                            // expectedErrorDomain
-              TFLSupportErrorCodeInvalidArgumentError,             // expectedErrorCode
-              @"SearchOptions.max_results must be > 0, found -1."  // expectedErrorMessage
+  ValidateError(error,
+                kExpectedTaskErrorDomain,                            // expectedErrorDomain
+                TFLSupportErrorCodeInvalidArgumentError,             // expectedErrorCode
+                @"SearchOptions.max_results must be > 0, found -1."  // expectedErrorMessage
   );
 }
 
@@ -284,12 +285,12 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
                                                                          error:&error];
 
   XCTAssertNil(imageSearcher);
-  VerifyError(error,
-              kExpectedTaskErrorDomain,                                // expectedErrorDomain
-              TFLSupportErrorCodeMetadataAssociatedFileNotFoundError,  // expectedErrorCode
-              @"Unable to find index file: SearchOptions.index_file is not set and no "
-              @"AssociatedFile with type SCANN_INDEX_FILE could be found in the output tensor "
-              @"metadata."  // expectedErrorMessage
+  ValidateError(error,
+                kExpectedTaskErrorDomain,                                // expectedErrorDomain
+                TFLSupportErrorCodeMetadataAssociatedFileNotFoundError,  // expectedErrorCode
+                @"Unable to find index file: SearchOptions.index_file is not set and no "
+                @"AssociatedFile with type SCANN_INDEX_FILE could be found in the output tensor "
+                @"metadata."  // expectedErrorMessage
   );
 }
 

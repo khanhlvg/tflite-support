@@ -33,3 +33,29 @@ ios_unit_test(
         ":TFLImageSearcherObjcTestLibrary",
     ],
 )
+
+# swift_library(
+#     name = "TFLImageSearcherSwiftTestLibrary",
+#     testonly = 1,
+#     srcs = ["TFLImageSearcherTests.swift"],
+#     data = [
+#         "//tensorflow_lite_support/cc/test/testdata/task/vision:test_images",
+#         "//tensorflow_lite_support/cc/test/testdata/task/vision:test_models",
+#         "//tensorflow_lite_support/cc/test/testdata/task/vision:test_indices",
+#     ],
+#     tags = TFL_DEFAULT_TAGS,
+#     deps = [
+#         "//tensorflow_lite_support/ios/task/vision:TFLImageSearcher",
+#         "//tensorflow_lite_support/ios/task/vision/utils:GMLImageUtils",
+#     ],
+# )
+
+# ios_unit_test(
+#     name = "TFLImageSearcherSwiftTest",
+#     minimum_os_version = TFL_MINIMUM_OS_VERSION,
+#     runner = tflite_ios_lab_runner("IOS_LATEST"),
+#     tags = TFL_DEFAULT_TAGS + TFL_DISABLED_SANITIZER_TAGS,
+#     deps = [
+#         ":TFLImageSearcherSwiftTestLibrary",
+#     ],
+# )
