@@ -14,7 +14,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import "tensorflow_lite_support/ios/sources/TFLCommonUtils.h"
+#import "tensorflow_lite_support/ios/utils/sources/TFLCommonUtils.h"
 #import "tensorflow_lite_support/ios/task/audio/core/audio_record/sources/TFLAudioRecord.h"
 #import "tensorflow_lite_support/ios/task/audio/core/sources/TFLRingBuffer.h"
 

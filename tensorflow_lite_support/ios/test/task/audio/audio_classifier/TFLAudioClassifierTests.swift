@@ -181,7 +181,7 @@ class AudioClassifierTests: XCTestCase {
     self.verifyCategory(
       categories[1],
       expectedIndex: 500,
-      0.019531,               // expectedScore
+      expectedScore: 0.019531,
       expectedLabel: "Inside, small room",
       expectedDisplayName: nil)
   }

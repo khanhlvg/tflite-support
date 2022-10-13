@@ -12,20 +12,19 @@
  See the License for the specific language governing permissions and
  limitations under the License.
  ==============================================================================*/
-#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-/** Encapsulates a single nearest neighbor. */
+/** Holds a confidence mask belonging to a single class and its meta data. */
 NS_SWIFT_NAME(NearestNeighbor)
 @interface TFLNearestNeighbor : NSObject
 
 /**
- * User-defined metadata about the result. This could be a label, a unique ID, a serialized proto of
- * some sort, etc.
+ * User-defined metadata about the result. This could be a label, a unique ID, a serialized proto of some sort, etc.
  */
-@property(nonatomic, readonly) NSString *metadata;
+@property(nonatomic, readonly) NSData *metadata;
 
 /**
  * The distance score indicating how confident the result is. Lower is better.
@@ -33,17 +32,9 @@ NS_SWIFT_NAME(NearestNeighbor)
 @property(nonatomic, readonly) CGFloat distance;
 
 /**
- * Initializes a new `TFLNearestNeighbor`.
- *
- * @param metadata User-defined metadata about the result. This could be a label, a unique ID, a
- * serialized proto of some sort, etc.User-defined metadata about the result. This could be a label,
- * a unique ID, a serialized proto of some sort, etc.
- * @param distance The distance score indicating how confident the result is.
- *
- * @return An instance of `TFLNearestNeighbor` initialized to the given values.
+ * Initializes a confidence mask.
  */
-- (instancetype)initWithMetadata:(NSString *)metadata
-                        distance:(CGFloat)distance NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithMetaData:(NSData *)metadata distance:(CGFloat)distance;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -51,27 +42,28 @@ NS_SWIFT_NAME(NearestNeighbor)
 
 @end
 
-/** Holds results from a search task as a list of nearest neighbors. */
+/** Holds category mask and its metadata. */
 NS_SWIFT_NAME(SearchResult)
 @interface TFLSearchResult : NSObject
 
 /**
- * The nearest neighbors, sorted by increasing distance order.
+ * Flattened 2D-array of size `width` x `height`, in row major order.
+ * The value of each pixel in this mask represents the class to which the
+ * pixel belongs.
  */
 @property(nonatomic, readonly) NSArray<TFLNearestNeighbor *> *nearestNeighbors;
+
 
 + (instancetype)new NS_UNAVAILABLE;
 
 /**
- * Initializes a new `TFLSearchResult`.
+ * Initializes a new `TFLCategoryMask` mask.
  *
- * @param nearestNeighbors An array of nearest neighbors detected in the search sorted by increasing
- * disance order.
+ * @param nearestNeighbors Width of the mask.
  *
- * @return An instance of TFLSearchResult initialized to the given values.
+ * @return An instance of TFLSearchResult initialized to the specified values.
  */
-- (instancetype)initWithNearestNeighbors:(NSArray<TFLNearestNeighbor *> *)nearestNeighbors
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithNearestNeighbors:(NSArray<TFLNearestNeighbor *> *)nearestNeighbors;
 
 - (instancetype)init NS_UNAVAILABLE;
 

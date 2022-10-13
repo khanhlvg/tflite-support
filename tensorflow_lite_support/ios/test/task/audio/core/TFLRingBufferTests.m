@@ -18,7 +18,7 @@
 #import "tensorflow_lite_support/ios/task/audio/core/sources/TFLRingBuffer.h"
 
 #define VerifyError(error, expectedErrorDomain, expectedErrorCode, expectedLocalizedDescription) \
-  XCTAssertEqualObjects(error.domain, expectedErrorDomain);                                      \
+  XCTAssertEqual(error.domain, expectedErrorDomain);                                             \
   XCTAssertEqual(error.code, expectedErrorCode);                                                 \
   XCTAssertEqualObjects(error.localizedDescription, expectedLocalizedDescription);
 

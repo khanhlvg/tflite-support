@@ -1,4 +1,4 @@
-/* Copyright 2022 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 #import "tensorflow_lite_support/ios/task/processor/sources/TFLSearchOptions.h"
 
 @implementation TFLSearchOptions
+@synthesize indexFile;
+@synthesize maxResults;
 
 - (instancetype)init {
   self = [super init];
   if (self) {
-    // maxResults will be 0 at the time of initialization. Setting it to 5 since max_results
-    // defaults to 5 in search_options.proto.
-    _maxResults = 5;
+    self.maxResults = 5;
   }
   return self;
 }

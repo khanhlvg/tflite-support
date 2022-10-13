@@ -60,7 +60,18 @@ NSString * const kMobileNetIndexName = @"kk";
 
 - (TFLImageSearcher *)testSuccessfulCreationOfImageSearcherWithSearchContent:(NSString *)modelPath {
   TFLImageSearcherOptions *imageSearcherOptions =
-      [[TFLImageSearcherOptions alloc] initWithModelPath:self.modelPath];
+      [[TFLImageSearcherOptions alloc] initWithModelPath:self.searcherModelPath];
+
+  TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
+                                                                         error:nil];
+  XCTAssertNotNil(imageSearcher);
+
+  return imageSearcher;
+}
+
+- (TFLImageSearcher *)testSuccessfulCreationOfImageSearcherWithEmbedderModelPath:(NSString *)modelPath andIndexPath:(NSString *)indexPath {
+  TFLImageSearcherOptions *imageSearcherOptions =
+      [[TFLImageSearcherOptions alloc] initWithModelPath:self.embedderModelPath];
 
   TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
                                                                          error:nil];

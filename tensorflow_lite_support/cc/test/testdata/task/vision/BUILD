@@ -26,10 +26,3 @@ filegroup(
         "*.ldb",
     ]),
 )
-
-filegroup(
-    name = "protos",
-    srcs = glob([
-        "*.pbtxt",
-    ]),
-)

@@ -144,7 +144,7 @@ class IntentModule : public AbstractModule {
   float categorical_slot_threshold_;
 };
 
-// Responsible for mentioned slots.
+// Responsible for noncategorical slots.
 class SlotModule : public AbstractModule {
  public:
   static absl::StatusOr<std::unique_ptr<AbstractModule>> Create(
@@ -156,7 +156,7 @@ class SlotModule : public AbstractModule {
                            CluResponse* response) const override;
 
  private:
-  float mentioned_slot_threshold_;
+  float noncategorical_slot_threshold_;
 };
 
 }  // namespace tflite::task::text::clu

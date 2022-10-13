@@ -34,9 +34,7 @@ objc_library(
         "sources/TFLClassificationResult.h",
     ],
     module_name = "TFLClassificationResult",
-    deps = [
-        ":TFLCategory",
-    ],
+    deps = [":TFLCategory"],
 )
 
 objc_library(
@@ -62,31 +60,7 @@ objc_library(
         "sources/TFLSegmentationResult.h",
     ],
     module_name = "TFLSegmentationResult",
-    deps = [
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
-    ],
-)
-
-objc_library(
-    name = "TFLSearchResult",
-    srcs = [
-        "sources/TFLSearchResult.m",
-    ],
-    hdrs = [
-        "sources/TFLSearchResult.h",
-    ],
-    module_name = "TFLSearchResult",
-)
-
-objc_library(
-    name = "TFLEmbeddingOptions",
-    srcs = [
-        "sources/TFLEmbeddingOptions.m",
-    ],
-    hdrs = [
-        "sources/TFLEmbeddingOptions.h",
-    ],
-    module_name = "TFLEmbeddingOptions",
+    deps = ["//tensorflow_lite_support/ios/utils:TFLCommonUtils"],
 )
 
 objc_library(
@@ -102,9 +76,31 @@ objc_library(
 )
 
 objc_library(
+    name = "TFLEmbeddingOptions",
+    srcs = [
+        "sources/TFLEmbeddingOptions.m",
+    ],
+    hdrs = [
+        "sources/TFLEmbeddingOptions.h",
+    ],
+    module_name = "TFLEmbeddingOptions",
+)
+
+objc_library(
+    name = "TFLSearchResult",
+    srcs = [
+        "sources/TFLSearchResult.m",
+    ],
+    hdrs = [
+        "sources/TFLSearchResult.h",
+    ],
+    module_name = "TFLSearchResult",
+)
+
+objc_library(
     name = "TFLClassificationOptionsHelpers",
     srcs = [
-        "sources/TFLClassificationOptions+Helpers.m",
+        "sources/TFLClassificationOptions+Helpers.mm",
     ],
     hdrs = [
         "sources/TFLClassificationOptions+Helpers.h",
@@ -112,8 +108,7 @@ objc_library(
     module_name = "TFLClassificationOptionsHelpers",
     deps = [
         "//tensorflow_lite_support/c/task/processor:classification_options",
-        "//tensorflow_lite_support/ios:TFLCommon",
-        "//tensorflow_lite_support/ios:TFLCommonUtils",
+        "//tensorflow_lite_support/ios/utils:TFLCommonUtils",
         "//tensorflow_lite_support/ios/task/processor:TFLClassificationOptions",
     ],
 )
@@ -198,7 +193,7 @@ objc_library(
 objc_library(
     name = "TFLSearchOptionsHelpers",
     srcs = [
-        "sources/TFLSearchOptions+Helpers.mm",
+        "sources/TTFLSearchOptions+Helpers.mm",
     ],
     hdrs = [
         "sources/TFLSearchOptions+Helpers.h",
@@ -207,22 +202,5 @@ objc_library(
     deps = [
         "//tensorflow_lite_support/cc/task/processor/proto:search_options_cc_proto_inc",
         "//tensorflow_lite_support/ios/task/processor:TFLSearchOptions",
-    ],
-)
-
-objc_library(
-    name = "TFLSearchResultHelpers",
-    srcs = [
-        "sources/TFLSearchResult+Helpers.mm",
-    ],
-    hdrs = [
-        "sources/TFLSearchResult+Helpers.h",
-    ],
-    module_name = "TFLSearchResultHelpers",
-    deps = [
-        "//tensorflow_lite_support/cc/port:statusor",
-        "//tensorflow_lite_support/cc/task/processor/proto:search_result_cc_proto_inc",
-        "//tensorflow_lite_support/ios:TFLCommonCppUtils",
-        "//tensorflow_lite_support/ios/task/processor:TFLSearchResult",
     ],
 )

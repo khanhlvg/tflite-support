@@ -23,9 +23,7 @@ objc_library(
         "sources/TFLBaseOptions.h",
     ],
     module_name = "TFLBaseOptions",
-    deps = [
-        ":TFLExternalFile",
-    ],
+    deps = [":TFLExternalFile"],
 )
 
 objc_library(
@@ -56,4 +54,5 @@ objc_library(
         "//tensorflow_lite_support/cc/task/core/proto:base_options_proto_inc",
         "//tensorflow_lite_support/ios/task/core:TFLBaseOptions",
     ],
+    copts = ["-ObjC++","-std=c++14"]
 )
