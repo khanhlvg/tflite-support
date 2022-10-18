@@ -43,6 +43,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
   XCTAssertEqualWithAccuracy(nearestNeighbor.distance, expectedDistance, 1e-6);
 
 @interface TFLImageSearcherTests : XCTestCase
+
 @end
 
 @implementation TFLImageSearcherTests
@@ -212,7 +213,7 @@ static NSString *const kMobileNetIndexName = @"searcher_index";
 
   TFLImageSearcher *imageSearcher = [TFLImageSearcher imageSearcherWithOptions:imageSearcherOptions
                                                                          error:nil];
-
+  
   GMLImage *gmlImage =
       [GMLImage imageFromBundleWithClass:self.class fileName:@"burger" ofType:@"jpg"];
   XCTAssertNotNil(gmlImage);

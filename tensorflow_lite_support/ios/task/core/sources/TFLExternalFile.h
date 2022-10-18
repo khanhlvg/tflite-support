@@ -23,8 +23,6 @@ NS_SWIFT_NAME(ExternalFile)
 @property(nonatomic, copy) NSString *filePath;
 /// Add provision for other sources in future.
 
-- (instancetype)initWithFilePath:(NSString *)filePath;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -77,6 +77,7 @@ using ::tflite::support::StatusOr;
   if (self) {
     StatusOr<std::unique_ptr<ImageSearcherCpp>> cppImageSearcher =
         ImageSearcherCpp::CreateFromOptions(cppOptions);
+
     if (![TFLCommonCppUtils checkCppError:cppImageSearcher.status() toError:error]) {
       return nil;
     }
