@@ -13,6 +13,7 @@
  limitations under the License.
  ==============================================================================*/
 import XCTest
+import GMLImageUtils
 
 @testable import TFLImageSearcher
 
@@ -37,7 +38,7 @@ class ImageSearcherTests: XCTestCase {
   func validateNearestNeighbor(
     _ nearestNeighbor: NearestNeighbor,
     expectedMetadata: String,
-    expectedDistance: Float
+    expectedDistance: Double
   ) {
     XCTAssertEqual(
       nearestNeighbor.metadata,
@@ -53,42 +54,41 @@ class ImageSearcherTests: XCTestCase {
     expectedNearestNeighborsCount: Int
   ) {
     XCTAssertEqual(
-      searchResult.nearesteNeighbors.count,
+      searchResult.nearestNeighbors.count,
       expectedNearestNeighborsCount)
   }
 
   func filePath(
-    name name: String,
-    extension: String,
-  ) -> String? {
-    
-    let filePath = try XCTUnwrap(AudioClassifierTests.bundle.path(
+    name: String,
+    fileExtension: String
+  ) throws -> String? {
+        
+    return try XCTUnwrap(ImageSearcherTests.bundle.path(
         forResource: name,
         ofType: fileExtension))
-    return filePath
   }
 
   func createImageSearcherOptions(
     modelName: String
   ) throws -> ImageSearcherOptions? {
 
-    let modelPath = filePath(name:modelName
-                             extension:"tflite")
+    let modelPath = try XCTUnwrap(filePath(name: modelName,
+        fileExtension: "tflite"))
     return ImageSearcherOptions(modelPath: modelPath)
   }
 
   func createImageSearcher(
-    _ modelName: String
+    modelName: String,
     indexFileName: String? = nil
   ) throws -> ImageSearcher? {
     let options = try XCTUnwrap(
       self.createImageSearcherOptions(
-        modelPath: ImageSearcherTests.modelPath))
+        modelName: "mobilenet_v3_small_100_224_searcher"))
     
 
     if let _indexFileName = indexFileName {
-      let indexFilePath = filePath(name:indexFileName
-                             extension:"ldb")
+      let indexFilePath = try XCTUnwrap(filePath(name: _indexFileName,
+          fileExtension: "ldb"))
       options.searchOptions.indexFile.filePath = indexFilePath
     }
 
@@ -101,38 +101,37 @@ class ImageSearcherTests: XCTestCase {
  
 
   func validateSearchResult(
-    searchResult: SearchResult
+    _ searchResult: SearchResult
   ) {
     self.validateSearchResultCount(
       searchResult,
       expectedNearestNeighborsCount: 5)
     
-    self.verifyNearestNeighbor(
-      searchResult.nearesteNeighbors[0],
+    self.validateNearestNeighbor(
+      searchResult.nearestNeighbors[0],
       expectedMetadata: "burger",
       expectedDistance: 198.456329)
-    self.verifyNearestNeighbor(
-      searchResult.nearesteNeighbors[1],
+    self.validateNearestNeighbor(
+      searchResult.nearestNeighbors[1],
       expectedMetadata: "car",
       expectedDistance: 226.022186)
     
-    self.verifyNearestNeighbor(
+    self.validateNearestNeighbor(
       searchResult.nearestNeighbors[2],
       expectedMetadata: "bird",
       expectedDistance: 227.297668)
-    self.verifyNearestNeighbor(
+    self.validateNearestNeighbor(
       searchResult.nearestNeighbors[3],
       expectedMetadata: "dog",
       expectedDistance: 229.133789)
-   self.verifyNearestNeighbor(searchResult.nearestNeighbors[4],
+   self.validateNearestNeighbor(searchResult.nearestNeighbors[4],
       expectedMetadata: "cat", 
       expectedDistance: 229.718948)
   }
 
   func testSearchWithSearcherModelSucceeds() throws {
-    let imageSearcher = try XCTUnwrap(
-      self.createImageSearcher(
-        modelName: kSearcherModelName)
+    let imageSearcher = try XCTUnwrap(self.createImageSearcher(
+      modelName: kSearcherModelName))
    
     let mlImage = try XCTUnwrap(
       MLImage.imageFromBundle(
@@ -142,7 +141,24 @@ class ImageSearcherTests: XCTestCase {
 
     let searchResult = try XCTUnwrap(
       imageSearcher.search(
-        mlImage: mlImage)
+        mlImage: mlImage))
+    self.validateSearchResult(searchResult)
+  }
+
+  func testSearchWithEmbedderModelAndIndexFileSucceeds() throws {
+    let imageSearcher = try XCTUnwrap(self.createImageSearcher(
+      modelName: kEmbedderModelName,
+      indexFileName: kMobileNetIndexName))
+   
+    let mlImage = try XCTUnwrap(
+      MLImage.imageFromBundle(
+        class: type(of: self),
+        filename: "burger",
+        type: "jpg"))
+
+    let searchResult = try XCTUnwrap(
+      imageSearcher.search(
+        mlImage: mlImage))
     self.validateSearchResult(searchResult)
   }
 
@@ -153,7 +169,7 @@ class ImageSearcherTests: XCTestCase {
         options: options)
       XCTAssertNil(imageSearcher)
     } catch {
-      self.verifyError(
+      self.validateError(
         error,
         expectedLocalizedDescription:
           "INVALID_ARGUMENT: Missing mandatory `model_file` field in `base_options`")
